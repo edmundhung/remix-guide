@@ -1,0 +1,11 @@
+node_modules
+
+# Build
+/.cache
+/build
+/public/build
+/dist
+/app/styles/tailwind.css
+
+# Cypress
+/cypress/videos
