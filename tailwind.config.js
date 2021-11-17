@@ -3,7 +3,11 @@ module.exports = {
   purge: ['./app/**/*.tsx', './app/**/*.ts'],
   darkMode: false, // or 'media' or 'class'
   theme: {
-    extend: {},
+    extend: {
+      gridTemplateColumns: {
+        masonry: 'repeat(auto-fill, minmax(250px, 1fr))',
+      },
+    },
   },
   variants: {
     extend: {},

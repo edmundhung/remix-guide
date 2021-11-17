@@ -1,5 +1,7 @@
-import { MetaFunction, LinksFunction, LoaderFunction, Form } from 'remix';
-import { useLoaderData } from 'remix';
+import type { MetaFunction, LinksFunction, LoaderFunction } from 'remix';
+import { Form, useLoaderData } from 'remix';
+import Masonry from '~/components/Masonry';
+import Card from '~/components/Card';
 
 export let meta: MetaFunction = () => {
   return {
@@ -9,11 +11,7 @@ export let meta: MetaFunction = () => {
   };
 };
 
-export let action: ActionFunction = async ({ request, context }) => {
-  const formData = new URLSearchParams(await request.text());
-
-  await context.counter.increment(formData.get('name'));
-
+export let action: ActionFunction = async () => {
   return null;
 };
 
@@ -21,91 +19,66 @@ export let links: LinksFunction = () => {
   return [];
 };
 
-export let loader: LoaderFunction = async ({ request, context }) => {
-  const counters = ['🚀', '🗺️', '⚡', '📡'];
-  const counts = await Promise.all(
-    counters.map(async (name) => [name, await context.counter.getCount(name)])
-  );
-
+export let loader: LoaderFunction = async () => {
   return {
-    message: 'Why Remix on Cloudflare Workers?',
-    counts: Object.fromEntries(counts),
+    articles: [
+      {
+        id: 'andwqiofqei',
+        url: 'https://edmund.dev/articles/deploying-remix-app-on-cloudflare-workers',
+        type: 'article',
+        title: 'Deploying Remix app on Cloudflare Workers',
+        description:
+          'Step by step guide on how to deploy your remix app to Cloudflare Workers using the `remix-worker-template`',
+        tags: ['Cloudflare Workers'],
+      },
+      {
+        id: 'wrgrgrg',
+        url: 'https://github.com/sergiodxa/remix-auth',
+        type: 'packacge',
+        title: 'remix-auth',
+        description: 'Simple Authentication for Remix',
+      },
+      {
+        id: '435frgg',
+        url: 'https://github.com/jacob-ebey/remix-css-modules',
+        type: 'template',
+        title: 'remix-css-modules',
+      },
+      {
+        id: 'rgjoer',
+        url: 'https://kentcdodds.com',
+        type: 'example',
+        title: 'kentcdodds.com',
+      },
+      {
+        id: 'gwrgjrig',
+        url: 'https://www.youtube.com/watch?v=bfLFHp7Sbkg',
+        type: 'other',
+        title: 'CDN Caching, Static Site Generation, and Server Side Rendering',
+      },
+    ],
   };
 };
 
 export default function Index() {
-  let data = useLoaderData();
+  let { articles } = useLoaderData();
 
   return (
-    <div>
-      <h2>Welcome to Remix! 💿</h2>
-      <p className="py-3">
-        <a
-          className="underline"
-          href="https://docs.remix.run"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Check out the docs
-        </a>{' '}
-        to get started
-      </p>
-
-      <h3 className="mt-10 font-bold">{data.message}</h3>
-
-      <div className="max-w-3xl">
-        <Form method="post">
-          <input type="hidden" name="name" value="🚀" />
-          <button
-            type="submit"
-            className="block w-full flex flex-row items-center justify-between p-2 my-4 border cursor-pointer hover:border-red-500"
-          >
-            <span className="text-left">
-              Blazing fast react app rendered on the edge
-            </span>
-            <span className="whitespace-nowrap">🚀 {data.counts['🚀']}</span>
-          </button>
-        </Form>
-
-        <Form method="post">
-          <input type="hidden" name="name" value="🗺️" />
-          <button
-            type="submit"
-            className="block w-full flex flex-row items-center justify-between p-2 my-4 border cursor-pointer hover:border-blue-500"
-          >
-            <span className="text-left">
-              Showing localized content based on your user Geo-location
-            </span>
-            <span className="whitespace-nowrap">🗺️ {data.counts['🗺️']}</span>
-          </button>
-        </Form>
-
-        <Form method="post">
-          <input type="hidden" name="name" value="⚡" />
-          <button
-            type="submit"
-            className="block w-full flex flex-row items-center justify-between p-2 my-4 border cursor-pointer hover:border-yellow-500"
-          >
-            <span className="text-left">
-              Customizing the CDN Cache within the worker for best performance
-            </span>
-            <span className="whitespace-nowrap">⚡ {data.counts['⚡']}</span>
-          </button>
-        </Form>
-
-        <Form method="post">
-          <input type="hidden" name="name" value="📡" />
-          <button
-            type="submit"
-            className="block w-full flex flex-row items-center justify-between p-2 my-4 border cursor-pointer hover:border-purple-500"
-          >
-            <span className="text-left">
-              Serving your data with a low-latency key-value store
-            </span>
-            <span className="whitespace-nowrap">📡 {data.counts['📡']}</span>
-          </button>
-        </Form>
+    <main className="p-10">
+      <div className="grid grid-cols-masonry pl-px pt-px">
+        {articles.map((article) => (
+          <Card
+            key={article.id}
+            className="-ml-px -mt-px"
+            url={article.url}
+            type={article.type}
+            title={article.title}
+            description={article.description}
+            image={article.image}
+            tags={article.tags}
+          />
+        ))}
       </div>
-    </div>
+    </main>
   );
 }
