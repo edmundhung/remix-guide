@@ -67,31 +67,42 @@ export default function App() {
           >
             <span className="text-center">Remix Guide</span>
           </Link>
-          <Form className="px-10 relative color-gray-300" method="get">
-            <button className="absolute top-4" title="search" type="button">
-              <svg
-                width="15"
-                height="15"
-                viewBox="0 0 18 18"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M3.75068 11.3405C1.65161 9.23359 1.65161 5.80439 3.75068 3.69748C4.76756 2.67681 6.11976 2.11292 7.55689 2.11292C8.99619 2.11292 10.3484 2.67681 11.3653 3.69748C13.4622 5.80439 13.4622 9.23359 11.3653 11.3405C9.2662 13.4452 5.84975 13.4452 3.75068 11.3405ZM18 16.4548L13.595 12.0333C15.7986 9.06529 15.5874 4.8471 12.9047 2.15226C10.0479 -0.715235 5.06587 -0.719606 2.21121 2.15226C-0.737072 5.10937 -0.737072 9.9286 2.21121 12.8857C3.68536 14.3654 5.62112 15.1041 7.55906 15.1041C9.14861 15.1041 10.7229 14.5752 12.0555 13.5785L16.4605 18L18 16.4548Z"
-                  fill="currentColor"
-                ></path>
-              </svg>
-            </button>
-            <input
-              className="pl-5 py-3 border-b focus:outline-none"
-              type="search"
-              placeholder="Search"
-              name="q"
-            />
+          <Form
+            className="px-10 relative flex-grow color-gray-300"
+            method="get"
+          >
+            <div class="flex items-center flex-row-reverse">
+              <input
+                id="search"
+                className="w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
+                type="search"
+                name="q"
+                placeholder="Search"
+              />
+              <label htmlFor="search" className="-mr-7">
+                <svg
+                  class="w-5 h-5 fill-current text-gray-500 z-10"
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="black"
+                >
+                  <path d="M0 0h24v24H0V0z" fill="none" />
+                  <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+              </label>
+            </div>
           </Form>
-          <nav className="px-2">
+          <Form method="get">
+            <select className="px-2 text-gray-300 hover:text-gray-600 transition-colors cursor-pointer appearance-none">
+              <option>Version</option>
+            </select>
+          </Form>
+          <Form method="get">
+            <select className="px-2 text-gray-300 hover:text-gray-600 transition-colors cursor-pointer appearance-none">
+              <option>Platform</option>
+            </select>
+          </Form>
+          <nav className="px-10">
             <NavLink
               className={({ isActive }) =>
                 `px-2 ${
