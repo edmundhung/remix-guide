@@ -1,5 +1,6 @@
 import type { LinksFunction, MetaFunction, LoaderFunction } from 'remix';
 import {
+  Form,
   Meta,
   Links,
   Scripts,
@@ -8,6 +9,7 @@ import {
   useCatch,
   Outlet,
   Link,
+  NavLink,
 } from 'remix';
 
 import stylesUrl from './styles/tailwind.css';
@@ -57,37 +59,83 @@ export default function App() {
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
-        <header className="h-32 border-b flex flex-row items-center">
-          <h1 className="flex-grow px-10 text-lg">Remix Guide</h1>
-          <nav className="h-full flex flex-row">
-            <Link
-              className="border-l px-10 flex items-center justify-center"
+        <header className="sticky top-0 z-20 bg-white border-b flex flex-row items-center">
+          <Link
+            className="w-24 h-24 px-10 flex items-center justify-center bg-black text-white"
+            to="/"
+            prefetch="intent"
+          >
+            <span className="text-center">Remix Guide</span>
+          </Link>
+          <Form className="px-10 relative color-gray-300" method="get">
+            <button className="absolute top-4" title="search" type="button">
+              <svg
+                width="15"
+                height="15"
+                viewBox="0 0 18 18"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fill-rule="evenodd"
+                  clip-rule="evenodd"
+                  d="M3.75068 11.3405C1.65161 9.23359 1.65161 5.80439 3.75068 3.69748C4.76756 2.67681 6.11976 2.11292 7.55689 2.11292C8.99619 2.11292 10.3484 2.67681 11.3653 3.69748C13.4622 5.80439 13.4622 9.23359 11.3653 11.3405C9.2662 13.4452 5.84975 13.4452 3.75068 11.3405ZM18 16.4548L13.595 12.0333C15.7986 9.06529 15.5874 4.8471 12.9047 2.15226C10.0479 -0.715235 5.06587 -0.719606 2.21121 2.15226C-0.737072 5.10937 -0.737072 9.9286 2.21121 12.8857C3.68536 14.3654 5.62112 15.1041 7.55906 15.1041C9.14861 15.1041 10.7229 14.5752 12.0555 13.5785L16.4605 18L18 16.4548Z"
+                  fill="currentColor"
+                ></path>
+              </svg>
+            </button>
+            <input
+              className="pl-5 py-3 border-b focus:outline-none"
+              type="search"
+              placeholder="Search"
+              name="q"
+            />
+          </Form>
+          <nav className="px-2">
+            <NavLink
+              className={({ isActive }) =>
+                `px-2 ${
+                  isActive ? 'text-gray-900' : 'text-gray-300'
+                } hover:text-gray-600 transition-colors`
+              }
               to="articles"
               prefetch="intent"
             >
               <span>Articles</span>
-            </Link>
-            <Link
-              className="border-l px-10 flex items-center justify-center"
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `px-2 ${
+                  isActive ? 'text-gray-900' : 'text-gray-300'
+                } hover:text-gray-600 transition-colors`
+              }
               to="packages"
               prefetch="intent"
             >
               <span>Packages</span>
-            </Link>
-            <Link
-              className="border-l px-10 flex items-center justify-center"
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `px-2 ${
+                  isActive ? 'text-gray-900' : 'text-gray-300'
+                } hover:text-gray-600 transition-colors`
+              }
               to="templates"
               prefetch="intent"
             >
               <span>Templates</span>
-            </Link>
-            <Link
-              className="border-l px-10 flex items-center justify-center"
+            </NavLink>
+            <NavLink
+              className={({ isActive }) =>
+                `px-2 ${
+                  isActive ? 'text-gray-900' : 'text-gray-300'
+                } hover:text-gray-600 transition-colors`
+              }
               to="examples"
               prefetch="intent"
             >
               <span>Examples</span>
-            </Link>
+            </NavLink>
           </nav>
         </header>
         <Outlet />
