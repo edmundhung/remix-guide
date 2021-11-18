@@ -152,9 +152,36 @@ export default function App() {
             </div>
           </div>
         </header>
-        <Outlet />
-        <footer className="sm:px-10 p-5">
-          <p>This page was rendered at {data.date.toLocaleString()}</p>
+        <main className="flex-grow p-4 sm:p-10">
+          <Outlet />
+        </main>
+        <footer className="flex flex-col sm:flex-row justify-between sm:px-10 p-5 text-sm text-center sm:text-left">
+          <p>
+            Wanna share something? Submit it{' '}
+            <Link className="underline" to="submit">
+              here
+            </Link>
+          </p>
+          <p>
+            Made with{' '}
+            <a
+              className="hover:underline"
+              href="https://remix.run"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Remix
+            </a>{' '}
+            by{' '}
+            <a
+              className="hover:underline"
+              href="https://edmund.dev"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Ed
+            </a>
+          </p>
         </footer>
       </div>
     </Document>

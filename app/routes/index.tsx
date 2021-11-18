@@ -64,21 +64,19 @@ export default function Index() {
   let { articles } = useLoaderData();
 
   return (
-    <main className="p-4 sm:p-10">
-      <div className="grid grid-cols-masonry pl-px pt-px">
-        {articles.map((article) => (
-          <Card
-            key={article.id}
-            className="-ml-px -mt-px"
-            url={article.url}
-            type={article.type}
-            title={article.title}
-            description={article.description}
-            image={article.image}
-            tags={article.tags}
-          />
-        ))}
-      </div>
-    </main>
+    <div className="grid grid-cols-masonry pl-px pt-px">
+      {articles.map((article) => (
+        <Card
+          key={article.id}
+          className="-ml-px -mt-px"
+          url={article.url}
+          type={article.type}
+          title={article.title}
+          description={article.description}
+          image={article.image}
+          tags={article.tags}
+        />
+      ))}
+    </div>
   );
 }
