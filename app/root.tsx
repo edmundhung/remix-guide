@@ -59,20 +59,20 @@ export default function App() {
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
-        <header className="sticky top-0 z-20 bg-white border-b flex flex-row items-center">
+        <header className="sticky top-0 z-20 bg-white sm:border-b flex flex-row items-center text-xs sm:text-base">
           <Link
-            className="w-24 h-24 px-10 flex items-center justify-center bg-black text-white"
+            className="w-12 h-12 sm:w-24 sm:h-24 sm:px-10 flex items-center justify-center bg-black text-white"
             to="/"
             prefetch="intent"
           >
             <span className="text-center">Remix Guide</span>
           </Link>
-          <div className="px-10 flex flex-grow flex-col lg:flex-row">
+          <div className="sm:px-5 lg:px-10 flex flex-grow flex-col lg:flex-row">
             <Form className="relative flex-grow color-gray-300" method="get">
               <div class="flex items-center flex-row-reverse">
                 <input
                   id="search"
-                  className="w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
+                  className="h-12 sm:h-auto w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
                   type="search"
                   name="q"
                   placeholder="Search"
@@ -90,7 +90,7 @@ export default function App() {
                 </label>
               </div>
             </Form>
-            <div className="flex flex-col sm:flex-row items-center pt-2">
+            <div className="hidden sm:flex flex-col sm:flex-row items-center pt-2">
               <div className="flex flex-row lg:px-10">
                 <Form method="get">
                   <select className="px-2 text-gray-300 hover:text-gray-600 transition-colors cursor-pointer appearance-none">

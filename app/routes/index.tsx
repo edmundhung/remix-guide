@@ -64,7 +64,7 @@ export default function Index() {
   let { articles } = useLoaderData();
 
   return (
-    <main className="p-10">
+    <main className="p-4 sm:p-10">
       <div className="grid grid-cols-masonry pl-px pt-px">
         {articles.map((article) => (
           <Card
