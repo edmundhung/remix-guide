@@ -1,9 +1,23 @@
-import type { LoaderFunction } from 'remix';
+import type { MetaFunction, LoaderFunction } from 'remix';
 import { useLoaderData } from 'remix';
 import Card from '~/components/Card';
 
-export let loader: LoaderFunction = async ({ context }) => {
-  const entries = context.search();
+export let meta: MetaFunction = () => {
+  return {
+    title: 'Remix Guide - Search',
+    description:
+      'Starter template for setting up a Remix app on Cloudflare Workers',
+  };
+};
+
+export let loader: LoaderFunction = async ({ request, context }) => {
+  const url = new URL(request.url);
+  const entries = context.search({
+    keyword: url.searchParams.get('q'),
+    category: url.searchParams.get('category'),
+    version: url.searchParams.get('version'),
+    platform: url.searchParams.get('platform'),
+  });
 
   return { entries };
 };
