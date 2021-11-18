@@ -1,6 +1,5 @@
 /.cache
 /build
 /public/build
-/worker.js
-/worker.js.map
+/dist
 /app/styles/tailwind.css
