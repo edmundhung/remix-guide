@@ -31,6 +31,7 @@ export default function Index() {
         <Card
           key={entry.id}
           className="-ml-px -mt-px"
+          id={entry.id}
           url={entry.url}
           type={entry.type}
           title={entry.title}

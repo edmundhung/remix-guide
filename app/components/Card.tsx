@@ -1,9 +1,11 @@
-import { ReactElement } from 'react';
+import { ReactElement, useEffect, useReducer } from 'react';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Link } from 'remix';
 import Hyperlink from '~/components/Hyperlink';
 
 interface CardProps {
   className?: string;
+  id: string;
   url: string;
   type: string;
   title: string;
@@ -12,8 +14,24 @@ interface CardProps {
   tags?: string[];
 }
 
+function useHash(): string {
+  const location = useLocation();
+  const [, rerender] = useReducer((i) => i + 1, 0);
+
+  useEffect(() => {
+    window.addEventListener('hashchange', rerender);
+
+    return () => {
+      window.removeEventListener('hashchange', rerender);
+    };
+  }, []);
+
+  return location.hash;
+}
+
 function Card({
   className,
+  id,
   url,
   type,
   title,
@@ -21,11 +39,19 @@ function Card({
   image,
   tags,
 }: CardProps): ReactElement {
+  const [searchParams] = useSearchParams();
+  const hash = useHash();
+
   return (
     <article
-      className={`flex flex-col overflow-hidden bg-white text-primary border hover:border-black z-0 hover:z-10 ${className}`.trim()}
+      className={`flex flex-col overflow-hidden bg-white text-primary border hover:border-black z-0 hover:z-10 ${
+        hash === `#${id}` ? 'col-span-2' : ''
+      } ${className}`.trim()}
     >
-      <Hyperlink className="no-underline flex-grow" to={url}>
+      <Hyperlink
+        className="no-underline flex-grow"
+        to={`?${searchParams.toString()}#${id}`}
+      >
         {!image ? null : (
           <figure>
             <img src={image} width="100%" alt="cover" />
