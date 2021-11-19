@@ -25,7 +25,7 @@ export let meta: MetaFunction = () => {
 
 export let loader: LoaderFunction = async () => {
   return {
-    categories: ['articles', 'packages', 'templates', 'examples', 'others'],
+    categories: ['articles', 'videos', 'packages', 'templates', 'others'],
     versions: ['v1.0.x', 'pre-v1'],
     platforms: [
       'architect',

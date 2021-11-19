@@ -5,12 +5,15 @@ module.exports = {
   theme: {
     extend: {
       gridTemplateColumns: {
-        masonry: 'repeat(auto-fill, minmax(250px, 1fr))',
+        masonry: 'repeat(auto-fill, minmax(260px, 1fr))',
       },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [
+    require('@tailwindcss/line-clamp'),
+    require('@tailwindcss/aspect-ratio'),
+  ],
 };

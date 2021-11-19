@@ -11,9 +11,8 @@ const entries = [
     id: 'remix-auth',
     type: 'packages',
     url: 'https://github.com/sergiodxa/remix-auth',
-    title: 'GitHub - sergiodxa/remix-auth: Simple Authentication for Remix',
-    description:
-      'Simple Authentication for Remix. Contribute to sergiodxa/remix-auth development by creating an account on GitHub.',
+    title: 'sergiodxa/remix-auth',
+    description: 'Simple Authentication for Remix',
     image:
       'https://opengraph.githubassets.com/cc065fe3e90866b296b5f71883049444d33061c8f2ae1ec6811093c84513b6f8/sergiodxa/remix-auth',
   },
@@ -21,10 +20,8 @@ const entries = [
     id: 'remix-utils',
     type: 'packages',
     url: 'https://github.com/sergiodxa/remix-utils',
-    title:
-      'GitHub - sergiodxa/remix-utils: A set of utility functions and types to use with Remix.run',
-    description:
-      'A set of utility functions and types to use with Remix.run - GitHub - sergiodxa/remix-utils: A set of utility functions and types to use with Remix.run',
+    title: 'sergiodxa/remix-utils',
+    description: 'A set of utility functions and types to use with Remix.run',
     image:
       'https://opengraph.githubassets.com/abc6efa8565efad8518a3991abad47a20558f72a0bcb1ee2180f17f9506330ce/sergiodxa/remix-utils',
   },
@@ -32,10 +29,8 @@ const entries = [
     id: 'remix-i18next',
     type: 'packages',
     url: 'https://github.com/sergiodxa/remix-i18next',
-    title:
-      'GitHub - sergiodxa/remix-i18next: The easiest way to translate your Remix apps',
-    description:
-      'The easiest way to translate your Remix apps. Contribute to sergiodxa/remix-i18next development by creating an account on GitHub.',
+    title: 'sergiodxa/remix-i18next',
+    description: 'The easiest way to translate your Remix apps',
     image:
       'https://opengraph.githubassets.com/c60e70ebf2d8087d468db97cfd929688cf75e7dfd6cf1ba3f956f9d0b1539f36/sergiodxa/remix-i18next',
   },
@@ -43,10 +38,9 @@ const entries = [
     id: 'remix-seo',
     type: 'packages',
     url: 'https://github.com/chaance/remix-seo',
-    title:
-      'GitHub - chaance/remix-seo: A package for easily managing SEO meta and link tags in Remix.',
+    title: 'chaance/remix-seo',
     description:
-      'A package for easily managing SEO meta and link tags in Remix. - GitHub - chaance/remix-seo: A package for easily managing SEO meta and link tags in Remix.',
+      'A package for easily managing SEO meta and link tags in Remix.',
     image:
       'https://opengraph.githubassets.com/9b9140f8517b2a46c081d7065717ba119efb2adcfcf0bbafcaed8fac2d860761/chaance/remix-seo',
   },
@@ -54,9 +48,7 @@ const entries = [
     id: 'danielgary/remix-azure-template',
     type: 'templates',
     url: 'https://github.com/danielgary/remix-azure-template',
-    title: 'GitHub - danielgary/remix-azure-template',
-    description:
-      'Contribute to danielgary/remix-azure-template development by creating an account on GitHub.',
+    title: 'danielgary/remix-azure-template',
     image:
       'https://opengraph.githubassets.com/4f1a248f35414f4bfdccb2caf76bb0ca57900d53dccadec9d884ae821ae920d9/danielgary/remix-azure-template',
   },
@@ -64,10 +56,8 @@ const entries = [
     id: 'brookslybrand/remix-nested-layouts',
     type: 'templates',
     url: 'https://github.com/brookslybrand/remix-nested-layouts',
-    title:
-      'GitHub - brookslybrand/remix-nested-layouts: Converting a demo of implementing nested layouts in Next.js: https://github.com/brookslybrand/next-nested-layouts',
-    description:
-      'Converting a demo of implementing nested layouts in Next.js: https://github.com/brookslybrand/next-nested-layouts - GitHub - brookslybrand/remix-nested-layouts: Converting a demo of implementing nested layouts in Next.js: https://github.com/brookslybrand/next-nested-layouts',
+    title: 'brookslybrand/remix-nested-layouts',
+    description: 'Converting a demo of implementing nested layouts in Next.js',
     image:
       'https://opengraph.githubassets.com/b79a213f7e3907d1530f4d3a52c1bcbd74a688ddab077e61c883b4538074ec7a/brookslybrand/remix-nested-layouts',
   },
@@ -75,10 +65,9 @@ const entries = [
     id: 'mcansh/remix-tailwind-starter',
     type: 'templates',
     url: 'https://github.com/mcansh/remix-tailwind-starter',
-    title:
-      'GitHub - mcansh/remix-tailwind-starter: A Remix.run starter with tailwindcss configured and deployed to various cloud platforms',
+    title: 'mcansh/remix-tailwind-starter',
     description:
-      'A Remix.run starter with tailwindcss configured and deployed to various cloud platforms - GitHub - mcansh/remix-tailwind-starter: A Remix.run starter with tailwindcss configured and deployed to various cloud platforms',
+      'A Remix.run starter with tailwindcss configured and deployed to various cloud platforms',
     image:
       'https://opengraph.githubassets.com/7ad8248d4f7b82b5409c2767791024c169091658688b49348832c133fc8fce2e/mcansh/remix-tailwind-starter',
   },
@@ -86,9 +75,7 @@ const entries = [
     id: 'ascorbic/remix-on-netlify',
     type: 'templates',
     url: 'https://github.com/ascorbic/remix-on-netlify',
-    title: 'GitHub - ascorbic/remix-on-netlify',
-    description:
-      'Contribute to ascorbic/remix-on-netlify development by creating an account on GitHub.',
+    title: 'ascorbic/remix-on-netlify',
     image:
       'https://opengraph.githubassets.com/17c30e7001b7fc25f644993b96f49d52a3e3764ef2096da1a841d76e3055f515/ascorbic/remix-on-netlify',
   },
@@ -96,10 +83,8 @@ const entries = [
     id: 'jacob-ebey/remix-css-modules',
     type: 'templates',
     url: 'https://github.com/jacob-ebey/remix-css-modules',
-    title:
-      'GitHub - jacob-ebey/remix-css-modules: Example of using CSS modules with Remix.run',
-    description:
-      'Example of using CSS modules with Remix.run. Contribute to jacob-ebey/remix-css-modules development by creating an account on GitHub.',
+    title: 'jacob-ebey/remix-css-modules',
+    description: 'Example of using CSS modules with Remix.run',
     image:
       'https://opengraph.githubassets.com/33d74b96a4039c6fbd3fa3d4f5f2aa84700e92accdef1ffad501d541926af42d/jacob-ebey/remix-css-modules',
   },
@@ -107,10 +92,9 @@ const entries = [
     id: 'jacob-ebey/remix-auth-layouts-example',
     type: 'templates',
     url: 'https://github.com/jacob-ebey/remix-auth-layouts-example',
-    title:
-      'GitHub - jacob-ebey/remix-auth-layouts-example: An example showing how to build a simple login flow utilizing actions, transitions, layout routes and more that works with and without JavaScript enabled.',
+    title: 'jacob-ebey/remix-auth-layouts-example',
     description:
-      'An example showing how to build a simple login flow utilizing actions, transitions, layout routes and more that works with and without JavaScript enabled. - GitHub - jacob-ebey/remix-auth-layouts-example: An example showing how to build a simple login flow utilizing actions, transitions, layout routes and more that works with and without JavaScript enabled.',
+      'An example showing how to build a simple login flow utilizing actions, transitions, layout routes and more that works with and without JavaScript enabled.',
     image:
       'https://opengraph.githubassets.com/1dc32b022849cb4cfc913a873f9e857f693835332d0cd056c758d710ad50aaa4/jacob-ebey/remix-auth-layouts-example',
   },
@@ -118,77 +102,67 @@ const entries = [
     id: 'edmundhung/remix-worker-template',
     type: 'templates',
     url: 'https://github.com/edmundhung/remix-worker-template',
-    title:
-      'GitHub - edmundhung/remix-worker-template: 📜 Starter template for setting up a Remix app on Cloudflare Workers',
+    title: 'edmundhung/remix-worker-template',
     description:
-      '📜 Starter template for setting up a Remix app on Cloudflare Workers - GitHub - edmundhung/remix-worker-template: 📜 Starter template for setting up a Remix app on Cloudflare Workers',
+      '📜 Starter template for setting up a Remix app on Cloudflare Workers',
     image:
       'https://opengraph.githubassets.com/b1a2979fce1c95f549d25b7094e1790d4504fd4572d35c3fba8638a463f963ae/edmundhung/remix-worker-template',
   },
   {
     id: 'kentcdodds/kentcdodds.com',
-    type: 'examples',
+    type: 'others',
     url: 'https://github.com/kentcdodds/kentcdodds.com',
-    title: 'GitHub - kentcdodds/kentcdodds.com: My personal website',
-    description:
-      'My personal website. Contribute to kentcdodds/kentcdodds.com development by creating an account on GitHub.',
+    title: 'kentcdodds/kentcdodds.com',
+    description: 'My personal website',
     image:
       'https://opengraph.githubassets.com/f1604576f571396a1de0804d85ef6538638133b612124e9aebfb13ca18ba65a9/kentcdodds/kentcdodds.com',
   },
   {
     id: 'HovaLabs/hova-labs-remix',
-    type: 'examples',
+    type: 'others',
     url: 'https://github.com/HovaLabs/hova-labs-remix',
-    title: 'GitHub - HovaLabs/hova-labs-remix',
-    description:
-      'Contribute to HovaLabs/hova-labs-remix development by creating an account on GitHub.',
+    title: 'HovaLabs/hova-labs-remix',
     image:
       'https://opengraph.githubassets.com/e07efc219fb41b233bf314de5d8d844ea8d4bb849f7c45c7c307b4956651c367/HovaLabs/hova-labs-remix',
   },
   {
     id: 'mcansh/snkrs',
-    type: 'examples',
+    type: 'others',
     url: 'https://github.com/mcansh/snkrs',
-    title: 'GitHub - mcansh/snkrs: show off your sneaker collection',
-    description:
-      'show off your sneaker collection. Contribute to mcansh/snkrs development by creating an account on GitHub.',
+    title: 'mcansh/snkrs',
+    description: 'show off your sneaker collection',
     image:
       'https://opengraph.githubassets.com/78ee9dfc88d2acf3256e9a261e77b3388e9e60ae8001888483ebe22520e85dd4/mcansh/snkrs',
   },
   {
     id: 'BenoitAverty/realworld-remix.run',
-    type: 'examples',
+    type: 'others',
     url: 'https://github.com/BenoitAverty/realworld-remix.run',
-    title:
-      'GitHub - BenoitAverty/realworld-remix.run: Remix.run implementation of Conduit',
-    description:
-      'Remix.run implementation of Conduit. Contribute to BenoitAverty/realworld-remix.run development by creating an account on GitHub.',
+    title: 'BenoitAverty/realworld-remix.run',
+    description: 'Remix.run implementation of Conduit',
     image:
       'https://opengraph.githubassets.com/5e297735aef04fe91f0119a7d3926284e5166df42ad569813e1ce7669fad01ee/BenoitAverty/realworld-remix.run',
   },
   {
     id: 'camchenry/camchenry-remix',
-    type: 'examples',
+    type: 'others',
     url: 'https://github.com/camchenry/camchenry-remix',
-    title: 'GitHub - camchenry/camchenry-remix',
-    description:
-      'Contribute to camchenry/camchenry-remix development by creating an account on GitHub.',
+    title: 'camchenry/camchenry-remix',
     image:
       'https://opengraph.githubassets.com/2591b07762a32fb84ea62790789c160cb64b258f5e1bbf79355f8f0d98e4e509/camchenry/camchenry-remix',
   },
   {
     id: 'sergiodxa/personal-site',
-    type: 'examples',
+    type: 'others',
     url: 'https://github.com/sergiodxa/personal-site',
-    title: 'GitHub - sergiodxa/personal-site: Personal website',
-    description:
-      'Personal website. Contribute to sergiodxa/personal-site development by creating an account on GitHub.',
+    title: 'sergiodxa/personal-site',
+    description: 'Personal website',
     image:
       'https://repository-images.githubusercontent.com/34244035/e3254a80-8313-11e9-807c-f737369e6ab7',
   },
   {
     id: 'cdn-caching-static-site-generation-and-server-side-rendering',
-    type: 'others',
+    type: 'videos',
     url: 'https://www.youtube.com/watch?v=bfLFHp7Sbkg',
     title: 'CDN Caching, Static Site Generation, and Server Side Rendering',
     description:
@@ -197,7 +171,7 @@ const entries = [
   },
   {
     id: 'document-titles-in-remix',
-    type: 'others',
+    type: 'videos',
     url: 'https://www.youtube.com/watch?v=nXjMorEABFQ',
     title: 'Document Titles in Remix',
     description:
@@ -206,7 +180,7 @@ const entries = [
   },
   {
     id: 'live-with-kent-building-authentication-with-postgres-prisma-and-remix',
-    type: 'others',
+    type: 'videos',
     url: 'https://www.youtube.com/watch?v=XkZINZDDdms',
     title:
       'Live with Kent: Building Authentication with Postgres, Prisma, and Remix',
@@ -215,16 +189,16 @@ const entries = [
   },
   {
     id: 'progressive-enhancement-with-Remix',
-    type: 'others',
+    type: 'videos',
     url: 'https://www.youtube.com/watch?v=VM4VMESF3tU',
     title: 'Progressive Enhancement with Remix',
     description:
-      "Remix makes progressively enhancing web sites/web apps incredibly simple. With it's platform-first focus you can easily make the same site to work with or wi...",
+      "Remix makes progressively enhancing web sites/web apps incredibly simple. With it\\'s platform-first focus you can easily make the same site to work with or wi...",
     image: 'https://i.ytimg.com/vi/VM4VMESF3tU/hqdefault.jpg',
   },
   {
     id: 'how-to-add-nested-persistent-layouts-in-remix',
-    type: 'others',
+    type: 'videos',
     url: 'https://www.youtube.com/watch?v=2QlxdDGqJ2c',
     title: 'How to Add Nested/Persistent Layouts in Remix',
     description:
@@ -233,7 +207,7 @@ const entries = [
   },
   {
     id: 'introduction-to-http-caching',
-    type: 'others',
+    type: 'videos',
     url: 'https://www.youtube.com/watch?v=3XkU_DXcgl0',
     title: 'Remix Run - Introduction to HTTP Caching',
     description:

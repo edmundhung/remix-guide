@@ -14,21 +14,6 @@ interface CardProps {
   tags?: string[];
 }
 
-function useHash(): string {
-  const location = useLocation();
-  const [, rerender] = useReducer((i) => i + 1, 0);
-
-  useEffect(() => {
-    window.addEventListener('hashchange', rerender);
-
-    return () => {
-      window.removeEventListener('hashchange', rerender);
-    };
-  }, []);
-
-  return location.hash;
-}
-
 function Card({
   className,
   id,
@@ -39,32 +24,28 @@ function Card({
   image,
   tags,
 }: CardProps): ReactElement {
-  const [searchParams] = useSearchParams();
-  const hash = useHash();
-
   return (
     <article
-      className={`flex flex-col overflow-hidden bg-white text-primary border hover:border-black z-0 hover:z-10 ${
-        hash === `#${id}` ? 'col-span-2' : ''
-      } ${className}`.trim()}
+      className={`flex flex-col overflow-hidden bg-white text-primary border hover:border-black focus:border-black z-0 hover:z-10 focus:z-10 aspect-w-1 aspect-h-1 ${className}`.trim()}
+      style={{ aspectRatio: '1' }}
+      tabIndex="0"
     >
-      <Hyperlink
-        className="no-underline flex-grow"
-        to={`?${searchParams.toString()}#${id}`}
-      >
-        {!image ? null : (
+      <Hyperlink className="no-underline flex-grow" to={`/${type}/${id}`}>
+        {true || !image ? null : (
           <figure>
             <img src={image} width="100%" alt="cover" />
           </figure>
         )}
-        <section className="p-8">
+        <section className="p-8 flex flex-col h-full">
           {!type ? null : (
             <div className="capitalize text-secondary text-xs font-light mb-5">
               {type}
             </div>
           )}
-          <h2 className="my-0 text-xl">{title}</h2>
-          {!description ? null : <p className="mt-10 text-sm">{description}</p>}
+          <h2 className="text-xl flex-grow break-words">{title}</h2>
+          {!description ? null : (
+            <p className="text-xs pt-10 line-clamp-2">{description}</p>
+          )}
         </section>
       </Hyperlink>
       {!tags ? null : (
