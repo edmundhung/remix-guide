@@ -38,7 +38,7 @@ const handleFetch = createFetchHandler({
   getLoadContext(request, env, ctx) {
     return {
       counter: createCounter(env.COUNTER),
-      search(params = {}) {
+      async search(params = {}) {
         const {
           keyword,
           category,

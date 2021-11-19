@@ -12,7 +12,7 @@ export let meta: MetaFunction = () => {
 
 export let loader: LoaderFunction = async ({ request, context }) => {
   const url = new URL(request.url);
-  const entries = context.search({
+  const entries = await context.search({
     keyword: url.searchParams.get('q'),
     category: url.searchParams.get('category'),
     version: url.searchParams.get('version'),
@@ -29,15 +29,12 @@ export default function Index() {
     <div className="grid grid-cols-masonry pl-px pt-px">
       {entries.map((entry) => (
         <Card
-          key={entry.id}
-          className="-ml-px -mt-px"
-          id={entry.id}
-          url={entry.url}
-          type={entry.type}
+          key={entry.slug}
+          className="hover:border-black focus:border-black z-0 hover:z-10 focus:z-10 aspect-w-1 aspect-h-1 -ml-px -mt-px"
+          slug={entry.slug}
+          category={entry.category}
           title={entry.title}
           description={entry.description}
-          image={entry.image}
-          tags={entry.tags}
         />
       ))}
     </div>
