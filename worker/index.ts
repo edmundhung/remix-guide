@@ -1,6 +1,7 @@
 import { createFetchHandler } from './adapter';
 import manifestJSON from '__STATIC_CONTENT_MANIFEST';
 import * as build from '../build/index.js';
+import entries from './entries';
 import { Counter } from './counter';
 
 const manifest = JSON.parse(manifestJSON);
@@ -44,44 +45,6 @@ const handleFetch = createFetchHandler({
           // version,
           // platform,
         } = params;
-
-        const entries = [
-          {
-            id: 'andwqiofqei',
-            url: 'https://edmund.dev/articles/deploying-remix-app-on-cloudflare-workers',
-            type: 'articles',
-            title: 'Deploying Remix app on Cloudflare Workers',
-            description:
-              'Step by step guide on how to deploy your remix app to Cloudflare Workers using the `remix-worker-template`',
-            tags: ['Cloudflare Workers'],
-          },
-          {
-            id: 'wrgrgrg',
-            url: 'https://github.com/sergiodxa/remix-auth',
-            type: 'packages',
-            title: 'remix-auth',
-            description: 'Simple Authentication for Remix',
-          },
-          {
-            id: '435frgg',
-            url: 'https://github.com/jacob-ebey/remix-css-modules',
-            type: 'templates',
-            title: 'remix-css-modules',
-          },
-          {
-            id: 'rgjoer',
-            url: 'https://kentcdodds.com',
-            type: 'examples',
-            title: 'kentcdodds.com',
-          },
-          {
-            id: 'gwrgjrig',
-            url: 'https://www.youtube.com/watch?v=bfLFHp7Sbkg',
-            type: 'others',
-            title:
-              'CDN Caching, Static Site Generation, and Server Side Rendering',
-          },
-        ];
 
         return entries.filter((entry) => {
           let match = true;
