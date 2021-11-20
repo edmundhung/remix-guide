@@ -60,6 +60,17 @@ const handleFetch = createFetchHandler({
           return match;
         });
       },
+      async query(category: string, slug: string) {
+        const result = entries.find(
+          (entry) => entry.category === category && entry.slug === slug
+        );
+
+        if (!result) {
+          return null;
+        }
+
+        return result;
+      },
       async support(category: string) {
         return entries.some((entry) => entry.category === category);
       },

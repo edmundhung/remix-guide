@@ -1,6 +1,7 @@
 import { ReactElement } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Form, Link, useSubmit } from 'remix';
+import { capitalize } from '~/helpers';
 
 interface SearchFormProps {
   categories: string[];
@@ -12,10 +13,6 @@ interface SearchLinkProps {
   name: string;
   value: string;
   children: string;
-}
-
-function capitalize(text: string): string {
-  return text.slice(0, 1).toUpperCase() + text.slice(1).toLowerCase();
 }
 
 function SearchLink({ name, value, children }: SearchLinkProps): ReactElement {
