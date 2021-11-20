@@ -1,0 +1,8 @@
+remix-auth:
+  url: https://github.com/sergiodxa/remix-auth
+remix-utils:
+  url: https://github.com/sergiodxa/remix-utils
+remix-i18next:
+  url: https://github.com/sergiodxa/remix-i18next
+remix-seo:
+  url: https://github.com/chaance/remix-seo
