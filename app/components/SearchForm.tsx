@@ -1,7 +1,7 @@
-import { ReactElement } from 'react';
+import { ReactElement, useEffect, useMemo, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Form, Link, useSubmit } from 'remix';
-import { capitalize, noOp } from '~/helpers';
+import { Form, Link, useSubmit, useTransition } from 'remix';
+import { capitalize, throttle } from '~/helpers';
 
 interface SearchFormProps {
   categories: string[];
@@ -46,13 +46,22 @@ function SearchForm({
 }: SearchFormProps): ReactElement {
   const submit = useSubmit();
   const [searchParams] = useSearchParams();
+  const transition = useTransition();
   const keyword = searchParams.get('q');
   const category = searchParams.get('category');
   const version = searchParams.get('version');
   const platform = searchParams.get('platform');
+  const handleSubmit = useMemo(() => throttle(submit, 200), [submit]);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    if (transition.state === 'loading' && transition.type === 'normalLoad') {
+      formRef.current.reset();
+    }
+  }, [transition]);
 
   function handleChange(event) {
-    submit(event.currentTarget);
+    handleSubmit(event.currentTarget);
   }
 
   return (
@@ -60,9 +69,12 @@ function SearchForm({
       className="sm:px-5 lg:px-10 flex flex-grow flex-col lg:flex-row"
       method="get"
       action="/search"
+      ref={formRef}
       onChange={handleChange}
     >
-      <input type="hidden" name="category" value={category ?? ''} />
+      {category ? (
+        <input type="hidden" name="category" value={category} />
+      ) : null}
       <div className="relative flex-grow color-gray-300">
         <div className="flex items-center flex-row-reverse">
           <input
@@ -70,8 +82,7 @@ function SearchForm({
             className="h-12 sm:h-auto w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
             type="text"
             name="q"
-            value={keyword ?? ''}
-            onChange={noOp}
+            defaultValue={keyword ?? ''}
             placeholder="Search"
           />
           <label htmlFor="search" className="-mr-7">
@@ -94,8 +105,7 @@ function SearchForm({
               version !== null ? 'text-gray-900' : 'text-gray-300'
             } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
             name="version"
-            value={version ?? ''}
-            onChange={noOp}
+            defaultValue={version ?? ''}
           >
             <option value="" disabled>
               Version
@@ -111,8 +121,7 @@ function SearchForm({
               platform !== null ? 'text-gray-900' : 'text-gray-300'
             } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
             name="platform"
-            value={platform ?? ''}
-            onChange={noOp}
+            defaultValue={platform ?? ''}
           >
             <option value="" disabled>
               Platform
