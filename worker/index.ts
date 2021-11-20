@@ -60,6 +60,9 @@ const handleFetch = createFetchHandler({
           return match;
         });
       },
+      async support(category: string) {
+        return entries.some((entry) => entry.category === category);
+      },
     };
   },
 });
