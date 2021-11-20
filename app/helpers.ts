@@ -15,3 +15,20 @@ export function capitalize(text: string | undefined): string {
 export function noOp() {
   // do nothing
 }
+
+export function throttle(callback, limit) {
+  let lastArgs = [];
+  let waiting = false;
+
+  return function () {
+    lastArgs = Array.from(arguments);
+
+    if (!waiting) {
+      waiting = true;
+      setTimeout(function () {
+        waiting = false;
+        callback(...lastArgs);
+      }, limit);
+    }
+  };
+}

@@ -1,7 +1,7 @@
 import { createFetchHandler } from './adapter';
 import manifestJSON from '__STATIC_CONTENT_MANIFEST';
 import * as build from '../build/index.js';
-import entries from './entries';
+import { createQuery } from './query';
 import { Counter } from './counter';
 
 const manifest = JSON.parse(manifestJSON);
@@ -36,34 +36,21 @@ const handleFetch = createFetchHandler({
   build,
   manifest,
   getLoadContext(request, env, ctx) {
+    const query = createQuery(env.CONTENT);
+
     return {
       counter: createCounter(env.COUNTER),
       async search(params = {}) {
-        const {
-          keyword,
-          category,
-          // version,
-          // platform,
-        } = params;
+        const { keyword, ...options } = params;
 
-        return entries.filter((entry) => {
-          let match = true;
-
-          if (keyword && !entry.title.includes(keyword)) {
-            match = false;
-          }
-
-          if (category && entry.type !== category) {
-            match = false;
-          }
-
-          return match;
-        });
+        return query('search', keyword ?? '', options);
       },
       async query(category: string, slug: string) {
-        const result = entries.find(
-          (entry) => entry.category === category && entry.slug === slug
-        );
+        if (category === 'search') {
+          return null;
+        }
+
+        const result = await query(category, slug);
 
         if (!result) {
           return null;
@@ -72,7 +59,13 @@ const handleFetch = createFetchHandler({
         return result;
       },
       async support(category: string) {
-        return entries.some((entry) => entry.category === category);
+        const options = await query('meta', 'category');
+
+        if (!options) {
+          return false;
+        }
+
+        return options.includes(category);
       },
     };
   },
