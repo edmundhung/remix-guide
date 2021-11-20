@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Form, Link, useSubmit } from 'remix';
-import { capitalize } from '~/helpers';
+import { capitalize, noOp } from '~/helpers';
 
 interface SearchFormProps {
   categories: string[];
@@ -71,11 +71,12 @@ function SearchForm({
             type="text"
             name="q"
             value={keyword ?? ''}
+            onChange={noOp}
             placeholder="Search"
           />
           <label htmlFor="search" className="-mr-7">
             <svg
-              class="w-5 h-5 fill-current text-gray-500 z-10"
+              className="w-5 h-5 fill-current text-gray-500 z-10"
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="black"
@@ -94,6 +95,7 @@ function SearchForm({
             } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
             name="version"
             value={version ?? ''}
+            onChange={noOp}
           >
             <option value="" disabled>
               Version
@@ -110,6 +112,7 @@ function SearchForm({
             } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
             name="platform"
             value={platform ?? ''}
+            onChange={noOp}
           >
             <option value="" disabled>
               Platform
