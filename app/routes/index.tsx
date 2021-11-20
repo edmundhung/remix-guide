@@ -1,6 +1,7 @@
 import type { LoaderFunction } from 'remix';
 import { useLoaderData } from 'remix';
 import Card from '~/components/Card';
+import type { Entry } from '~/types';
 
 export let loader: LoaderFunction = async ({ context }) => {
   const entries = await context.search();
@@ -9,7 +10,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 };
 
 export default function Index() {
-  let { entries } = useLoaderData();
+  let { entries } = useLoaderData<{ entries: Entry[] }>();
 
   return (
     <div className="grid grid-cols-masonry pl-px pt-px">

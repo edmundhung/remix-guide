@@ -1,6 +1,7 @@
 import type { MetaFunction, LoaderFunction } from 'remix';
 import { useLoaderData } from 'remix';
 import Card from '~/components/Card';
+import type { Entry } from '~/types';
 
 export let meta: MetaFunction = () => {
   return {
@@ -23,7 +24,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
 };
 
 export default function Index() {
-  let { entries } = useLoaderData();
+  let { entries } = useLoaderData<{ entries: Entry[] }>();
 
   return (
     <div className="grid grid-cols-masonry pl-px pt-px">
