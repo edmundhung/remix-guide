@@ -10,7 +10,7 @@ import {
   Link,
 } from 'remix';
 import SearchForm from '~/components/SearchForm';
-import { categories, versions, platforms } from './meta';
+import { categories, platforms } from './meta';
 import stylesUrl from './styles/tailwind.css';
 
 export let links: LinksFunction = () => {
@@ -25,9 +25,12 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
+  const { languages } = await context.query('meta', 'data');
+
   return {
+    versions: [],
     categories,
-    versions,
+    languages,
     platforms,
   };
 };
@@ -58,14 +61,14 @@ function Document({
 }
 
 export default function App() {
-  let { categories, platforms, versions } = useLoaderData();
-
+  let { categories, platforms, languages, versions } = useLoaderData();
+  console.log({ categories, platforms, languages, versions });
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
         <header className="sticky top-0 z-40 bg-white sm:border-b flex flex-row items-center text-xs sm:text-base">
           <Link
-            className="w-12 h-12 sm:w-24 sm:h-24 sm:px-10 flex items-center justify-center bg-black text-white"
+            className="w-12 h-12 sm:w-24 sm:h-24 sm:px-10 flex items-center justify-center bg-gray-900 text-white"
             to="/"
             prefetch="intent"
           >
@@ -75,6 +78,7 @@ export default function App() {
             categories={categories}
             platforms={platforms}
             versions={versions}
+            languages={languages}
           />
         </header>
         <main className="flex-grow p-4 sm:p-10">

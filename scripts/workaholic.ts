@@ -9,13 +9,30 @@ export let setupBuild: SetupBuildFunction = () => {
     { name: 'author', weight: 2 },
     { name: 'title', weight: 3 },
     { name: 'description', weight: 1 },
-    { name: 'version', weight: 1 },
     { name: 'platforms', weight: 2 },
     { name: 'packages', weight: 1 },
   ];
 
-  async function previewMetadata(item: any): Promise<any> {
-    let preview = (await getLinkPreview(item.url)) as any;
+  // async function getRemixMetadata() {
+  //   const response = await fetch('https://registry.npmjs.org/remix');
+  //   const data = await response.json();
+  //   const { latest } = data['dist-tags'];
+  //   const time = Object.fromEntries(
+  //     Object
+  //       .entries(data.time)
+  //       .filter(([version, time]) => semvar.valid(version) && semvar.gt(version, '0.17.0'))
+  //   );
+  //   const versions = Array.from(new Set(Object.keys(time).map(version => `${semvar.major(version)}.${semvar.minor(version)}`)));
+
+  //   return {
+  //     time,
+  //     latest,
+  //     versions,
+  //   };
+  // }
+
+  async function previewMetadata(source: any): Promise<any> {
+    let preview = (await getLinkPreview(source.url)) as any;
     let data = {
       title: preview.title,
       description: preview.description,
@@ -31,7 +48,7 @@ export let setupBuild: SetupBuildFunction = () => {
 
         Object.assign(data, {
           ...data,
-          title: item.category === 'packages' ? title : repo,
+          title: source.category === 'packages' ? title : repo,
           description,
           author,
         });
@@ -41,7 +58,7 @@ export let setupBuild: SetupBuildFunction = () => {
         Object.assign(data, {
           ...data,
           video: `https://www.youtube.com/embed/${new URL(
-            item.url
+            source.url
           ).searchParams.get('v')}`,
         });
         break;
@@ -50,7 +67,7 @@ export let setupBuild: SetupBuildFunction = () => {
 
     return {
       ...data,
-      ...item,
+      ...source, // Source data always takes priority
     };
   }
 
@@ -64,17 +81,27 @@ export let setupBuild: SetupBuildFunction = () => {
   }
 
   function createMetaEntries(items: any[]) {
+    // const remix = await getRemixMetadata();
     const orders = ['articles', 'videos', 'packages', 'templates', 'examples'];
-    const categories = [...new Set(items.map((item) => item.category))].sort(
-      (prev, next) => orders.indexOf(prev) - orders.indexOf(next)
+    const categories = [...new Set(items.map((item) => item.category))]
+      .filter((v) => !!v)
+      .sort((prev, next) => orders.indexOf(prev) - orders.indexOf(next));
+    const platforms = [
+      ...new Set(items.flatMap((item) => item.platforms)),
+    ].filter((v) => !!v);
+    const languages = [
+      ...new Set(items.flatMap((item) => item.language)),
+    ].filter((v) => !!v);
+    const versions = [...new Set(items.map((item) => item.version))].filter(
+      (v) => !!v
     );
-    const platforms = [...new Set(items.flatMap((item) => item.platforms))];
-    const versions = [...new Set(items.flatMap((item) => item.remixVersions))];
 
     return [
-      { key: 'category', value: JSON.stringify(categories) },
-      { key: 'platform', value: JSON.stringify(platforms) },
-      { key: 'version', value: JSON.stringify(versions) },
+      {
+        key: 'data',
+        value: JSON.stringify({ categories, platforms, versions, languages }),
+      },
+      // { key: 'remix', value: JSON.stringify(remix) },
     ];
   }
 

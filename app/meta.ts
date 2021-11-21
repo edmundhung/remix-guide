@@ -6,8 +6,6 @@ export const categories = [
   'examples',
 ];
 
-export const versions = [];
-
 export const platforms = [
   'architect',
   'aws',

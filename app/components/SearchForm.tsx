@@ -7,6 +7,7 @@ interface SearchFormProps {
   categories: string[];
   platforms: string[];
   versions: string[];
+  languages: string[];
 }
 
 interface SearchLinkProps {
@@ -43,6 +44,7 @@ function SearchForm({
   categories,
   platforms,
   versions,
+  languages,
 }: SearchFormProps): ReactElement {
   const submit = useSubmit();
   const [searchParams] = useSearchParams();
@@ -51,6 +53,7 @@ function SearchForm({
   const category = searchParams.get('category');
   const version = searchParams.get('version') ?? '';
   const platform = searchParams.get('platform') ?? '';
+  const language = searchParams.get('language') ?? '';
   const handleSubmit = useMemo(() => throttle(submit, 200), [submit]);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -101,34 +104,54 @@ function SearchForm({
       </div>
       <div className="hidden sm:flex flex-col sm:flex-row items-center pt-2">
         <div className="flex flex-row lg:px-10">
-          <select
-            className={`px-2 text-center ${
-              version !== '' ? 'text-gray-900' : 'text-gray-300'
-            } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
-            name="version"
-            defaultValue={version}
-          >
-            <option value="">Version</option>
-            {versions.map((version) => (
-              <option key={version} value={version}>
-                {version}
-              </option>
-            ))}
-          </select>
-          <select
-            className={`px-2 text-center ${
-              platform !== '' ? 'text-gray-900' : 'text-gray-300'
-            } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
-            name="platform"
-            defaultValue={platform}
-          >
-            <option value="">Platform</option>
-            {platforms.map((platform) => (
-              <option key={platform} value={platform}>
-                {platform}
-              </option>
-            ))}
-          </select>
+          {versions.length === 0 ? null : (
+            <select
+              className={`px-2 text-center ${
+                version !== '' ? 'text-gray-900' : 'text-gray-300'
+              } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
+              name="version"
+              defaultValue={version}
+            >
+              <option value="">Version</option>
+              {versions.map((version) => (
+                <option key={version} value={version}>
+                  {version}
+                </option>
+              ))}
+            </select>
+          )}
+          {platforms.length === 0 ? null : (
+            <select
+              className={`px-2 text-center ${
+                platform !== '' ? 'text-gray-900' : 'text-gray-300'
+              } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
+              name="platform"
+              defaultValue={platform}
+            >
+              <option value="">Platform</option>
+              {platforms.map((platform) => (
+                <option key={platform} value={platform}>
+                  {platform}
+                </option>
+              ))}
+            </select>
+          )}
+          {languages.length === 0 ? null : (
+            <select
+              className={`px-2 text-center ${
+                language !== '' ? 'text-gray-900' : 'text-gray-300'
+              } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
+              name="language"
+              defaultValue={language}
+            >
+              <option value="">Language</option>
+              {languages.map((language) => (
+                <option key={language} value={language}>
+                  {language}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
         <nav className="flex-grow sm:text-right">
           {categories.map((category) => (

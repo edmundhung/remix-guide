@@ -7,14 +7,13 @@ const keys = [
   { name: 'author', weight: 2 },
   { name: 'title', weight: 3 },
   { name: 'description', weight: 1 },
-  { name: 'version', weight: 1 },
   { name: 'platforms', weight: 2 },
   { name: 'packages', weight: 1 },
 ];
 
 let setupQuery: SetupQueryFunction = () => {
   function match(list, options) {
-    const { categories, version, platform, author, packageName } =
+    const { categories, language, platform, author, packageName } =
       options ?? {};
 
     return list.filter((item) => {
@@ -22,15 +21,15 @@ let setupQuery: SetupQueryFunction = () => {
         return false;
       }
 
-      if (version && item.version !== category) {
+      if (author && item.author !== author) {
+        return false;
+      }
+
+      if (language && item.language !== language) {
         return false;
       }
 
       if (platform && !item.platforms?.includes(platform)) {
-        return false;
-      }
-
-      if (author && item.author !== author) {
         return false;
       }
 
