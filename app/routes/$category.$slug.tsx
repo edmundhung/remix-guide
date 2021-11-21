@@ -52,7 +52,7 @@ export default function ArticleDetail() {
   }>();
 
   return (
-    <div className="max-w-screen-xl mx-auto">
+    <div className="max-w-screen-xl">
       <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
         {entry.category === 'videos' && entry.video ? (
           <div className="relative h-0" style={{ paddingBottom: '56.25%' }}>

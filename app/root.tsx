@@ -68,25 +68,27 @@ export default function App() {
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
-        <header className="sticky top-0 z-40 bg-white sm:border-b flex flex-row items-center text-xs sm:text-base">
+        <header className="px-4 sm:px-16 h-12 sticky top-0 z-40 bg-white border-b flex flex-row items-center text-xs md:text-base shadow-sm">
           <Link
-            className="w-12 h-12 sm:w-24 sm:h-24 sm:px-10 flex items-center justify-center bg-gray-900 text-white"
+            className="whitespace-nowrap -mx-4 px-4 z-40"
             to="/"
             prefetch="intent"
           >
-            <span className="text-center">Remix Guide</span>
+            Remix Guide
           </Link>
-          <SearchForm
-            categories={categories}
-            platforms={platforms}
-            versions={versions}
-            languages={languages}
-          />
+          <div className="flex flex-grow">
+            <SearchForm
+              categories={categories}
+              platforms={platforms}
+              versions={versions}
+              languages={languages}
+            />
+          </div>
         </header>
-        <main className="flex-grow p-4 sm:p-10">
+        <main className="flex-grow p-4 sm:p-8">
           <Outlet />
         </main>
-        <footer className="flex flex-col sm:flex-row justify-between sm:px-10 p-5 text-sm text-center sm:text-left">
+        <footer className="flex flex-col sm:flex-row justify-between sm:px-16 p-4 text-sm text-center sm:text-left">
           <p>
             Wanna share something? Submit it{' '}
             <Link className="underline" to="submit">

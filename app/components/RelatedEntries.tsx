@@ -1,4 +1,3 @@
-import { Link } from 'remix';
 import Card from '~/components/Card';
 import type { Entry } from '~/types';
 import { capitalize } from '~/helpers';
@@ -25,7 +24,7 @@ function RelatedEntries({ title, categories, entries }: RelatedEntriesProps) {
 
   return (
     <section>
-      <div className="sticky top-12 sm:top-24 bg-white z-20 px-2 py-4 border-b flex flex-col md:flex-row justify-between">
+      <div className="sticky top-12 bg-white z-20 px-8 py-4 border-b flex flex-col md:flex-row justify-between">
         <span className="md:pt-4 text-gray-500">{title}</span>
         {options.length > 1 ? (
           <nav className="pt-4 -mx-2">

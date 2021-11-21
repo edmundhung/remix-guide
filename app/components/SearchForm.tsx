@@ -73,7 +73,7 @@ function SearchForm({
 
   return (
     <Form
-      className="sm:px-5 lg:px-10 flex flex-grow flex-col lg:flex-row"
+      className="flex flex-grow flex-row"
       method="get"
       action="/search"
       ref={formRef}
@@ -82,11 +82,11 @@ function SearchForm({
       {category ? (
         <input type="hidden" name="category" value={category} />
       ) : null}
-      <div className="relative flex-grow color-gray-400">
+      <div className="px-4 relative flex-grow">
         <div className="flex items-center flex-row-reverse">
           <input
             id="search"
-            className="h-12 sm:h-auto w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
+            className="h-12 w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
             type="text"
             name="q"
             defaultValue={keyword ?? ''}
@@ -106,13 +106,15 @@ function SearchForm({
           </label>
         </div>
       </div>
-      <div className="hidden sm:flex flex-col sm:flex-row items-center pt-2">
-        <div className="flex flex-row lg:px-10">
+      <div className="flex flex-row items-center">
+        <div className="hidden lg:flex flex-row lg:pr-6">
           {versions.length === 0 ? null : (
             <select
-              className={`px-2 text-center ${
-                version !== '' ? 'text-gray-900' : 'text-gray-400'
-              } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
+              className={`mx-1 px-2 text-center ${
+                version !== ''
+                  ? 'text-gray-900 border-gray-700'
+                  : 'text-gray-400 border-white'
+              } hover:text-gray-600 transition-colors border appearance-none outline-none`}
               name="version"
               defaultValue={version}
             >
@@ -126,9 +128,11 @@ function SearchForm({
           )}
           {platforms.length === 0 ? null : (
             <select
-              className={`px-2 text-center ${
-                platform !== '' ? 'text-gray-900' : 'text-gray-400'
-              } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
+              className={`mx-1 px-2 text-center ${
+                platform !== ''
+                  ? 'text-gray-900 border-gray-700'
+                  : 'text-gray-400 border-white'
+              } hover:text-gray-600 transition-colors border appearance-none outline-none`}
               name="platform"
               defaultValue={platform}
             >
@@ -142,9 +146,11 @@ function SearchForm({
           )}
           {languages.length === 0 ? null : (
             <select
-              className={`px-2 text-center ${
-                language !== '' ? 'text-gray-900' : 'text-gray-400'
-              } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
+              className={`mx-1 px-2 text-center ${
+                language !== ''
+                  ? 'text-gray-900 border-gray-700'
+                  : 'text-gray-400 border-white'
+              } hover:text-gray-600 transition-colors border appearance-none outline-none`}
               name="language"
               defaultValue={language}
             >
@@ -157,7 +163,7 @@ function SearchForm({
             </select>
           )}
         </div>
-        <nav className="flex-grow sm:text-right">
+        <nav className="hidden sm:block flex-grow sm:text-right">
           {categories.map((category) => (
             <SearchLink key={category} name="category" value={category}>
               {capitalize(category)}
