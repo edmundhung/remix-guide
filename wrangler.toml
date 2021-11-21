@@ -23,9 +23,6 @@ format = "modules"
 dir = "./dist"
 main = "./worker.mjs"
 
-[durable_objects]
-bindings = [{ name = "COUNTER", class_name = "Counter" }]
-
 [workaholic]
 source = "content"
 binding = "CONTENT"
