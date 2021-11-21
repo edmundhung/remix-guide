@@ -17,7 +17,9 @@ function Card({
   description,
 }: CardProps): ReactElement {
   return (
-    <article className={`flex flex-col border ${className}`.trim()}>
+    <article
+      className={`flex flex-col border lg:text-gray-500 hover:text-black duration-150 ${className}`.trim()}
+    >
       <Link
         className="no-underline flex-grow"
         to={`/${category}/${slug}`}
@@ -25,7 +27,7 @@ function Card({
       >
         <section className="p-8 flex flex-col h-full">
           <div className="capitalize text-xs font-light mb-5">{category}</div>
-          <h2 className="text-xl flex-grow break-words">{title}</h2>
+          <h2 className="text-xl flex-grow break-words text-black">{title}</h2>
           {!description ? null : (
             <p className="text-xs pt-10 line-clamp-2">{description}</p>
           )}
