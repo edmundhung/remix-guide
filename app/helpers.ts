@@ -1,7 +1,7 @@
 export function notFound(): Response {
   const statusText = 'Not Found';
 
-  return new Response(statusText, { status: '404', statusText });
+  return new Response(statusText, { status: 404, statusText });
 }
 
 export function capitalize(text: string | undefined): string {
