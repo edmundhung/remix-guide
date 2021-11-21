@@ -13,7 +13,7 @@ const keys = [
 
 let setupQuery: SetupQueryFunction = () => {
   function match(list, options) {
-    const { category, version, platform } = options ?? {};
+    const { category, version, platform, author } = options ?? {};
 
     return list.filter((item) => {
       if (category && item.category !== category) {
@@ -25,6 +25,10 @@ let setupQuery: SetupQueryFunction = () => {
       }
 
       if (platform && !item.platforms?.includes(platform)) {
+        return false;
+      }
+
+      if (author && item.author !== author) {
         return false;
       }
 

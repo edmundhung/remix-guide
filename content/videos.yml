@@ -1,12 +1,18 @@
 cdn-caching-static-site-generation-and-server-side-rendering:
   url: https://www.youtube.com/watch?v=bfLFHp7Sbkg
+  author: remix-run
 document-titles-in-remix:
   url: https://www.youtube.com/watch?v=nXjMorEABFQ
+  author: remix-run
 live-with-kent-building-authentication-with-postgres-prisma-and-remix:
   url: https://www.youtube.com/watch?v=XkZINZDDdms
+  author: kentcdodds
 progressive-enhancement-with-Remix:
   url: https://www.youtube.com/watch?v=VM4VMESF3tU
+  author: brookslybrand
 how-to-add-nested-persistent-layouts-in-remix:
   url: https://www.youtube.com/watch?v=2QlxdDGqJ2c
+  author: brookslybrand
 introduction-to-http-caching:
   url: https://www.youtube.com/watch?v=3XkU_DXcgl0
+  author: remix-run

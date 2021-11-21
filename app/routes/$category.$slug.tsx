@@ -2,48 +2,50 @@ import type { LoaderFunction, MetaFunction } from 'remix';
 import { json, useLoaderData } from 'remix';
 import { capitalize, notFound } from '~/helpers';
 import { Entry } from '~/types';
-import Card from '~/components/Card';
+import RelatedEntries from '~/components/RelatedEntries';
 
 export let meta: MetaFunction = ({ data, params }) => {
   return {
-    title: `Remix Guide - ${capitalize(params.category)} - ${data.entry.title}`,
+    title: `Remix Guide - ${capitalize(params.category)} - ${
+      data?.entry?.title
+    }`,
   };
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  let entry = await context.query(params.category, params.slug);
+  const entry = await context.query(params.category, params.slug);
 
   if (!entry) {
     throw notFound();
   }
 
-  let more = await context.search({
-    keyword: entry.title,
+  const relatedEntries = await context.search({
+    author: entry.author,
   });
 
   return json({
     entry,
-    more,
+    relatedEntries,
   });
 };
 
 export default function ArticleDetail() {
-  const { entry, more } = useLoaderData<{ entry: Entry; more: Entry[] }>();
+  const { entry, relatedEntries } =
+    useLoaderData<{ entry: Entry; relatedEntries: Entry[] }>();
+  const url = new URL(entry.url);
 
   return (
-    <div>
+    <div className="max-w-screen-xl mx-auto">
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div>
-          {entry.category === 'videos' &&
-          entry.url.startsWith('https://www.youtube.com/watch?v=') ? (
+        <div className="">
+          {entry.category === 'videos' && url.hostname === 'www.youtube.com' ? (
             <div className="relative h-0" style={{ paddingBottom: '56.25%' }}>
               <iframe
                 className="absolute top-0 left-0 w-full h-full"
                 width="480"
                 height="270"
-                src={`https://www.youtube.com/embed/${entry.url.replace(
-                  'https://www.youtube.com/watch?v=',
-                  ''
+                src={`https://www.youtube.com/embed/${url.searchParams.get(
+                  'v'
                 )}`}
                 title={entry.title}
                 frameBorder="0"
@@ -52,9 +54,14 @@ export default function ArticleDetail() {
               />
             </div>
           ) : entry.image ? (
-            <a href={entry.url} target="_blank" rel="noopener noreferrer">
+            <a
+              className="h-full flex flex-col justify-center"
+              href={entry.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
               <figure>
-                <img src={entry.image} width="100%" alt="cover" />
+                <img src={entry.image} width="100%" height="auto" alt="cover" />
               </figure>
             </a>
           ) : null}
@@ -68,20 +75,15 @@ export default function ArticleDetail() {
             <p className="text-xs pt-10">{entry.description}</p>
           </section>
         </div>
-        <div className="lg:col-span-2">
-          <div className="grid grid-cols-masonry pl-px pt-px">
-            {more.map((entry) => (
-              <Card
-                key={entry.slug}
-                className="hover:border-black focus:border-black z-0 hover:z-10 focus:z-10 aspect-w-1 aspect-h-1 -ml-px -mt-px"
-                slug={entry.slug}
-                category={entry.category}
-                title={entry.title}
-                description={entry.description}
-              />
-            ))}
-          </div>
-        </div>
+      </div>
+      <div className="mt-4">
+        <RelatedEntries
+          title={`Also from ${entry.author}`}
+          categories={[
+            ...new Set(relatedEntries.map((entry) => entry.category)),
+          ]}
+          entries={relatedEntries}
+        />
       </div>
     </div>
   );
