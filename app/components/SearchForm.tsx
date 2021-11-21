@@ -34,7 +34,7 @@ function SearchLink({ name, value, children }: SearchLinkProps): ReactElement {
       to={`/search?${search.toString()}`}
       prefetch="intent"
     >
-      <span>{children}</span>
+      {children}
     </Link>
   );
 }
@@ -49,8 +49,8 @@ function SearchForm({
   const transition = useTransition();
   const keyword = searchParams.get('q');
   const category = searchParams.get('category');
-  const version = searchParams.get('version');
-  const platform = searchParams.get('platform');
+  const version = searchParams.get('version') ?? '';
+  const platform = searchParams.get('platform') ?? '';
   const handleSubmit = useMemo(() => throttle(submit, 200), [submit]);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -83,6 +83,7 @@ function SearchForm({
             type="text"
             name="q"
             defaultValue={keyword ?? ''}
+            autoFocus
             placeholder="Search"
           />
           <label htmlFor="search" className="-mr-7">
@@ -101,15 +102,13 @@ function SearchForm({
       <div className="hidden sm:flex flex-col sm:flex-row items-center pt-2">
         <div className="flex flex-row lg:px-10">
           <select
-            className={`px-2 ${
-              version !== null ? 'text-gray-900' : 'text-gray-300'
+            className={`px-2 text-center ${
+              version !== '' ? 'text-gray-900' : 'text-gray-300'
             } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
             name="version"
-            defaultValue={version ?? ''}
+            defaultValue={version}
           >
-            <option value="" disabled>
-              Version
-            </option>
+            <option value="">Version</option>
             {versions.map((version) => (
               <option key={version} value={version}>
                 {version}
@@ -117,15 +116,13 @@ function SearchForm({
             ))}
           </select>
           <select
-            className={`px-2 ${
-              platform !== null ? 'text-gray-900' : 'text-gray-300'
+            className={`px-2 text-center ${
+              platform !== '' ? 'text-gray-900' : 'text-gray-300'
             } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
             name="platform"
-            defaultValue={platform ?? ''}
+            defaultValue={platform}
           >
-            <option value="" disabled>
-              Platform
-            </option>
+            <option value="">Platform</option>
             {platforms.map((platform) => (
               <option key={platform} value={platform}>
                 {platform}

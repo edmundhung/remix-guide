@@ -31,6 +31,14 @@ export let loader: LoaderFunction = async ({ request, context }) => {
 export default function Index() {
   let { entries } = useLoaderData<{ entries: Entry[] }>();
 
+  if (entries.length === 0) {
+    return (
+      <div className="text-center pt-8 text-gray-500">
+        No entry found at the moment
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-masonry pl-px pt-px">
       {entries.map((entry) => (

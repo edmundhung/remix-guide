@@ -6,6 +6,10 @@ import type { Entry } from '~/types';
 export let loader: LoaderFunction = async ({ context }) => {
   const entries = await context.search();
 
+  if (!entries || entries.length === 0) {
+    throw new Error('Something went wrong');
+  }
+
   return { entries };
 };
 
