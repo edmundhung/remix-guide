@@ -5,6 +5,7 @@ interface CardProps {
   className?: string;
   slug: string;
   category: string;
+  author?: string;
   title: string;
   description?: string;
 }
@@ -12,6 +13,7 @@ interface CardProps {
 function Card({
   className,
   slug,
+  author,
   category,
   title,
   description,
@@ -25,11 +27,14 @@ function Card({
         to={`/${category}/${slug}`}
         prefetch="intent"
       >
-        <section className="p-8 flex flex-col h-full">
-          <div className="capitalize text-xs font-light mb-5">{category}</div>
-          <h2 className="text-xl flex-grow break-words text-black">{title}</h2>
+        <section className="relative p-8 flex flex-col h-full text-xs">
+          <div className="font-light mb-5">
+            <span className="capitalize">{category}</span>
+            {!author ? null : <span> / {author}</span>}
+          </div>
+          <h2 className="flex-grow text-xl break-words text-black">{title}</h2>
           {!description ? null : (
-            <p className="text-xs pt-10 line-clamp-2">{description}</p>
+            <p className="pt-10 line-clamp-2">{description}</p>
           )}
         </section>
       </Link>

@@ -78,29 +78,38 @@ export default function ArticleDetail() {
           </a>
         ) : (
           <a
-            className="relative h-full flex flex-col items-center justify-center bg-gray-800"
+            className="hidden relative h-full md:flex flex-col items-center justify-center bg-gray-800"
             href={entry.url}
             target="_blank"
             rel="noopener noreferrer"
           >
             <div className="font-light px-8 py-12 text-white">
-              <div className="flex flex-grow flex-row items-center ">
-                <div className="bg-white text-black p-2 w-12 h-12 mx-auto text-xs flex text-center items-center justify-center mr-4">
-                  Remix Guide
-                </div>
-                <div>{entry.title}</div>
+              <div className="text-xs">Checkout here</div>
+              <div className="break-all">{entry.url}</div>
+              <div className="pt-4 text-xs">
+                This entry has no preview image
               </div>
-              <div className="pt-4 text-xs">{entry.url}</div>
             </div>
           </a>
         )}
         <div className="mt-4 md:mt-0 lg:col-span-2 md:order-first">
-          <section className="p-8 flex flex-col h-full border">
-            <div className="flex flex-row justify-between text-xs font-light mb-4">
-              <h3 className="capitalize">{entry.category}</h3>
+          <section className="p-8 text-xs flex flex-col h-full border">
+            <div className="flex flex-row justify-between mb-4">
+              <div className="font-light">
+                <span className="capitalize">{entry.category}</span>
+                {!entry.author ? null : <span> / {entry.author}</span>}
+              </div>
+              <a
+                className="hover:underline"
+                href={entry.url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                &gt; Open page
+              </a>
             </div>
             <h2 className="text-xl flex-grow break-words">{entry.title}</h2>
-            <p className="text-xs pt-10">{entry.description}</p>
+            <p className="pt-10">{entry.description}</p>
           </section>
         </div>
       </div>
