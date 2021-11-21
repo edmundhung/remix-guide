@@ -8,6 +8,7 @@ import {
   useCatch,
   Outlet,
   Link,
+  ScrollRestoration,
 } from 'remix';
 import SearchForm from '~/components/SearchForm';
 import { categories, platforms } from './meta';
@@ -53,6 +54,7 @@ function Document({
       </head>
       <body>
         {children}
+        <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
