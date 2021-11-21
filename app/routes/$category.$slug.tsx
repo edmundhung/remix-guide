@@ -69,16 +69,31 @@ export default function ArticleDetail() {
           </div>
         ) : entry.image ? (
           <a
-            className="h-full flex flex-col justify-center"
+            className="relative h-full flex flex-col justify-center"
             href={entry.url}
             target="_blank"
             rel="noopener noreferrer"
           >
-            <figure>
-              <img src={entry.image} width="100%" height="auto" alt="cover" />
-            </figure>
+            <img src={entry.image} width="100%" height="auto" alt="cover" />
           </a>
-        ) : null}
+        ) : (
+          <a
+            className="relative h-full flex flex-col items-center justify-center bg-gray-800"
+            href={entry.url}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <div className="font-light px-8 py-12 text-white">
+              <div className="flex flex-grow flex-row items-center ">
+                <div className="bg-white text-black p-2 w-12 h-12 mx-auto text-xs flex text-center items-center justify-center mr-4">
+                  Remix Guide
+                </div>
+                <div>{entry.title}</div>
+              </div>
+              <div className="pt-4 text-xs">{entry.url}</div>
+            </div>
+          </a>
+        )}
         <div className="mt-4 md:mt-0 lg:col-span-2 md:order-first">
           <section className="p-8 flex flex-col h-full border">
             <div className="flex flex-row justify-between text-xs font-light mb-4">
