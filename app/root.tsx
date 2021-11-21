@@ -68,7 +68,7 @@ export default function App() {
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
-        <header className="sticky top-0 z-20 bg-white sm:border-b flex flex-row items-center text-xs sm:text-base">
+        <header className="sticky top-0 z-40 bg-white sm:border-b flex flex-row items-center text-xs sm:text-base">
           <Link
             className="w-12 h-12 sm:w-24 sm:h-24 sm:px-10 flex items-center justify-center bg-black text-white"
             to="/"
