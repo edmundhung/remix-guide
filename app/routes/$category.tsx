@@ -1,11 +1,12 @@
 import type { LoaderFunction } from 'remix';
 import { redirect } from 'remix';
 import { notFound } from '~/helpers';
+import { categories } from '~/meta';
 
-export let loader: LoaderFunction = async ({ params, context }) => {
+export let loader: LoaderFunction = async ({ params }) => {
   const { category } = params;
 
-  if (await context.support(category)) {
+  if (categories.includes(category)) {
     return redirect(`/search?category=${category}`);
   }
 

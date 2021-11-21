@@ -10,6 +10,7 @@ import {
   Link,
 } from 'remix';
 import SearchForm from '~/components/SearchForm';
+import { categories, versions, platforms } from './meta';
 import stylesUrl from './styles/tailwind.css';
 
 export let links: LinksFunction = () => {
@@ -24,12 +25,6 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-  const [categories, versions, platforms] = await Promise.all([
-    context.query('meta', 'category'),
-    context.query('meta', 'version'),
-    context.query('meta', 'platform'),
-  ]);
-
   return {
     categories,
     versions,

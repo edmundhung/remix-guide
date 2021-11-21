@@ -3,12 +3,13 @@ import { createQuery as createRawQuery } from '@workaholic/core';
 import Fuse from 'fuse.js';
 
 const keys = [
-  { name: 'category', weight: 5 },
-  { name: 'author', weight: 4 },
+  { name: 'category', weight: 1 },
+  { name: 'author', weight: 2 },
   { name: 'title', weight: 3 },
   { name: 'description', weight: 1 },
-  { name: 'version', weight: 5 },
-  { name: 'platforms', weight: 4 },
+  { name: 'version', weight: 1 },
+  { name: 'platforms', weight: 2 },
+  { name: 'packages', weight: 1 },
 ];
 
 let setupQuery: SetupQueryFunction = () => {
@@ -17,7 +18,7 @@ let setupQuery: SetupQueryFunction = () => {
       options ?? {};
 
     return list.filter((item) => {
-      if (categories && !categories.includes(item.category)) {
+      if (categories?.length > 0 && !categories.includes(item.category)) {
         return false;
       }
 
@@ -42,7 +43,7 @@ let setupQuery: SetupQueryFunction = () => {
   }
 
   function handleSearch(list, index, keyword) {
-    if (!keyword) {
+    if (!keyword || !index) {
       return list;
     }
 
@@ -75,13 +76,10 @@ let setupQuery: SetupQueryFunction = () => {
             return [];
           }
 
-          const result = match(list, options);
+          const data = handleSearch(list, index, slug);
+          const result = match(data, options);
 
-          if (!index) {
-            return result;
-          }
-
-          return handleSearch(result, index, slug);
+          return result;
         default:
           return await query(namespace, slug, { type: 'json' });
       }

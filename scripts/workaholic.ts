@@ -5,12 +5,13 @@ import { getLinkPreview } from 'link-preview-js';
 
 export let setupBuild: SetupBuildFunction = () => {
   const keys = [
-    { name: 'category', weight: 5 },
-    { name: 'author', weight: 4 },
+    { name: 'category', weight: 1 },
+    { name: 'author', weight: 2 },
     { name: 'title', weight: 3 },
     { name: 'description', weight: 1 },
-    { name: 'version', weight: 5 },
-    { name: 'platforms', weight: 4 },
+    { name: 'version', weight: 1 },
+    { name: 'platforms', weight: 2 },
+    { name: 'packages', weight: 1 },
   ];
 
   async function previewMetadata(item: any): Promise<any> {

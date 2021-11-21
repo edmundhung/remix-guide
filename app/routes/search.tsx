@@ -13,11 +13,16 @@ export let meta: MetaFunction = () => {
 
 export let loader: LoaderFunction = async ({ request, context }) => {
   const url = new URL(request.url);
+  const keyword = url.searchParams.get('q');
+  const category = url.searchParams.get('category');
+  const version = url.searchParams.get('version');
+  const platform = url.searchParams.get('platform');
+
   const entries = await context.search({
-    keyword: url.searchParams.get('q'),
-    categories: [url.searchParams.get('category')],
-    version: url.searchParams.get('version'),
-    platform: url.searchParams.get('platform'),
+    keyword,
+    categories: category ? [category] : null,
+    version,
+    platform,
   });
 
   return { entries };
