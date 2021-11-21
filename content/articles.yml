@@ -1,48 +1,69 @@
 kentcdodds-how-remix-makes-css-clashes-predictable:
   url: https://kentcdodds.com/blog/how-remix-makes-css-clashes-predictable
   author: kentcdodds
+  date: 2021-10-13
+  language: en
 kentcdodds-super-simple-start-to-remix:
   url: https://kentcdodds.com/blog/super-simple-start-to-remix
   author: kentcdodds
+  date: 2021-05-03
+  language: en
+  version: ^0.20.1
 sergiodxa-use-etags-in-remix:
   url: https://sergiodxa.com/articles/use-etags-in-remix
   author: sergiodxa
+  language: en
 zachtylr21-stable-forms-in-remix:
   url: https://dev.to/zachtylr21/stable-forms-in-remix-226p
   author: zachtylr21
+  date: 2021-06-15
+  language: en
 zachtylr21-building-a-simple-search-ui-with-remix:
   url: https://dev.to/zachtylr21/building-a-simple-search-ui-with-remix-57da
   author: zachtylr21
+  date: 2021-06-02
+  lastupdate: 2021-11-01
+  language: en
 sergiodxa-sending-data-from-layout-to-leaf-routes-in-remix:
   url: https://sergiodxa.com/articles/sending-data-from-layout-to-leaf-routes-in-remix
   author: sergiodxa
+  language: en
 sergiodxa-using-service-workers-with-remix:
   url: https://sergiodxa.com/articles/using-service-workers-with-remix
   author: sergiodxa
+  language: en
 sergiodxa-localizing-remix-apps-with-i18next:
   url: https://sergiodxa.com/articles/localizing-remix-apps-with-i18next
   author: sergiodxa
+  language: en
 sergiodxa-adding-csrf-protection-to-remix:
   url: https://sergiodxa.com/articles/adding-csrf-protection-to-remix
   author: sergiodxa
+  language: en
 sergiodxa-load-only-the-data-you-need-in-remix:
   url: https://sergiodxa.com/articles/load-only-the-data-you-need-in-remix
   author: sergiodxa
+  language: en
 sergiodxa-server-side-authentication-with-auth0-in-remix:
   url: https://sergiodxa.com/articles/server-side-authentication-with-auth0-in-remix
-  author: sergiodxa
+  language: en
 sergiodxa-using-tailwindcss-with-remix:
   url: https://sergiodxa.com/articles/using-tailwindcss-with-remix
   author: sergiodxa
+  language: en
 sergiodxa-jest-matchers-for-remix-responses:
   url: https://sergiodxa.com/articles/jest-matchers-for-remix-responses
   author: sergiodxa
+  language: en
 sergiodxa-using-form-objects-inside-remix-actions:
   url: https://sergiodxa.com/articles/using-form-objects-inside-remix-actions
   author: sergiodxa
+  language: en
 sergiodxa-route-protection-in-remix-with-policies:
   url: https://sergiodxa.com/articles/route-protection-in-remix-with-policies
   author: sergiodxa
+  language: en
 sergiodxa-redirect-to-the-original-url-inside-a-remix-action:
   url: https://sergiodxa.com/articles/redirect-to-the-original-url-inside-a-remix-action
   author: sergiodxa
+  language: en

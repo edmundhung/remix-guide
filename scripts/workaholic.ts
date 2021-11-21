@@ -14,7 +14,12 @@ export let setupBuild: SetupBuildFunction = () => {
   ];
 
   async function previewMetadata(item: any): Promise<any> {
-    const preview = (await getLinkPreview(item.url)) as any;
+    let preview = (await getLinkPreview(item.url)) as any;
+    let data = {
+      title: preview.title,
+      description: preview.description,
+      image: preview.images[0],
+    };
 
     switch (preview.siteName) {
       case 'GitHub': {
@@ -23,22 +28,29 @@ export let setupBuild: SetupBuildFunction = () => {
           .split(':');
         const [author, title] = repo.split('/');
 
-        return {
-          ...item,
+        Object.assign(data, {
+          ...data,
           title: item.category === 'packages' ? title : repo,
           description,
           author,
-          image: preview.images[0],
-        };
+        });
+        break;
       }
-      default:
-        return {
-          ...item,
-          title: preview.title,
-          description: preview.description,
-          image: preview.images[0],
-        };
+      case 'YouTube': {
+        Object.assign(data, {
+          ...data,
+          video: `https://www.youtube.com/embed/${new URL(
+            item.url
+          ).searchParams.get('v')}`,
+        });
+        break;
+      }
     }
+
+    return {
+      ...data,
+      ...item,
+    };
   }
 
   function createSearchEntries(items: any[]) {

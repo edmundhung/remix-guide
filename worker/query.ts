@@ -20,7 +20,7 @@ let setupQuery: SetupQueryFunction = () => {
         return false;
       }
 
-      if (version && !item.remixVersions?.includes(version)) {
+      if (version && item.version !== category) {
         return false;
       }
 

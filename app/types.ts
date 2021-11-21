@@ -6,18 +6,18 @@ export interface Metadata {
   image?: string;
   title: string;
   description?: string;
-  remixVersions: string[];
+  version?: string;
   platforms: string[];
+  packages?: string[];
 }
 
 export interface Article extends Metadata {
   category: 'articles';
-  packages: string[];
 }
 
 export interface Video extends Metadata {
   category: 'videos';
-  packages: string[];
+  video?: string;
 }
 
 export interface Package extends Metadata {

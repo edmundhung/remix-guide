@@ -1,12 +1,26 @@
 kentcdodds-kentcdodds.com:
   url: https://github.com/kentcdodds/kentcdodds.com
+  version: 0.21.0
+  platforms: [express, fly]
 HovaLabs-hova-labs-remix:
   url: https://github.com/HovaLabs/hova-labs-remix
+  version: ^0.17.5
+  platforms: [vercel]
 mcansh-snkrs:
   url: https://github.com/mcansh/snkrs
+  packages: [remix-seo]
+  version: 0.20.1
+  platforms: [fly]
 BenoitAverty-realworld-remix.run:
   url: https://github.com/BenoitAverty/realworld-remix.run
+  version: ^0.21.1
+  platforms: [fly]
 camchenry-camchenry-remix:
   url: https://github.com/camchenry/camchenry-remix
+  version: ^0.21.1
+  platforms: [vercel]
 sergiodxa-personal-site:
   url: https://github.com/sergiodxa/personal-site
+  packages: [remix-utils]
+  version: 0.18.0
+  platforms: [vercel]

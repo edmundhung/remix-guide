@@ -1,8 +1,12 @@
 remix-auth:
   url: https://github.com/sergiodxa/remix-auth
+  version: ^0.21.0
 remix-utils:
   url: https://github.com/sergiodxa/remix-utils
+  version: ^0.21.1
 remix-i18next:
   url: https://github.com/sergiodxa/remix-i18next
+  version: ^0.21.1
 remix-seo:
   url: https://github.com/chaance/remix-seo
+  version: '>=0.21.1'
