@@ -30,7 +30,7 @@ function SearchLink({ name, value, children }: SearchLinkProps): ReactElement {
   return (
     <Link
       className={`px-2 transition-colors ${
-        isActive ? 'text-gray-900' : 'text-gray-300'
+        isActive ? 'text-gray-900' : 'text-gray-400'
       } hover:text-gray-600`}
       to={`/search?${search.toString()}`}
       prefetch="intent"
@@ -82,7 +82,7 @@ function SearchForm({
       {category ? (
         <input type="hidden" name="category" value={category} />
       ) : null}
-      <div className="relative flex-grow color-gray-300">
+      <div className="relative flex-grow color-gray-400">
         <div className="flex items-center flex-row-reverse">
           <input
             id="search"
@@ -111,7 +111,7 @@ function SearchForm({
           {versions.length === 0 ? null : (
             <select
               className={`px-2 text-center ${
-                version !== '' ? 'text-gray-900' : 'text-gray-300'
+                version !== '' ? 'text-gray-900' : 'text-gray-400'
               } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
               name="version"
               defaultValue={version}
@@ -127,7 +127,7 @@ function SearchForm({
           {platforms.length === 0 ? null : (
             <select
               className={`px-2 text-center ${
-                platform !== '' ? 'text-gray-900' : 'text-gray-300'
+                platform !== '' ? 'text-gray-900' : 'text-gray-400'
               } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
               name="platform"
               defaultValue={platform}
@@ -143,7 +143,7 @@ function SearchForm({
           {languages.length === 0 ? null : (
             <select
               className={`px-2 text-center ${
-                language !== '' ? 'text-gray-900' : 'text-gray-300'
+                language !== '' ? 'text-gray-900' : 'text-gray-400'
               } hover:text-gray-600 transition-colors cursor-pointer appearance-none`}
               name="language"
               defaultValue={language}

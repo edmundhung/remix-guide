@@ -36,7 +36,7 @@ function RelatedEntries({ title, categories, entries }: RelatedEntriesProps) {
                 className={`px-2 transition-colors ${
                   selected === option
                     ? 'text-gray-500'
-                    : 'text-gray-300 hover:text-gray-600'
+                    : 'text-gray-400 hover:text-gray-600'
                 }`}
                 to={option}
                 onClick={() =>
