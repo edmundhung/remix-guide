@@ -58,7 +58,11 @@ function SearchForm({
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (transition.state === 'loading' && transition.type === 'normalLoad') {
+    if (
+      transition.state === 'loading' &&
+      transition.type === 'normalLoad' &&
+      transition.location.pathname !== '/search'
+    ) {
       formRef.current.reset();
     }
   }, [transition]);
