@@ -9,7 +9,7 @@ export let setupBuild: SetupBuildFunction = () => {
     { name: 'author', weight: 4 },
     { name: 'title', weight: 3 },
     { name: 'description', weight: 1 },
-    { name: 'remixVersions', weight: 5 },
+    { name: 'version', weight: 5 },
     { name: 'platforms', weight: 4 },
   ];
 

@@ -7,16 +7,17 @@ const keys = [
   { name: 'author', weight: 4 },
   { name: 'title', weight: 3 },
   { name: 'description', weight: 1 },
-  { name: 'remixVersions', weight: 5 },
+  { name: 'version', weight: 5 },
   { name: 'platforms', weight: 4 },
 ];
 
 let setupQuery: SetupQueryFunction = () => {
   function match(list, options) {
-    const { category, version, platform, author, packageName } = options ?? {};
+    const { categories, version, platform, author, packageName } =
+      options ?? {};
 
     return list.filter((item) => {
-      if (category && item.category !== category) {
+      if (categories && !categories.includes(item.category)) {
         return false;
       }
 

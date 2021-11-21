@@ -19,39 +19,48 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     throw notFound();
   }
 
-  const [alsoFrom, relatedTo] = await Promise.all([
+  const [alsoFrom, relatedTo, builtWith] = await Promise.all([
     context.search({ author: entry.author }),
     entry.category === 'packages'
-      ? context.search({ packageName: entry.title })
-      : null,
+      ? context.search({
+          packageName: entry.title,
+          categories: ['articles', 'videos'],
+        })
+      : [],
+    entry.category === 'packages'
+      ? context.search({
+          packageName: entry.title,
+          categories: ['packages', 'templates', 'examples'],
+        })
+      : [],
   ]);
 
   return json({
     entry,
     alsoFrom,
     relatedTo,
+    builtWith,
   });
 };
 
 export default function ArticleDetail() {
-  const { entry, alsoFrom, relatedTo } =
-    useLoaderData<{
-      entry: Entry;
-      alsoFrom: Entry[];
-      relatedTo: Entry[] | null;
-    }>();
-  const url = new URL(entry.url);
+  const { entry, alsoFrom, relatedTo, builtWith } = useLoaderData<{
+    entry: Entry;
+    alsoFrom: Entry[];
+    relatedTo: Entry[];
+    builtWith: Entry[];
+  }>();
 
   return (
     <div className="max-w-screen-xl mx-auto">
       <div className="md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4">
-        {entry.category === 'videos' && url.hostname === 'www.youtube.com' ? (
+        {entry.category === 'videos' && entry.video ? (
           <div className="relative h-0" style={{ paddingBottom: '56.25%' }}>
             <iframe
               className="absolute top-0 left-0 w-full h-full"
               width="480"
               height="270"
-              src={`https://www.youtube.com/embed/${url.searchParams.get('v')}`}
+              src={entry.video}
               title={entry.title}
               frameBorder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -81,12 +90,20 @@ export default function ArticleDetail() {
         </div>
       </div>
       {entry.category === 'packages' ? (
-        <div className="mt-4">
-          <RelatedEntries
-            title={`Related to ${entry.title}`}
-            entries={relatedTo.filter((e) => e.url !== entry.url)}
-          />
-        </div>
+        <>
+          <div className="mt-4">
+            <RelatedEntries
+              title={`Related to ${entry.title}`}
+              entries={relatedTo.filter((e) => e.url !== entry.url)}
+            />
+          </div>
+          <div className="mt-4">
+            <RelatedEntries
+              title={`Built with ${entry.title}`}
+              entries={builtWith.filter((e) => e.url !== entry.url)}
+            />
+          </div>
+        </>
       ) : null}
       <div className="mt-4">
         <RelatedEntries

@@ -15,7 +15,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const url = new URL(request.url);
   const entries = await context.search({
     keyword: url.searchParams.get('q'),
-    category: url.searchParams.get('category'),
+    categories: [url.searchParams.get('category')],
     version: url.searchParams.get('version'),
     platform: url.searchParams.get('platform'),
   });
