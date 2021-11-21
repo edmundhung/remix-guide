@@ -23,22 +23,17 @@ export let meta: MetaFunction = () => {
   };
 };
 
-export let loader: LoaderFunction = async () => {
+export let loader: LoaderFunction = async ({ context }) => {
+  const [categories, versions, platforms] = await Promise.all([
+    context.query('meta', 'category'),
+    context.query('meta', 'version'),
+    context.query('meta', 'platform'),
+  ]);
+
   return {
-    categories: ['articles', 'videos', 'packages', 'templates', 'others'],
-    versions: ['v1.0.x', 'pre-v1'],
-    platforms: [
-      'architect',
-      'aws',
-      'azure',
-      'cloudflare',
-      'express',
-      'firebase',
-      'fly',
-      'netlify',
-      'render',
-      'vercel',
-    ],
+    categories,
+    versions,
+    platforms,
   };
 };
 

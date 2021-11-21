@@ -12,8 +12,28 @@ const keys = [
 ];
 
 let setupQuery: SetupQueryFunction = () => {
+  function match(list, options) {
+    const { category, version, platform } = options ?? {};
+
+    return list.filter((item) => {
+      if (category && item.category !== category) {
+        return false;
+      }
+
+      if (version && !item.remixVersions?.includes(version)) {
+        return false;
+      }
+
+      if (platform && !item.platforms?.includes(platform)) {
+        return false;
+      }
+
+      return true;
+    });
+  }
+
   function handleSearch(list, index, keyword) {
-    if (keyword === '') {
+    if (!keyword) {
       return list;
     }
 
@@ -33,23 +53,30 @@ let setupQuery: SetupQueryFunction = () => {
     return fuse.search(keyword).map((data) => data.item);
   }
 
-  return (query) => async (namespace: string, slug: string) => {
-    switch (namespace) {
-      case 'search':
-        const [list, index] = await Promise.all([
-          query(namespace, 'list', { type: 'json' }),
-          query(namespace, 'index', { type: 'json' }),
-        ]);
+  return (query) =>
+    async (namespace: string, slug: string, options: Record<string, any>) => {
+      switch (namespace) {
+        case 'search':
+          const [list, index] = await Promise.all([
+            query(namespace, 'list', { type: 'json' }),
+            query(namespace, 'index', { type: 'json' }),
+          ]);
 
-        if (!list || !index) {
-          return [];
-        }
+          if (!list) {
+            return [];
+          }
 
-        return handleSearch(list, index, slug);
-      default:
-        return await query(namespace, slug, { type: 'json' });
-    }
-  };
+          const result = match(list, options);
+
+          if (!index) {
+            return result;
+          }
+
+          return handleSearch(result, index, slug);
+        default:
+          return await query(namespace, slug, { type: 'json' });
+      }
+    };
 };
 
 export function createQuery(kvNamespace: KVNamespace): Query {

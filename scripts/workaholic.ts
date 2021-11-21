@@ -3,53 +3,68 @@ import yaml from 'js-yaml';
 import Fuse from 'fuse.js';
 import { getLinkPreview } from 'link-preview-js';
 
-const keys = [
-  { name: 'category', weight: 5 },
-  { name: 'author', weight: 4 },
-  { name: 'title', weight: 3 },
-  { name: 'description', weight: 1 },
-  { name: 'remixVersions', weight: 5 },
-  { name: 'platforms', weight: 4 },
-];
-
-async function previewMetadata(item: any): Promise<any> {
-  const preview = (await getLinkPreview(item.url)) as any;
-
-  switch (preview.siteName) {
-    case 'GitHub': {
-      const [repo, description] = preview.title
-        .replace('GitHub - ', '')
-        .split(':');
-      const [author, title] = repo.split('/');
-
-      return {
-        ...item,
-        title: item.category === 'packages' ? title : repo,
-        description,
-        author,
-        image: preview.images[0],
-      };
-    }
-    default:
-      return {
-        ...item,
-        title: preview.title,
-        description: preview.description,
-        image: preview.images[0],
-      };
-  }
-}
-
-function createSearchEntries(items: any[]) {
-  const index = Fuse.createIndex(keys, items).toJSON();
-
-  return [
-    { key: 'index', value: JSON.stringify(index) },
-    { key: 'list', value: JSON.stringify(items) },
-  ];
-}
-
 export let setupBuild: SetupBuildFunction = () => {
+  const keys = [
+    { name: 'category', weight: 5 },
+    { name: 'author', weight: 4 },
+    { name: 'title', weight: 3 },
+    { name: 'description', weight: 1 },
+    { name: 'remixVersions', weight: 5 },
+    { name: 'platforms', weight: 4 },
+  ];
+
+  async function previewMetadata(item: any): Promise<any> {
+    const preview = (await getLinkPreview(item.url)) as any;
+
+    switch (preview.siteName) {
+      case 'GitHub': {
+        const [repo, description] = preview.title
+          .replace('GitHub - ', '')
+          .split(':');
+        const [author, title] = repo.split('/');
+
+        return {
+          ...item,
+          title: item.category === 'packages' ? title : repo,
+          description,
+          author,
+          image: preview.images[0],
+        };
+      }
+      default:
+        return {
+          ...item,
+          title: preview.title,
+          description: preview.description,
+          image: preview.images[0],
+        };
+    }
+  }
+
+  function createSearchEntries(items: any[]) {
+    const index = Fuse.createIndex(keys, items).toJSON();
+
+    return [
+      { key: 'index', value: JSON.stringify(index) },
+      { key: 'list', value: JSON.stringify(items) },
+    ];
+  }
+
+  function createMetaEntries(items: any[]) {
+    const orders = ['articles', 'videos', 'packages', 'templates', 'examples'];
+    const categories = [...new Set(items.map((item) => item.category))].sort(
+      (prev, next) => orders.indexOf(prev) - orders.indexOf(next)
+    );
+    const platforms = [...new Set(items.flatMap((item) => item.platforms))];
+    const versions = [...new Set(items.flatMap((item) => item.remixVersions))];
+
+    return [
+      { key: 'category', value: JSON.stringify(categories) },
+      { key: 'platform', value: JSON.stringify(platforms) },
+      { key: 'version', value: JSON.stringify(versions) },
+    ];
+  }
+
   return async (entries: Entry[]): Record<string, Entry[]> => {
     const items = await Promise.all(
       entries.flatMap((entry) => {
@@ -83,7 +98,7 @@ export let setupBuild: SetupBuildFunction = () => {
 
     return {
       ...result,
-      meta: [{ key: 'category', value: JSON.stringify(Object.keys(result)) }],
+      meta: createMetaEntries(items),
       search: createSearchEntries(items),
     };
   };
