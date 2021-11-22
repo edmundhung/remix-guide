@@ -106,12 +106,14 @@ export function createFetchHandler({
   getLoadContext,
   mode,
   manifest,
+  cache,
   kvAssetHandlerOptions,
 }: {
   build: ServerBuild;
   getLoadContext?: GetLoadContextFunction;
   mode?: string;
   manifest: any;
+  cache?: Cache;
   kvAssetHandlerOptions?: Partial<KvAssetHandlerOptions>;
 }) {
   const handleRequest = createRequestHandler({
@@ -131,7 +133,15 @@ export function createFetchHandler({
       let response = await handleAsset(request, env, ctx);
 
       if (!response) {
-        response = await handleRequest(request, env, ctx);
+        response = await cache?.match(request);
+
+        if (!response) {
+          response = await handleRequest(request, env, ctx);
+
+          if (cache) {
+            ctx.waitUntil(cache.put(request, response.clone()));
+          }
+        }
       }
 
       return response;

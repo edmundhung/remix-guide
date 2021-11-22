@@ -8,6 +8,7 @@ const manifest = JSON.parse(manifestJSON);
 const handleFetch = createFetchHandler({
   build,
   manifest,
+  cache: caches.default,
   getLoadContext(request, env, ctx) {
     const query = createQuery(env.CONTENT);
 
