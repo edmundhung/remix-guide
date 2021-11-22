@@ -37,9 +37,9 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 
   return json({
     entry,
-    alsoFrom,
-    relatedTo,
-    builtWith,
+    alsoFrom: alsoFrom.sort((prev, next) => next.views - prev.views),
+    relatedTo: relatedTo.sort((prev, next) => next.views - prev.views),
+    builtWith: builtWith.sort((prev, next) => next.views - prev.views),
   });
 };
 

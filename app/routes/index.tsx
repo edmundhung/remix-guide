@@ -10,7 +10,9 @@ export let loader: LoaderFunction = async ({ context }) => {
     throw new Error('Something went wrong');
   }
 
-  return { entries };
+  return {
+    entries: entries.sort((prev, next) => next.views - prev.views),
+  };
 };
 
 export default function Index() {
