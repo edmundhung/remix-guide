@@ -3,9 +3,9 @@ describe('Index', () => {
     cy.visit('/');
   });
 
-  it('should show the loader message', () => {
-    cy.findByText('Why Remix on Cloudflare Workers?', { exact: false }).should(
-      'exist'
-    );
+  it('should show the headline of the platform', () => {
+    cy.findByText('An interactive list of awesome stuffs about Remix', {
+      exact: false,
+    }).should('exist');
   });
 });

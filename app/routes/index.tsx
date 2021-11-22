@@ -35,15 +35,24 @@ export default function Index() {
     <>
       <div className="px-8 py-4">
         <h1 className="font-light text-xl">Remix Guide</h1>
-        <div>An interactive awesome repository for anything about Remix</div>
+        <div>An interactive list of awesome stuffs about Remix</div>
         <div className="pt-4 text-xs">
-          <sup>*</sup> All stuffs shared here are mostly made by the community
+          <sup>*</sup> Everything shared here are mostly made by the community
           only
         </div>
       </div>
       <section>
         <div className="sticky top-12 bg-white z-20 px-8 py-4 mb-8 border-b text-sm text-gray-500">
-          Remix v1 is releasing today. Stay tuned!
+          Remix v1 is finally here! Check out the{' '}
+          <a
+            className="underline"
+            href="https://docs.remix.run"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            docs
+          </a>{' '}
+          to get started
         </div>
         <div className="grid grid-cols-masonry pl-px pt-px">
           {entries.map((entry) => (

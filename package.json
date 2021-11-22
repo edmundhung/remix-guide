@@ -12,6 +12,7 @@
     "build:style": "cross-env NODE_ENV=production tailwindcss -o ./app/styles/tailwind.css --minify",
     "build:worker": "cross-env NODE_ENV=production node ./scripts/build.mjs",
     "build": "npm run build:style && npm run build:remix && npm run build:worker",
+    "dev:cypress": "cypress open",
     "dev:miniflare": "miniflare --build-command \"node ./scripts/build.mjs\" --no-cache --watch --kv-persist --do-persist",
     "dev:remix": "remix watch",
     "dev:style": "tailwindcss -o ./app/styles/tailwind.css --watch",
@@ -19,10 +20,9 @@
     "predev": "remix build && node ./scripts/preview.mjs",
     "postinstall": "remix setup cloudflare-workers",
     "prebuild": "npm run cleanup",
-    "test:open": "cypress open",
-    "test:cypress": "cypress run",
-    "test": "start-server-and-test miniflare http-get://localhost:8787 test:cypress",
-    "start": "miniflare",
+    "test": "cypress run",
+    "ci": "start-server-and-test http-get://localhost:8787",
+    "start": "node ./scripts/preview.mjs && miniflare --kv-persist",
     "prepare": "husky install"
   },
   "dependencies": {

@@ -1,18 +1,20 @@
-name: Deploy
+name: Publish
 on:
   push:
     branches: main
-  repository_dispatch:
+    paths:
+      - '.github/workflows/publish.yml'
+      - 'content/**'
 jobs:
-  deploy:
-    name: Deploying on Cloudflare Workers
+  publish:
+    name: 🔥 Publishing content
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
       - name: Set up Node
         uses: actions/setup-node@v1
         with:
-          node-version: 16.x
+          node-version: 14.x
       - name: Cache dependencies
         uses: actions/cache@v2
         with:
@@ -25,15 +27,9 @@ jobs:
         uses: actions/checkout@v2
       - name: Install dependencies
         run: npm ci
-      - name: Code format check
-        run: npx prettier --check .
-      - name: Code linting
-        run: npx eslint . --ext .js,.mjs,.ts,.tsx
-      - name: Run tests
-        uses: cypress-io/github-action@v2
-        with:
-          start: npm start
-      - name: Publish
-        run: npx wrangler publish
+      - name: Generate KV data
+        run: npx workaholic build content.json
+      - name: Publish Content
+        run: npx workaholic publish content.json
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
