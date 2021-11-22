@@ -11,7 +11,7 @@ const handleFetch = createFetchHandler({
   manifest,
   cache: caches.default,
   getLoadContext(request, env, ctx) {
-    const query = createQuery(env.CONTENT);
+    const query = createQuery(env, ctx);
     const counter = createCounter(env.COUNTER);
 
     return {

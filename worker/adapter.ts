@@ -128,20 +128,28 @@ export function createFetchHandler({
     kvAssetHandlerOptions,
   });
 
+  function wrapWithCache(handler, cache) {
+    return;
+  }
+
   return async (request: Request, env: any, ctx: any) => {
     try {
       let response = await handleAsset(request, env, ctx);
 
-      if (!response) {
+      if (response) {
+        return response;
+      }
+
+      if (request.method === 'GET') {
         response = await cache?.match(request);
+      }
 
-        if (!response) {
-          response = await handleRequest(request, env, ctx);
+      if (!response) {
+        response = await handleRequest(request, env, ctx);
+      }
 
-          if (cache) {
-            ctx.waitUntil(cache.put(request, response.clone()));
-          }
-        }
+      if (request.method === 'GET') {
+        ctx.waitUntil(cache.put(request, response.clone()));
       }
 
       return response;
