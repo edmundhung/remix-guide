@@ -28,3 +28,13 @@ introduction-to-http-caching:
   author: remix-run
   date: 2020-10-13
   language: en
+benoitaverty-devfest-nantes-2021:
+  url: https://www.youtube.com/watch?v=awnQlPtRSeU
+  author: BenoitAverty
+  date: 2021-11-02
+  language: fr
+sergiodxa-introduction-to-remix-run:
+  url: https://www.youtube.com/watch?v=0QkFGTX9P78
+  author: sergiodxa
+  date: 2021-05-14
+  language: es

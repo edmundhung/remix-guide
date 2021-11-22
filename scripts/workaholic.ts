@@ -54,6 +54,18 @@ export let setupBuild: SetupBuildFunction = () => {
         });
         break;
       }
+      case 'Gist': {
+        const [author] = source.url
+          .replace('https://gist.github.com/', '')
+          .split('/');
+
+        Object.assign(data, {
+          ...data,
+          author,
+          description: '',
+        });
+        break;
+      }
       case 'YouTube': {
         Object.assign(data, {
           ...data,

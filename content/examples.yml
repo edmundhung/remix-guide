@@ -24,3 +24,55 @@ sergiodxa-personal-site:
   packages: [remix-utils]
   version: 0.18.0
   platforms: [vercel]
+tomslutsky-debounced-search:
+  url: https://gist.github.com/tomslutsky/f87a253a1dc43a1797306a79243a25ed
+roelandmoors-remix-cloudflare-dynamodb:
+  url: https://github.com/roelandmoors/remix-cloudflare-dynamodb
+  version: ^1.0.0-rc.2
+  packages: [remix-auth]
+  platforms: [cloudflare]
+itsMapleLeaf-thoughtbucket:
+  url: https://github.com/itsMapleLeaf/thoughtbucket
+  version: ^0.20.1
+  platforms: [fly]
+jacob-ebey-remix-cloudflare-demo:
+  url: https://github.com/jacob-ebey/remix-cloudflare-demo
+  version: ^0.21.0
+  platforms: [cloudflare]
+tidusia-thibaud-on-remix:
+  url: https://github.com/tidusia/thibaud-on-remix
+  version: ^0.20.1
+kiliman-debug-your-server-side-remix-code-using-vscode:
+  url: https://gist.github.com/kiliman/a9d7c874af03369a1d105a92560d89e9
+gmencz-oneclip:
+  url: https://github.com/gmencz/OneClip
+  version: ^0.17.5
+  platforms: [express, fly]
+TheRealFlyingCoder-remix-firebase-portal:
+  url: https://github.com/TheRealFlyingCoder/remix-firebase-portal
+  version: 0.17.0
+  platforms: [firebase]
+GregBrimble-remix-on-cloudflare-pages:
+  url: https://github.com/GregBrimble/remix-on-cloudflare-pages
+  version: ^0.19.3
+  platforms: [cloudflare]
+dbanisimov-remix-firebase-hosted-bundle:
+  url: https://github.com/dbanisimov/remix-firebase-hosted-bundle
+  version: ^0.19.3
+  platforms: [firebase]
+dbanisimov-remix-firebase-express:
+  url: https://github.com/dbanisimov/remix-firebase-express
+  version: ^0.20.1
+  platforms: [express, firebase]
+ajcwebdev-ajcwebdev-remix:
+  url: https://github.com/ajcwebdev/ajcwebdev-remix
+  version: ^0.20.1
+  platforms: [netlify]
+jacob-ebey-ebey-me-remix:
+  url: https://github.com/jacob-ebey/ebey-me-remix
+  version: 0.19.0-pre.0
+  platforms: [vercel]
+andrelandgraf-sitemap-generator:
+  url: https://gist.github.com/andrelandgraf/0112631dcdf6640e4bd44360d3e7a08e
+edmundhung/remix-sandbox:
+  url: https://github.com/edmundhung/remix-sandbox

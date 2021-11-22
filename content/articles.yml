@@ -67,3 +67,16 @@ sergiodxa-redirect-to-the-original-url-inside-a-remix-action:
   url: https://sergiodxa.com/articles/redirect-to-the-original-url-inside-a-remix-action
   author: sergiodxa
   language: en
+camchenry-generating-social-images-with-remix:
+  url: https://camchenry.com/blog/generating-social-images-with-remix
+  author: camchenry
+  language: en
+kentcdodds-how-i-built-a-modern-website-in-2021:
+  url: https://kentcdodds.com/blog/how-i-built-a-modern-website-in-2021
+  author: kentcdodds
+  date: 2021-09-29
+  language: en
+edmundhung-setting-up-a-global-loading-indicator-in-remix:
+  url: https://edmund.dev/articles/setting-up-a-global-loading-indicator-in-remix
+  author: edmundhung
+  language: en
