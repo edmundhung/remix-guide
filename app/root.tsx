@@ -53,7 +53,7 @@ function Document({
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="dark:bg-black dark:text-gray-200">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -69,9 +69,9 @@ export default function App() {
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
-        <header className="px-4 sm:px-16 h-12 sticky top-0 z-40 bg-white border-b flex flex-row items-center text-xs md:text-base shadow-sm">
+        <header className="px-4 sm:px-16 h-12 sticky top-0 z-40 bg-white dark:bg-black border-b dark:bod dark:border-b-gray-600 flex flex-row items-center text-xs md:text-base shadow-sm">
           <Link
-            className="whitespace-nowrap -mx-4 px-4 z-40"
+            className="whitespace-nowrap -mx-4 px-4 z-40 dark:text-white"
             to="/"
             prefetch="intent"
           >
@@ -118,7 +118,7 @@ export default function App() {
               </a>
             </div>
             <a
-              className="ml-2 inline-block text-gray-600 hover:text-black transition-colors"
+              className="ml-2 inline-block text-gray-600 hover:text-black dark:hover:text-white transition-colors"
               href="https://github.com/edmundhung/remix-guide"
               target="_blank"
               rel="noopener noreferrer"

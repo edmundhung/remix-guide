@@ -116,8 +116,8 @@ export default function EntryDetail() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <div className="font-light px-8 py-12 text-white">
-              <div className="text-xs">Checkout here</div>
+            <div className="font-light px-10 py-12 text-white">
+              <div className="text-xs">Checkout</div>
               <div className="break-all">{entry.url}</div>
               <div className="pt-4 text-xs">
                 This entry has no preview image
@@ -126,11 +126,11 @@ export default function EntryDetail() {
           </a>
         )}
         <div className="mt-4 md:mt-0 lg:col-span-2 md:order-first">
-          <section className="p-8 text-xs flex flex-col h-full border">
+          <section className="p-8 text-xs flex flex-col h-full border dark:border-gray-600">
             <div className="flex flex-row justify-between mb-4">
               <div className="font-light">
                 <span className="capitalize">{entry.category}</span>
-                {!entry.author ? null : <span> / {entry.author}</span>}
+                {!entry.author ? null : <span> / by {entry.author}</span>}
               </div>
               <a
                 className="hover:underline"

@@ -3,13 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import { Form, Link, useSubmit, useTransition } from 'remix';
 import { capitalize, throttle } from '~/helpers';
 
-interface SearchFormProps {
-  categories: string[];
-  platforms: string[];
-  versions: string[];
-  languages: string[];
-}
-
 interface SearchLinkProps {
   name: string;
   value: string;
@@ -30,14 +23,45 @@ function SearchLink({ name, value, children }: SearchLinkProps): ReactElement {
   return (
     <Link
       className={`px-2 transition-colors ${
-        isActive ? 'text-gray-900' : 'text-gray-400'
-      } hover:text-gray-600`}
+        isActive
+          ? 'text-gray-900 dark:text-gray-200'
+          : 'text-gray-400 dark:text-gray-600 hover:text-gray-600 dark:hover:text-gray-400'
+      }`}
       to={`/search?${search.toString()}`}
       prefetch="intent"
     >
       {children}
     </Link>
   );
+}
+
+function Select({ name, value, children }: SelectProps): ReactElement {
+  return (
+    <select
+      className={`dark:bg-black mx-1 px-2 text-center ${
+        value !== ''
+          ? 'text-gray-900 dark:text-gray-200 border-gray-700 dark:border-white'
+          : 'text-gray-400 dark:text-gray-600 border-white dark:border-black hover:text-gray-600 dark:hover:text-gray-400'
+      } transition-colors border appearance-none outline-none`}
+      name={name}
+      defaultValue={value}
+    >
+      {children}
+    </select>
+  );
+}
+
+interface SelectProps {
+  name: string;
+  value: string;
+  children: ReactElement;
+}
+
+interface SearchFormProps {
+  categories: string[];
+  platforms: string[];
+  versions: string[];
+  languages: string[];
 }
 
 function SearchForm({
@@ -86,7 +110,7 @@ function SearchForm({
         <div className="flex items-center flex-row-reverse">
           <input
             id="search"
-            className="h-12 w-full pr-4 pl-9 py-2 text-gray-700 border-b focus:outline-none focus:border-gray-700 appearance-none"
+            className="h-12 w-full pr-4 pl-9 py-2 dark:bg-black text-gray-700 dark:text-gray-200 border-b dark:border-b-gray-600 focus:outline-none focus:border-gray-700 dark:focus:border-white focus:border-white appearance-none"
             type="text"
             name="q"
             defaultValue={keyword ?? ''}
@@ -109,58 +133,34 @@ function SearchForm({
       <div className="flex flex-row items-center">
         <div className="hidden lg:flex flex-row lg:pr-6">
           {versions.length === 0 ? null : (
-            <select
-              className={`mx-1 px-2 text-center ${
-                version !== ''
-                  ? 'text-gray-900 border-gray-700'
-                  : 'text-gray-400 border-white'
-              } hover:text-gray-600 transition-colors border appearance-none outline-none`}
-              name="version"
-              defaultValue={version}
-            >
+            <Select name="version" value={version}>
               <option value="">Version</option>
               {versions.map((version) => (
                 <option key={version} value={version}>
                   {version}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
           {platforms.length === 0 ? null : (
-            <select
-              className={`mx-1 px-2 text-center ${
-                platform !== ''
-                  ? 'text-gray-900 border-gray-700'
-                  : 'text-gray-400 border-white'
-              } hover:text-gray-600 transition-colors border appearance-none outline-none`}
-              name="platform"
-              defaultValue={platform}
-            >
+            <Select name="platform" value={platform}>
               <option value="">Platform</option>
               {platforms.map((platform) => (
                 <option key={platform} value={platform}>
                   {platform}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
           {languages.length === 0 ? null : (
-            <select
-              className={`mx-1 px-2 text-center ${
-                language !== ''
-                  ? 'text-gray-900 border-gray-700'
-                  : 'text-gray-400 border-white'
-              } hover:text-gray-600 transition-colors border appearance-none outline-none`}
-              name="language"
-              defaultValue={language}
-            >
+            <Select name="language" value={language}>
               <option value="">Language</option>
               {languages.map((language) => (
                 <option key={language} value={language}>
                   {language}
                 </option>
               ))}
-            </select>
+            </Select>
           )}
         </div>
         <nav className="hidden sm:block flex-grow sm:text-right">

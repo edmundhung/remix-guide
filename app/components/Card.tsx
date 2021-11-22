@@ -22,7 +22,7 @@ function Card({
 }: CardProps): ReactElement {
   return (
     <article
-      className={`flex flex-col border lg:text-gray-500 hover:text-black duration-150 ${className}`.trim()}
+      className={`flex flex-col border dark:border-gray-600 lg:text-gray-500 hover:text-black dark:hover:text-gray-200 duration-150 ${className}`.trim()}
     >
       <Link
         className="no-underline flex-grow"
@@ -37,7 +37,9 @@ function Card({
             </div>
             {views > 0 ? <div>({views})</div> : null}
           </div>
-          <h2 className="flex-grow text-xl break-words text-black">{title}</h2>
+          <h2 className="flex-grow text-xl break-words text-black dark:text-gray-200">
+            {title}
+          </h2>
           {!description ? null : (
             <p className="pt-10 line-clamp-2">{description}</p>
           )}
