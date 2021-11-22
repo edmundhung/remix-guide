@@ -89,14 +89,14 @@ export default function App() {
         <main className="flex-grow p-4 sm:p-8">
           <Outlet />
         </main>
-        <footer className="flex flex-col sm:flex-row justify-between sm:px-16 p-4 text-sm text-center sm:text-left">
+        <footer className="flex flex-col sm:flex-row justify-between sm:px-16 p-4 text-sm text-center sm:text-left gap-12">
           <p>
             Wanna share something? Submit it{' '}
             <Link className="underline" to="submit">
               here
             </Link>
           </p>
-          <p className="flex items-center">
+          <p className="flex items-center justify-center">
             <div>
               Made with{' '}
               <a
