@@ -1,9 +1,15 @@
-import type { LoaderFunction, MetaFunction } from 'remix';
+import type { HeadersFunction, LoaderFunction, MetaFunction } from 'remix';
 import { json, useLoaderData, useFetcher } from 'remix';
 import { capitalize, notFound } from '~/helpers';
 import { Entry } from '~/types';
 import RelatedEntries from '~/components/RelatedEntries';
 import { useEffect } from 'react';
+
+export let headers: HeadersFunction = () => {
+  return {
+    'Cache-Control': 'public, max-age=60',
+  };
+};
 
 export let meta: MetaFunction = ({ data, params }) => {
   return {
@@ -37,14 +43,21 @@ export let loader: LoaderFunction = async ({ context, params }) => {
       : [],
   ]);
 
-  return json({
-    category,
-    slug,
-    entry,
-    alsoFrom: alsoFrom.sort((prev, next) => next.views - prev.views),
-    relatedTo: relatedTo.sort((prev, next) => next.views - prev.views),
-    builtWith: builtWith.sort((prev, next) => next.views - prev.views),
-  });
+  return json(
+    {
+      category,
+      slug,
+      entry,
+      alsoFrom: alsoFrom.sort((prev, next) => next.views - prev.views),
+      relatedTo: relatedTo.sort((prev, next) => next.views - prev.views),
+      builtWith: builtWith.sort((prev, next) => next.views - prev.views),
+    },
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=60',
+      },
+    }
+  );
 };
 
 export default function EntryDetail() {

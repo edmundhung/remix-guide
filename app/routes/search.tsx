@@ -1,7 +1,13 @@
-import type { MetaFunction, LoaderFunction } from 'remix';
-import { useLoaderData } from 'remix';
+import type { HeadersFunction, MetaFunction, LoaderFunction } from 'remix';
+import { useLoaderData, json } from 'remix';
 import Card from '~/components/Card';
 import type { Entry } from '~/types';
+
+export let headers: HeadersFunction = () => {
+  return {
+    'Cache-Control': 'public, max-age=60',
+  };
+};
 
 export let meta: MetaFunction = () => {
   return {
@@ -27,7 +33,16 @@ export let loader: LoaderFunction = async ({ request, context }) => {
     language,
   });
 
-  return { entries };
+  return json(
+    {
+      entries,
+    },
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=60',
+      },
+    }
+  );
 };
 
 export default function Index() {

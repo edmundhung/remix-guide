@@ -1,7 +1,13 @@
-import type { LoaderFunction } from 'remix';
-import { useLoaderData } from 'remix';
+import type { HeadersFunction, LoaderFunction } from 'remix';
+import { useLoaderData, json } from 'remix';
 import Card from '~/components/Card';
 import type { Entry } from '~/types';
+
+export let headers: HeadersFunction = () => {
+  return {
+    'Cache-Control': 'public, max-age=60',
+  };
+};
 
 export let loader: LoaderFunction = async ({ context }) => {
   const entries = await context.search();
@@ -10,9 +16,9 @@ export let loader: LoaderFunction = async ({ context }) => {
     throw new Error('Something went wrong');
   }
 
-  return {
+  return json({
     entries: entries.sort((prev, next) => next.views - prev.views),
-  };
+  });
 };
 
 export default function Index() {
