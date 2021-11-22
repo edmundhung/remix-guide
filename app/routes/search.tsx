@@ -15,6 +15,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const url = new URL(request.url);
   const keyword = url.searchParams.get('q');
   const category = url.searchParams.get('category');
+  const language = url.searchParams.get('language');
   const version = url.searchParams.get('version');
   const platform = url.searchParams.get('platform');
 
@@ -23,6 +24,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
     categories: category ? [category] : null,
     version,
     platform,
+    language,
   });
 
   return { entries };
