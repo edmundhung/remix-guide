@@ -1,20 +1,21 @@
-# remix-worker-template
+# remix-guide
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/edmundhung/remix-worker-template)
+Remix Guide is an interactive list of awesome stuffs about Remix. It is built with [Remix](https://docs.remix.run) and is deployed to [Cloudflare Workers](https://workers.cloudflare.com/). All contents are published to Worker KV and Durable Objects.
 
-> The current starter template is based on Remix 0.21.0
+## Roadmap
 
-- [Remix Docs](https://docs.remix.run)
-- [Customer Dashboard](https://remix.run/dashboard)
+The idea behind Remix Guide is to make all resources prepared by the community more accessible and making the whole process as automatic as possible. Furture plans include:
 
-## Differences with the Remix CF Workers template
+- Online submission
+- Voting system
+- Better search ranking / recommendations
+- Github repository analysis (e.g. Check package.json for packages and versions used)
 
-While the official template provides the bare minimums for you to kickstart a Remix app running on Cloudflare Workers, this starter template adds a few extra tools that are common for development and let you be productive right away. These tools include:
+## Submission
 
-- Tailwind
-- ESLint
-- Prettier
-- Cypress
+All the contents are currently managed under the `content` directory. Please take a reference from existing content and create a Pull Request with your submission details.
+
+We will publish it as soon as possible.
 
 ## Node Version
 
@@ -49,16 +50,3 @@ When confirmed everythings works, deploy the worker with Wrangler using:
 ```sh
 npx wrangler publish
 ```
-
-## CI/CD
-
-The template ships a basic [deploy workflow](./.github/workflows/deploy.yml) which is triggered when new changes are pushed to the `main` branch.
-
-To setup the CI environment, following variables are required:
-
-- CF_API_TOKEN
-- CF_ACCOUNT_ID
-
-These values could be found / created on your Cloudflare Dashboard. If your project is bootstrapped with the deploy button above, both should be already set in the repository.
-
-Alternatively, **CF_ACCOUNT_ID** can be set as `account_id` on the [wrangler.toml](./wrangler.toml).
