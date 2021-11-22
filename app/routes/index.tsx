@@ -46,7 +46,7 @@ export default function Index() {
           Remix v1 is finally here! Check out the{' '}
           <a
             className="underline"
-            href="https://docs.remix.run"
+            href="https://remix.run/docs"
             target="_blank"
             rel="noopener noreferrer"
           >
