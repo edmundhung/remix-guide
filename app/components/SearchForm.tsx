@@ -1,6 +1,5 @@
 import { ReactElement, useEffect, useMemo, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
-import { Form, Link, useSubmit, useTransition } from 'remix';
+import { Form, Link, useSubmit, useTransition, useSearchParams } from 'remix';
 import { capitalize, throttle } from '~/helpers';
 
 interface SearchLinkProps {
