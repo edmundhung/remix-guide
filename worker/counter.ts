@@ -1,45 +1,52 @@
 /**
- * Durable object - Counter example
- * @see https://developers.cloudflare.com/workers/learning/using-durable-objects#example---counter
+ * Durable object - Counter
+ * @see https://developers.cloudflare.com/workers/learning/using-durable-objects
  */
 export class Counter {
   constructor(state, env) {
     this.state = state;
-    // `blockConcurrencyWhile()` ensures no requests are delivered until
-    // initialization completes.
     this.state.blockConcurrencyWhile(async () => {
       let stored = await this.state.storage.get('value');
-      this.value = stored || 0;
+      this.countsByKey = stored || {};
     });
   }
 
-  // Handle HTTP requests from clients.
   async fetch(request) {
-    // Apply requested action.
-    let url = new URL(request.url);
-    let currentValue = this.value;
-    switch (url.pathname) {
-      case '/increment':
-        currentValue = ++this.value;
-        await this.state.storage.put('value', this.value);
-        break;
-      case '/decrement':
-        currentValue = --this.value;
-        await this.state.storage.put('value', this.value);
-        break;
-      case '/':
-        // Just serve the current value. No storage calls needed!
-        break;
-      default:
-        return new Response('Not found', { status: 404 });
-    }
+    try {
+      let url = new URL(request.url);
+      let method = request.method.toUpperCase();
 
-    // Return `currentValue`. Note that `this.value` may have been
-    // incremented or decremented by a concurrent request when we
-    // yielded the event loop to `await` the `storage.put` above!
-    // That's why we stored the counter value created by this
-    // request in `currentValue` before we used `await`.
-    return new Response(currentValue);
+      switch (url.pathname) {
+        case '/increment':
+          if (method !== 'POST') {
+            break;
+          }
+
+          const { key } = await request.json();
+          this.countsByKey[key] = (this.countsByKey[key] ?? 0) + 1;
+          await this.state.storage.put('value', this.countsByKey);
+          return new Response('OK', { status: 200 });
+        case '/':
+          if (method !== 'GET') {
+            break;
+          }
+
+          const keys = url.searchParams.getAll('keys');
+          const countsByKey = keys.reduce((result, key) => {
+            result[key] = this.countsByKey[key] ?? 0;
+
+            return result;
+          }, {});
+
+          return new Response(JSON.stringify(countsByKey), { status: 200 });
+      }
+
+      return new Response('Not found', { status: 404 });
+    } catch (e) {
+      console.log(`Counter failed handling fetch call - ${request.url}`, e);
+
+      return new Response('Internal Server Error', { status: 500 });
+    }
   }
 }
 
@@ -52,19 +59,30 @@ export function createCounter(namespace: DurableObjectNamespace) {
   }
 
   return {
-    async check(name: string): Promise<Number> {
+    async check(name: string, keys: string[]): Promise<Record<string, number>> {
       const counter = getCounter(name);
-      const response = await counter.fetch('http://counter/');
-      const count = await response.text();
+      const searchParams = new URLSearchParams(
+        keys.map((key) => ['keys', key])
+      );
+      const response = await counter.fetch(
+        `http://counter/?${searchParams.toString()}`
+      );
+      const data = await response.json();
 
-      return Number(count);
+      return data;
     },
-    async increment(name: string): Promise<Number> {
+    async increment(name: string, key: string): Promise<void> {
       const counter = getCounter(name);
-      const response = await counter.fetch('http://counter/increment');
-      const count = await response.text();
+      const response = await counter.fetch('http://counter/increment', {
+        method: 'POST',
+        body: JSON.stringify({ key }),
+      });
 
-      return Number(count);
+      if (!response.ok) {
+        console.log(
+          `Counter: Fail incrementing counts for ${key} from ${name}`
+        );
+      }
     },
   };
 }

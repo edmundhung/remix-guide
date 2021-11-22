@@ -18,21 +18,22 @@ const handleFetch = createFetchHandler({
       async search(params = {}) {
         const { keyword, ...options } = params;
         const list = await query('search', keyword ?? '', options);
-        const viewsPerKey = await Promise.all(
-          list.map(async (item) => {
-            let key = `${item.category}/${item.slug}`;
-            let count = await counter.check(key);
 
-            return [key, count];
-          })
-        );
-        const viewsByKey = Object.fromEntries(viewsPerKey);
+        try {
+          const viewsByKey = await counter.check(
+            'views',
+            list.map((item) => `${item.category}/${item.slug}`)
+          );
 
-        return list.map((item) => ({
-          ...item,
-          views: viewsByKey[`${item.category}/${item.slug}`] ?? 0,
-        }));
-        // return list;
+          return list.map((item) => ({
+            ...item,
+            views: viewsByKey[`${item.category}/${item.slug}`] ?? 0,
+          }));
+        } catch (e) {
+          console.log('Gathering counts during search failed');
+
+          return list;
+        }
       },
       async query(category: string, slug: string) {
         if (category === 'search') {
@@ -46,7 +47,7 @@ const handleFetch = createFetchHandler({
         }
 
         if (category !== 'meta') {
-          ctx.waitUntil(counter.increment(`${category}/${slug}`));
+          ctx.waitUntil(counter.increment('views', `${category}/${slug}`));
         }
 
         return result;
