@@ -41,7 +41,7 @@ export default function Index() {
 
   return (
     <section>
-      <div className="sticky top-12 bg-white z-20 px-8 py-4 mb-8 border-b flex flex-col md:flex-row justify-between -mb-px text-sm text-gray-500">
+      <div className="sticky top-12 bg-white z-20 px-8 py-4 mb-8 border-b flex flex-col md:flex-row justify-between text-sm text-gray-500">
         Showing {entries.length > 1 ? `${entries.length} entries` : '1 entry'}
       </div>
       <div className="grid grid-cols-masonry pl-px pt-px">
