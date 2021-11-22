@@ -12,7 +12,7 @@
     "build:style": "cross-env NODE_ENV=production tailwindcss -o ./app/styles/tailwind.css --minify",
     "build:worker": "cross-env NODE_ENV=production node ./scripts/build.mjs",
     "build": "npm run build:style && npm run build:remix && npm run build:worker",
-    "dev:miniflare": "miniflare --build-command \"node ./scripts/build.mjs\" --no-cache --watch --kv-persist",
+    "dev:miniflare": "miniflare --build-command \"node ./scripts/build.mjs\" --no-cache --watch --kv-persist --do-persist",
     "dev:remix": "remix watch",
     "dev:style": "tailwindcss -o ./app/styles/tailwind.css --watch",
     "dev": "concurrently \"npm:dev:*\"",

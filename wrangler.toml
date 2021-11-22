@@ -18,6 +18,10 @@ entry-point = "."
 [durable_objects]
 bindings = [{ name = "COUNTER", class_name = "Counter" }]
 
+[[migrations]]
+tag = "v0.1"
+new_classes = ["Counter"]
+
 [build]
 command = "npm run build"
 watch_dir = "./build/index.js"
