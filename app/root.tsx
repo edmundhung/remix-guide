@@ -64,7 +64,7 @@ function Document({
 
 export default function App() {
   let { categories, platforms, languages, versions } = useLoaderData();
-  console.log({ categories, platforms, languages, versions });
+
   return (
     <Document>
       <div className="min-h-screen flex flex-col">
