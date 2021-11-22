@@ -22,7 +22,8 @@ export default function Index() {
         <h1 className="font-light text-xl">Remix Guide</h1>
         <div>An interactive awesome repository for anything about Remix</div>
         <div className="pt-4 text-xs">
-          <sup>*</sup> All stuffs shared here are made by the community.{' '}
+          <sup>*</sup> All stuffs shared here are mostly made by the community
+          only
         </div>
       </div>
       <section>
