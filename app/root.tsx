@@ -173,12 +173,9 @@ export function ErrorBoundary({ error }: { error: Error }) {
 
   return (
     <Document title="Uh-oh!">
-      <h1>App Error</h1>
-      <pre>{error.message}</pre>
-      <p>
-        Replace this UI with what you want users to see when your app throws
-        uncaught errors.
-      </p>
+      <div className="min-h-screen py-4 flex flex-col justify-center items-center">
+        <h1>Sorry, something went wrong...</h1>
+      </div>
     </Document>
   );
 }
