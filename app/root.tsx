@@ -108,11 +108,11 @@ export default function App() {
             by{' '}
             <a
               className="hover:underline"
-              href="https://edmund.dev"
+              href="https://github.com/edmundhung"
               target="_blank"
               rel="noopener noreferrer"
             >
-              Ed
+              Edmund Hung
             </a>
           </p>
         </footer>

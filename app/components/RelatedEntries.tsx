@@ -24,7 +24,7 @@ function RelatedEntries({ title, categories, entries }: RelatedEntriesProps) {
 
   return (
     <section>
-      <div className="sticky top-12 bg-white z-20 px-8 py-4 border-b flex flex-col md:flex-row justify-between">
+      <div className="sticky top-12 bg-white z-20 px-8 py-4 mb-8 border-b flex flex-col md:flex-row justify-between">
         <span className="md:pt-4 text-gray-500">{title}</span>
         {options.length > 1 ? (
           <nav className="pt-4 -mx-2">
@@ -51,7 +51,7 @@ function RelatedEntries({ title, categories, entries }: RelatedEntriesProps) {
         ) : null}
       </div>
       {selectedEntries.length > 0 ? (
-        <div className="mt-8 grid grid-cols-masonry pl-px pt-px">
+        <div className="grid grid-cols-masonry pl-px pt-px">
           {selectedEntries.map((entry) => (
             <Card
               key={entry.slug}

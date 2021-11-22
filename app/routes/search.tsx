@@ -40,18 +40,23 @@ export default function Index() {
   }
 
   return (
-    <div className="grid grid-cols-masonry pl-px pt-px">
-      {entries.map((entry) => (
-        <Card
-          key={entry.slug}
-          className="hover:border-black focus:border-black z-0 hover:z-10 focus:z-10 sm:aspect-w-1 sm:aspect-h-1 -ml-px -mt-px"
-          slug={entry.slug}
-          author={entry.author}
-          category={entry.category}
-          title={entry.title}
-          description={entry.description}
-        />
-      ))}
-    </div>
+    <section>
+      <div className="sticky top-12 bg-white z-20 px-8 py-4 mb-8 border-b flex flex-col md:flex-row justify-between -mb-px text-sm text-gray-500">
+        Showing {entries.length > 1 ? `${entries.length} entries` : '1 entry'}
+      </div>
+      <div className="grid grid-cols-masonry pl-px pt-px">
+        {entries.map((entry) => (
+          <Card
+            key={entry.slug}
+            className="hover:border-black focus:border-black z-0 hover:z-10 focus:z-10 sm:aspect-w-1 sm:aspect-h-1 -ml-px -mt-px"
+            slug={entry.slug}
+            author={entry.author}
+            category={entry.category}
+            title={entry.title}
+            description={entry.description}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
