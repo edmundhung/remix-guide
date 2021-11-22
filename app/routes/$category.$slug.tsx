@@ -5,9 +5,9 @@ import { Entry } from '~/types';
 import RelatedEntries from '~/components/RelatedEntries';
 import { useEffect } from 'react';
 
-export let headers: HeadersFunction = () => {
+export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
-    'Cache-Control': 'public, max-age=60',
+    'Cache-Control': loaderHeaders.get('Cache-Control'),
   };
 };
 

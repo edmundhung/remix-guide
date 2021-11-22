@@ -3,9 +3,9 @@ import { useLoaderData, json } from 'remix';
 import Card from '~/components/Card';
 import type { Entry } from '~/types';
 
-export let headers: HeadersFunction = () => {
+export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
-    'Cache-Control': 'public, max-age=60',
+    'Cache-Control': loaderHeaders.get('Cache-Control'),
   };
 };
 
@@ -16,9 +16,16 @@ export let loader: LoaderFunction = async ({ context }) => {
     throw new Error('Something went wrong');
   }
 
-  return json({
-    entries: entries.sort((prev, next) => next.views - prev.views),
-  });
+  return json(
+    {
+      entries: entries.sort((prev, next) => next.views - prev.views),
+    },
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=60',
+      },
+    }
+  );
 };
 
 export default function Index() {

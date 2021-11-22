@@ -3,9 +3,9 @@ import { useLoaderData, json } from 'remix';
 import Card from '~/components/Card';
 import type { Entry } from '~/types';
 
-export let headers: HeadersFunction = () => {
+export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
-    'Cache-Control': 'public, max-age=60',
+    'Cache-Control': loaderHeaders.get('Cache-Control'),
   };
 };
 
