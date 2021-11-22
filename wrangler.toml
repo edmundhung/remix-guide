@@ -15,6 +15,9 @@ id = "ac24beac98a54c2786c7605bbbabdbdc"
 bucket = "./public"
 entry-point = "."
 
+[durable_objects]
+bindings = [{ name = "COUNTER", class_name = "Counter" }]
+
 [build]
 command = "npm run build"
 watch_dir = "./build/index.js"

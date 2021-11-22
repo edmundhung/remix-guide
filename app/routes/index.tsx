@@ -31,6 +31,7 @@ export default function Index() {
             category={entry.category}
             title={entry.title}
             description={entry.description}
+            views={entry.views}
           />
         ))}
       </div>

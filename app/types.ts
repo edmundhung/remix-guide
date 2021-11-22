@@ -9,6 +9,7 @@ export interface Metadata {
   version?: string;
   platforms: string[];
   packages?: string[];
+  views?: number;
 }
 
 export interface Article extends Metadata {

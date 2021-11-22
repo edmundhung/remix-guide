@@ -8,6 +8,7 @@ interface CardProps {
   author?: string;
   title: string;
   description?: string;
+  views?: number;
 }
 
 function Card({
@@ -17,6 +18,7 @@ function Card({
   category,
   title,
   description,
+  views,
 }: CardProps): ReactElement {
   return (
     <article
@@ -28,9 +30,12 @@ function Card({
         prefetch="intent"
       >
         <section className="relative p-8 flex flex-col h-full text-xs">
-          <div className="font-light mb-5">
-            <span className="capitalize">{category}</span>
-            {!author ? null : <span> / {author}</span>}
+          <div className="flex flex-row justify-between font-light mb-5">
+            <div>
+              <span className="capitalize">{category}</span>
+              {!author ? null : <span> / by {author}</span>}
+            </div>
+            {views > 0 ? <div>({views})</div> : null}
           </div>
           <h2 className="flex-grow text-xl break-words text-black">{title}</h2>
           {!description ? null : (
