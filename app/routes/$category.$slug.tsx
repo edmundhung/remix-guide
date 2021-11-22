@@ -1,8 +1,9 @@
 import type { LoaderFunction, MetaFunction } from 'remix';
-import { json, useLoaderData } from 'remix';
+import { json, useLoaderData, useFetcher } from 'remix';
 import { capitalize, notFound } from '~/helpers';
 import { Entry } from '~/types';
 import RelatedEntries from '~/components/RelatedEntries';
+import { useEffect } from 'react';
 
 export let meta: MetaFunction = ({ data, params }) => {
   return {
@@ -13,7 +14,8 @@ export let meta: MetaFunction = ({ data, params }) => {
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  const entry = await context.query(params.category, params.slug);
+  const { category, slug } = params;
+  const entry = await context.query(category, slug);
 
   if (!entry) {
     throw notFound();
@@ -36,6 +38,8 @@ export let loader: LoaderFunction = async ({ context, params }) => {
   ]);
 
   return json({
+    category,
+    slug,
     entry,
     alsoFrom: alsoFrom.sort((prev, next) => next.views - prev.views),
     relatedTo: relatedTo.sort((prev, next) => next.views - prev.views),
@@ -43,13 +47,29 @@ export let loader: LoaderFunction = async ({ context, params }) => {
   });
 };
 
-export default function ArticleDetail() {
-  const { entry, alsoFrom, relatedTo, builtWith } = useLoaderData<{
-    entry: Entry;
-    alsoFrom: Entry[];
-    relatedTo: Entry[];
-    builtWith: Entry[];
-  }>();
+export default function EntryDetail() {
+  const marker = useFetcher();
+  const { category, slug, entry, alsoFrom, relatedTo, builtWith } =
+    useLoaderData<{
+      category: string;
+      slug: string;
+      entry: Entry;
+      alsoFrom: Entry[];
+      relatedTo: Entry[];
+      builtWith: Entry[];
+    }>();
+
+  useEffect(() => {
+    if (marker.type === 'init') {
+      marker.submit(
+        {},
+        {
+          method: 'post',
+          action: `/${category}/${slug}/view`,
+        }
+      );
+    }
+  }, [marker, category, slug]);
 
   return (
     <div className="max-w-screen-xl">

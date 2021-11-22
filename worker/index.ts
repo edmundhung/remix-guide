@@ -46,11 +46,10 @@ const handleFetch = createFetchHandler({
           return null;
         }
 
-        if (category !== 'meta') {
-          ctx.waitUntil(counter.increment('views', `${category}/${slug}`));
-        }
-
         return result;
+      },
+      view(category: string, slug: string): void {
+        ctx.waitUntil(counter.increment('views', `${category}/${slug}`));
       },
     };
   },
