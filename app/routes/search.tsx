@@ -12,14 +12,12 @@ export let headers: HeadersFunction = ({ loaderHeaders }) => {
 export let meta: MetaFunction = () => {
   return {
     title: 'Remix Guide - Search',
-    description:
-      'Starter template for setting up a Remix app on Cloudflare Workers',
   };
 };
 
 export let loader: LoaderFunction = async ({ request, context }) => {
   const url = new URL(request.url);
-  const keyword = url.searchParams.get('q');
+  const keyword = url.searchParams.get('q') ?? '';
   const category = url.searchParams.get('category');
   const language = url.searchParams.get('language');
   const version = url.searchParams.get('version');
@@ -35,7 +33,10 @@ export let loader: LoaderFunction = async ({ request, context }) => {
 
   return json(
     {
-      entries,
+      entries:
+        keyword !== ''
+          ? entries.sort((prev, next) => next.views - prev.views)
+          : entries,
     },
     {
       headers: {

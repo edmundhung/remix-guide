@@ -9,6 +9,7 @@ import {
   Outlet,
   Link,
   ScrollRestoration,
+  json,
 } from 'remix';
 import SearchForm from '~/components/SearchForm';
 import { categories, platforms } from './meta';
@@ -29,12 +30,19 @@ export let meta: MetaFunction = () => {
 export let loader: LoaderFunction = async ({ context }) => {
   const { languages } = await context.query('meta', 'data');
 
-  return {
-    versions: [],
-    categories,
-    languages,
-    platforms,
-  };
+  return json(
+    {
+      versions: [],
+      categories,
+      languages,
+      platforms,
+    },
+    {
+      headers: {
+        'Cache-Control': 'public, max-age=3600',
+      },
+    }
+  );
 };
 
 function Document({
