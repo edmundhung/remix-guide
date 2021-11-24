@@ -34,7 +34,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   return json(
     {
       entries:
-        keyword !== ''
+        keyword === ''
           ? entries.sort((prev, next) => next.views - prev.views)
           : entries,
     },
