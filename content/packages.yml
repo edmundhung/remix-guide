@@ -10,3 +10,5 @@ remix-i18next:
 remix-seo:
   url: https://github.com/chaance/remix-seo
   version: '>=0.21.1'
+remix-tailwind:
+  url: https://github.com/itsMapleLeaf/remix-tailwind

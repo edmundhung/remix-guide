@@ -25,3 +25,11 @@ edmundhung-remix-worker-template:
   url: https://github.com/edmundhung/remix-worker-template
   version: ^0.21.0
   platforms: [cloudflare]
+kiliman-debug-your-server-side-remix-code-using-vscode:
+  url: https://gist.github.com/kiliman/a9d7c874af03369a1d105a92560d89e9
+tomslutsky-debounced-search:
+  url: https://gist.github.com/tomslutsky/f87a253a1dc43a1797306a79243a25ed
+andrelandgraf-sitemap-generator:
+  url: https://gist.github.com/andrelandgraf/0112631dcdf6640e4bd44360d3e7a08e
+edmundhung-remix-sandbox:
+  url: https://github.com/edmundhung/remix-sandbox

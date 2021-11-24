@@ -38,3 +38,18 @@ sergiodxa-introduction-to-remix-run:
   author: sergiodxa
   date: 2021-05-14
   language: es
+introducing-remix:
+  url: https://www.youtube.com/watch?v=9FDV-VCq5XE
+  author: remix-run
+  date: 2021-11-22
+  language: en
+introducing-remix-v1:
+  url: https://www.youtube.com/watch?v=wsJaUjd1rUo
+  author: remix-run
+  date: 2021-11-22
+  language: en
+remix-tutorial-with-kent:
+  url: https://www.youtube.com/watch?v=hsIWJpuxNj0
+  author: remix-run
+  date: 2021-11-23
+  language: en

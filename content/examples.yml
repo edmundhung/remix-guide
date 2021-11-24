@@ -24,8 +24,6 @@ sergiodxa-personal-site:
   packages: [remix-utils]
   version: 0.18.0
   platforms: [vercel]
-tomslutsky-debounced-search:
-  url: https://gist.github.com/tomslutsky/f87a253a1dc43a1797306a79243a25ed
 roelandmoors-remix-cloudflare-dynamodb:
   url: https://github.com/roelandmoors/remix-cloudflare-dynamodb
   version: ^1.0.0-rc.2
@@ -42,8 +40,6 @@ jacob-ebey-remix-cloudflare-demo:
 tidusia-thibaud-on-remix:
   url: https://github.com/tidusia/thibaud-on-remix
   version: ^0.20.1
-kiliman-debug-your-server-side-remix-code-using-vscode:
-  url: https://gist.github.com/kiliman/a9d7c874af03369a1d105a92560d89e9
 gmencz-oneclip:
   url: https://github.com/gmencz/OneClip
   version: ^0.17.5
@@ -72,7 +68,11 @@ jacob-ebey-ebey-me-remix:
   url: https://github.com/jacob-ebey/ebey-me-remix
   version: 0.19.0-pre.0
   platforms: [vercel]
-andrelandgraf-sitemap-generator:
-  url: https://gist.github.com/andrelandgraf/0112631dcdf6640e4bd44360d3e7a08e
-edmundhung-remix-sandbox:
-  url: https://github.com/edmundhung/remix-sandbox
+edmundhung-blog:
+  url: https://github.com/edmundhung/blog
+  version: ^0.20.1
+  platforms: [cloudflare]
+edmundhung-remix-guide:
+  url: https://github.com/edmundhung/remix-guide
+  version: ^1.0.3
+  platforms: [cloudflare]
