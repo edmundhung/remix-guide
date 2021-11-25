@@ -4,7 +4,7 @@ on:
     branches: dev
 jobs:
   test:
-    name: 🤖 Checking code quality
+    name: 🤖 Tests
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node
@@ -34,7 +34,7 @@ jobs:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   lint:
-    name: 💅 Checking code style
+    name: 💅 Styles
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node
