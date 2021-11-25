@@ -34,7 +34,8 @@
     "fuse.js": "^6.4.6",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "remix": "^1.0.5"
+    "remix": "^1.0.5",
+    "remix-auth": "^2.5.0-0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.2.0",

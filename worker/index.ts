@@ -1,20 +1,21 @@
+import manifest from '__STATIC_CONTENT_MANIFEST';
 import { createFetchHandler } from './adapter';
-import manifestJSON from '__STATIC_CONTENT_MANIFEST';
 import * as build from '../build/index.js';
 import { createQuery } from './query';
+import { createAuth } from './auth';
 import { Counter, createCounter } from './counter';
-
-const manifest = JSON.parse(manifestJSON);
 
 const handleFetch = createFetchHandler({
   build,
   manifest,
   cache: caches.default,
   getLoadContext(request, env, ctx) {
+    const auth = createAuth(request, env, ctx);
     const query = createQuery(env, ctx);
     const counter = createCounter(env.COUNTER);
 
     return {
+      auth,
       async search(params = {}) {
         const { keyword, ...options } = params;
         const list = await query('search', keyword ?? '', options);
@@ -55,10 +56,8 @@ const handleFetch = createFetchHandler({
   },
 });
 
-const worker = {
-  async fetch(request, env, ctx) {
-    return handleFetch(request, env, ctx);
-  },
+const worker: ExportedHandler = {
+  fetch: handleFetch,
 };
 
 export default worker;

@@ -1,5 +1,6 @@
 import type { LinksFunction, MetaFunction, LoaderFunction } from 'remix';
 import {
+  Form,
   Meta,
   Links,
   Scripts,
@@ -12,8 +13,8 @@ import {
   json,
 } from 'remix';
 import SearchForm from '~/components/SearchForm';
-import { categories, platforms } from './meta';
-import stylesUrl from './styles/tailwind.css';
+import { categories, platforms } from '~/meta';
+import stylesUrl from '~/styles/tailwind.css';
 
 export let links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: stylesUrl }];
@@ -29,6 +30,7 @@ export let meta: MetaFunction = () => {
 
 export let loader: LoaderFunction = async ({ context }) => {
   const { languages } = await context.query('meta', 'data');
+  const user = await context.auth.isAuthenticated();
 
   return json(
     {
@@ -36,6 +38,7 @@ export let loader: LoaderFunction = async ({ context }) => {
       categories,
       languages,
       platforms,
+      user,
     },
     {
       headers: {
@@ -71,7 +74,7 @@ function Document({
 }
 
 export default function App() {
-  let { categories, platforms, languages, versions } = useLoaderData();
+  let { categories, platforms, languages, versions, user } = useLoaderData();
 
   return (
     <Document>
@@ -91,6 +94,17 @@ export default function App() {
               versions={versions}
               languages={languages}
             />
+          </div>
+          <div className="ml-2">
+            {user ? (
+              <Form action="/logout" method="post" reloadDocument>
+                <button>Logout</button>
+              </Form>
+            ) : (
+              <Form action="/login" method="post" reloadDocument>
+                <button>Login</button>
+              </Form>
+            )}
           </div>
         </header>
         <main className="flex-grow p-4 sm:p-8">
