@@ -12,3 +12,6 @@ remix-seo:
   version: '>=0.21.1'
 remix-tailwind:
   url: https://github.com/itsMapleLeaf/remix-tailwind
+remix-postcss:
+  url: https://github.com/l-mbert/remix-postcss
+  version: '>=1'

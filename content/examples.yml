@@ -76,3 +76,7 @@ edmundhung-remix-guide:
   url: https://github.com/edmundhung/remix-guide
   version: ^1.0.3
   platforms: [cloudflare]
+HerrBertling-hamvaxmap:
+  url: https://github.com/HerrBertling/hamvaxmap
+  version: ^1.0.4
+  platforms: [vercel]

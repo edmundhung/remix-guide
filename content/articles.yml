@@ -83,4 +83,25 @@ edmundhung-setting-up-a-global-loading-indicator-in-remix:
 sergiodxa-use-nprogress-in-a-remix-app:
   url: https://sergiodxa.com/articles/use-nprogress-in-a-remix-app
   author: sergiodxa
+  date: 2021-11-24
+  language: en
+benanna2019-remix-for-beginners:
+  url: https://dev.to/benanna2019/remix-for-beginners-1dhi
+  author: Benanna2019
+  date: 2021-11-24
+  language: en
+andrelandgraf-how-to-migrate-from-gatsby-to-remix:
+  url: https://andrelandgraf.medium.com/how-to-migrate-from-gatsby-to-remix-a3cb0806460c
+  author: andrelandgraf
+  date: 2021-11-24
+  language: en
+jacob-ebey-dynamic-css-with-remix-resource-routes:
+  url: https://www.ebey.me/blog/dynamic-css-with-remix-resource-routes
+  author: jacob-ebey
+  date: 2021-11-25
+  language: en
+sergiodxa-test-remix-loaders-and-actions:
+  url: https://sergiodxa.com/articles/test-remix-loaders-and-actions
+  author: sergiodxa
+  date: 2021-11-25
   language: en
