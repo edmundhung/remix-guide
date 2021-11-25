@@ -8,7 +8,9 @@ import { Counter, createCounter } from './counter';
 const handleFetch = createFetchHandler({
   build,
   manifest,
-  cache: caches.default,
+  getCache() {
+    return caches.open(process.env.VERSION);
+  },
   getLoadContext(request, env, ctx) {
     const auth = createAuth(request, env, ctx);
     const query = createQuery(env, ctx);

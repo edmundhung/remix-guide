@@ -11,13 +11,13 @@ import type {
 } from '@remix-run/server-runtime';
 import { createRequestHandler as createRemixRequestHandler } from '@remix-run/server-runtime';
 
-export interface GetLoadContextFunction {
-  (request: Request, env: any, ctx: any): AppLoadContext;
+export interface GetLoadContextFunction<Env = unknown> {
+  (request: Request, env: Env, ctx: ExecutionContext): AppLoadContext;
 }
 
 export type RequestHandler = ReturnType<typeof createRequestHandler>;
 
-export function createRequestHandler({
+export function createRequestHandler<Env>({
   build,
   getLoadContext,
   mode,
@@ -25,11 +25,11 @@ export function createRequestHandler({
   build: ServerBuild;
   getLoadContext?: GetLoadContextFunction;
   mode?: string;
-}) {
+}): ExportedHandlerFetchHandler<Env> {
   let platform: ServerPlatform = {};
   let handleRequest = createRemixRequestHandler(build, platform, mode);
 
-  return (request: Request, env: any, ctx: any) => {
+  return (request: Request, env: Env, ctx: ExecutionContext) => {
     let loadContext =
       typeof getLoadContext === 'function'
         ? getLoadContext(request, env, ctx)
@@ -39,18 +39,18 @@ export function createRequestHandler({
   };
 }
 
-export function createAssetHandler({
+export function createAssetHandler<Env>({
   build,
   manifest,
   kvAssetHandlerOptions,
 }: {
   build: ServerBuild;
-  manifest: any;
+  manifest: string;
   kvAssetHandlerOptions?: Partial<KvAssetHandlerOptions>;
-}) {
+}): ExportedHandlerFetchHandler<Env> {
   const assetpath = build.assets.url.split('/').slice(0, -1).join('/');
 
-  return async (request: Request, env: any, ctx: any) => {
+  return async (request: Request, env: Env, ctx: ExecutionContext) => {
     try {
       const event = {
         request,
@@ -61,7 +61,7 @@ export function createAssetHandler({
       const options: KvAssetHandlerOptions = {
         ...kvAssetHandlerOptions,
         ASSET_NAMESPACE: env.__STATIC_CONTENT,
-        ASSET_MANIFEST: manifest,
+        ASSET_MANIFEST: JSON.parse(manifest),
       };
 
       if (process.env.NODE_ENV === 'development') {
@@ -101,21 +101,21 @@ export function createAssetHandler({
   };
 }
 
-export function createFetchHandler({
+export function createFetchHandler<Env>({
   build,
   getLoadContext,
   mode,
   manifest,
-  cache,
+  getCache,
   kvAssetHandlerOptions,
 }: {
   build: ServerBuild;
   getLoadContext?: GetLoadContextFunction;
   mode?: string;
-  manifest: any;
-  cache?: Cache;
+  manifest: string;
+  getCache?: Promise<Cache>;
   kvAssetHandlerOptions?: Partial<KvAssetHandlerOptions>;
-}) {
+}): ExportedHandlerFetchHandler<Env> {
   const handleRequest = createRequestHandler({
     build,
     getLoadContext,
@@ -128,19 +128,22 @@ export function createFetchHandler({
     kvAssetHandlerOptions,
   });
 
-  function wrapWithCache(handler, cache) {
-    return;
-  }
-
-  return async (request: Request, env: any, ctx: any) => {
+  return async (request: Request, env: Env, ctx: ExecutionContext) => {
     try {
-      let response = await handleAsset(request, env, ctx);
+      let isHeadOrGetRequest =
+        request.method === 'HEAD' || request.method === 'GET';
+      let cache = typeof getCache !== 'undefined' ? await getCache() : null;
+      let response;
+
+      if (isHeadOrGetRequest) {
+        response = await handleAsset(request, env, ctx);
+      }
 
       if (response) {
         return response;
       }
 
-      if (request.method === 'GET') {
+      if (isHeadOrGetRequest) {
         response = await cache?.match(request);
       }
 
@@ -148,13 +151,13 @@ export function createFetchHandler({
         response = await handleRequest(request, env, ctx);
       }
 
-      if (request.method === 'GET') {
-        ctx.waitUntil(cache.put(request, response.clone()));
+      if (isHeadOrGetRequest) {
+        ctx.waitUntil(cache?.put(request, response.clone()));
       }
 
       return response;
     } catch (e: any) {
-      if (process.env.NODE_ENV === 'development') {
+      if (process.env.NODE_ENV === 'development' && e instanceof Error) {
         return new Response(e.message || e.toString(), {
           status: 500,
         });

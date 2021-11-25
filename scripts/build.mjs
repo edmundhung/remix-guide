@@ -2,8 +2,9 @@ import * as esbuild from 'esbuild';
 
 async function build() {
   const mode = process.env.NODE_ENV?.toLowerCase() ?? 'development';
+  const version = process.env.VERSION ?? new Date().toISOString();
 
-  console.log(`Building Worker in ${mode} mode`);
+  console.log(`Building Worker in ${mode} mode for version ${version}`);
 
   const outfile = './dist/worker.mjs';
   const startTime = Date.now();
@@ -17,6 +18,7 @@ async function build() {
     external: ['__STATIC_CONTENT_MANIFEST'],
     define: {
       'process.env.NODE_ENV': `"${mode}"`,
+      'process.env.VERSION': `"${version}"`,
     },
     outfile,
   });
