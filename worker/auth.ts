@@ -20,6 +20,31 @@ export function createAuth<Env>(
   env: Env,
   ctx: ExecutionContext
 ) {
+  if (process.env.NODE_ENV === 'production') {
+    return {
+      async login() {
+        return redirect('/');
+      },
+      async logout() {
+        return redirect('/');
+      },
+      async isAuthenticated() {
+        return null;
+      },
+    };
+  }
+
+  if (
+    !env.GITHUB_CLIENT_ID ||
+    !env.GITHUB_CLIENT_SECRET ||
+    !env.GITHUB_CALLBACK_URL ||
+    !env.SESSION_SECERTS
+  ) {
+    throw new Error(
+      'Fail creating auth object; Some env variables are missing'
+    );
+  }
+
   let sessionStorage = createCookieSessionStorage({
     cookie: {
       name: '__session',
