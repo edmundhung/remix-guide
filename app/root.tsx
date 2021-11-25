@@ -95,17 +95,19 @@ export default function App() {
               languages={languages}
             />
           </div>
-          <div className="ml-2">
-            {user ? (
-              <Form action="/logout" method="post" reloadDocument>
-                <button>Logout</button>
-              </Form>
-            ) : (
-              <Form action="/login" method="post" reloadDocument>
-                <button>Login</button>
-              </Form>
-            )}
-          </div>
+          {process.env.NODE_ENV === 'production' ? null : (
+            <div className="ml-2">
+              {user ? (
+                <Form action="/logout" method="post" reloadDocument>
+                  <button>Logout</button>
+                </Form>
+              ) : (
+                <Form action="/login" method="post" reloadDocument>
+                  <button>Login</button>
+                </Form>
+              )}
+            </div>
+          )}
         </header>
         <main className="flex-grow p-4 sm:p-8">
           <Outlet />
