@@ -5,7 +5,7 @@ import {
 } from 'remix-auth/build/strategies/github';
 import { createCookieSessionStorage, redirect } from 'remix';
 
-interface UserProfile {
+export interface UserProfile {
   email: string;
 }
 
