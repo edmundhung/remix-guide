@@ -252,7 +252,6 @@ function SidebarNavigation({
   let action = location.pathname.startsWith('/resources')
     ? location.pathname
     : '/resources';
-  console.log('location.pathname', location.pathname);
 
   return (
     <Form
@@ -339,7 +338,7 @@ function SidebarNavigation({
         ) : (
           <Form action="/login" method="post" reloadDocument>
             <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-800">
-              Login
+              Login with Github
             </button>
           </Form>
         )}

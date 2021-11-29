@@ -46,7 +46,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   );
 };
 
-export default function Resources() {
+export default function List() {
   let { entries } = useLoaderData<{ entries: Entry[] }>();
   let params = useParams();
 
