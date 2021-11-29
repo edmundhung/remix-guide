@@ -40,7 +40,7 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
     <div className="flex items-center flex-row-reverse text-xs">
       <input
         id="search"
-        className="h-8 w-full pr-4 pl-9 py-2 dark:bg-black text-gray-700 dark:text-gray-200 border rounded-md dark:border-gray-600 focus:outline-none focus:border-gray-700 dark:focus:border-white focus:border-white appearance-none"
+        className="h-8 w-full pr-4 pl-9 py-2 bg-black text-gray-200 border rounded-md border-gray-600 focus:outline-none focus:border-white appearance-none"
         type="text"
         name={name}
         defaultValue={value ?? ''}
@@ -151,32 +151,47 @@ function SelectMenu({
 interface MenuItemProps {
   to: string;
   name?: string;
-  value?: string;
+  value?: string | null;
   children: ReactNode;
 }
 
 function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
   const location = useLocation();
   const [isActive, search] = useMemo(() => {
-    if (!name || !value) {
-      return [false, ''];
+    let search = '';
+    let isActive = false;
+
+    if (name) {
+      let searchParams = new URLSearchParams(location.search);
+
+      isActive = searchParams.get(name) === value;
+
+      switch (name) {
+        case 'list': {
+          if (value !== null) {
+            search = new URLSearchParams({ [name]: value }).toString();
+          }
+          break;
+        }
+        case 'category': {
+          if (!isActive) {
+            searchParams.set(name, value);
+          } else {
+            searchParams.delete(name);
+          }
+
+          search = searchParams.toString();
+          break;
+        }
+      }
     }
 
-    const searchParams = new URLSearchParams(location.search);
-    const isActive = searchParams.get(name) === value;
-
-    if (!isActive) {
-      searchParams.set(name, value);
-    } else {
-      searchParams.delete(name);
-    }
-
-    return [isActive, searchParams.toString()];
+    return [isActive, search];
   }, [location, name, value]);
   const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-md ${
     isActive
-      ? 'shadow-inner dark:bg-gray-700'
-      : 'hover:shadow-inner hover:dark:bg-gray-800'
+      ? 'shadow-inner bg-gray-700'
+      : 'hover:shadow-inner hover:bg-gray-800'
   }`;
 
   if (/http:\/\/|https:\/\/|\/\//.test(to)) {
@@ -221,6 +236,7 @@ function SidebarNavigation({
   const submit = useSubmit();
   const [searchParams] = useSearchParams();
   const keyword = searchParams.get('q');
+  const list = searchParams.get('list');
   const category = searchParams.get('category');
   const version = searchParams.get('version') ?? '';
   const platform = searchParams.get('platform') ?? '';
@@ -257,15 +273,16 @@ function SidebarNavigation({
       {category ? (
         <input type="hidden" name="category" value={category} />
       ) : null}
+      {list ? <input type="hidden" name="list" value={list} /> : null}
       <section className="flex-grow px-5 py-3 divide-y overflow-y-auto">
         <LinkMenu>
-          <MenuItem to="/">
+          <MenuItem to="/" name="list" value={null}>
             <HomeIcon className="w-4 h-4" /> Home
           </MenuItem>
-          <MenuItem to="/trending">
+          <MenuItem to="/search" name="list" value="trending">
             <TrendingIcon className="w-4 h-4" /> Trending
           </MenuItem>
-          <MenuItem to="/bookmarks">
+          <MenuItem to="/search" name="list" value="bookmarks">
             <BookmarkIcon className="w-4 h-4" /> Bookmarks
           </MenuItem>
         </LinkMenu>
@@ -277,15 +294,13 @@ function SidebarNavigation({
               name="category"
               value={category}
             >
-              {
-                {
-                  articles: <ArticleIcon className="w-4 h-4" />,
-                  videos: <VideoIcon className="w-4 h-4" />,
-                  packages: <PackageIcon className="w-4 h-4" />,
-                  templates: <TemplateIcon className="w-4 h-4" />,
-                  examples: <ExampleIcon className="w-4 h-4" />,
-                }[category]
-              }{' '}
+              {{
+                articles: <ArticleIcon className="w-4 h-4" />,
+                videos: <VideoIcon className="w-4 h-4" />,
+                packages: <PackageIcon className="w-4 h-4" />,
+                templates: <TemplateIcon className="w-4 h-4" />,
+                examples: <ExampleIcon className="w-4 h-4" />,
+              }[category] ?? <i className="w-4 h-4" />}{' '}
               {category}
             </MenuItem>
           ))}
@@ -329,13 +344,13 @@ function SidebarNavigation({
       <footer className="px-5 py-3 border-t">
         {user ? (
           <Form action="/logout" method="post" reloadDocument>
-            <button className="w-full py-1 text-center rounded-md hover:shadow-md hover:shadow-inner hover:dark:bg-gray-800">
+            <button className="w-full py-1 text-center rounded-md hover:shadow-md hover:shadow-inner hover:bg-gray-800">
               Logout
             </button>
           </Form>
         ) : (
           <Form action="/login" method="post" reloadDocument>
-            <button className="w-full py-1 text-center rounded-md hover:shadow-md hover:shadow-inner hover:dark:bg-gray-800">
+            <button className="w-full py-1 text-center rounded-md hover:shadow-md hover:shadow-inner hover:bg-gray-800">
               Login
             </button>
           </Form>

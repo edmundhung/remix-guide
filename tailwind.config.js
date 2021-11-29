@@ -3,7 +3,7 @@ const colors = require('tailwindcss/colors');
 module.exports = {
   mode: 'jit',
   purge: ['./app/**/*.tsx', './app/**/*.ts'],
-  darkMode: 'media',
+  darkMode: false,
   theme: {
     borderColor: (theme) => ({
       ...theme('colors'),

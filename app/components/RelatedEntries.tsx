@@ -24,10 +24,10 @@ function RelatedEntries({ title, categories, entries }: RelatedEntriesProps) {
 
   return (
     <section>
-      <div className="sticky top-0 bg-white dark:bg-black z-20 px-8 py-4 mb-8 border-b dark:border-b-gray-600 text-sm text-gray-500 flex flex-col md:flex-row justify-between">
-        <span className="md:pt-4 text-gray-500">{title}</span>
+      <div className="sticky top-0 leading-8 bg-white dark:bg-black z-20 px-8 py-4 mb-8 border-b dark:border-b-gray-600 text-sm text-gray-500 flex flex-col md:flex-row justify-between">
+        <span className="text-gray-500">{title}</span>
         {options.length > 1 ? (
-          <nav className="pt-4 -mx-2">
+          <nav className="-mx-2">
             {options.map((option) => (
               <button
                 key={option}

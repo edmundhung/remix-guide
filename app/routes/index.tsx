@@ -42,7 +42,7 @@ export default function Index() {
         </div>
       </div>
       <section>
-        <div className="sticky top-0 bg-white dark:bg-black z-20 px-8 py-4 mb-8 border-b dark:border-b-gray-600 text-sm text-gray-500">
+        <div className="sticky top-0 leading-8 bg-white dark:bg-black z-20 px-8 py-4 mb-8 border-b dark:border-b-gray-600 text-sm text-gray-500">
           Remix v1 is finally here! Check out the{' '}
           <a
             className="underline"

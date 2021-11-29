@@ -61,7 +61,7 @@ function Document({
         <Meta />
         <Links />
       </head>
-      <body className="relative w-full h-full min-h-screen flex dark:bg-black dark:text-gray-200 bg-gradient-to-bl from-gray-900 via-black to-gray-900">
+      <body className="relative w-full h-full min-h-screen flex bg-black text-gray-200 bg-gradient-to-bl from-gray-900 via-black to-gray-900">
         {children}
         <ScrollRestoration />
         <Scripts />
