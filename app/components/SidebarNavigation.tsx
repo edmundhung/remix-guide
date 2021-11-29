@@ -16,14 +16,10 @@ import {
 } from 'remix';
 import { throttle } from '~/helpers';
 import type { UserProfile } from '../../worker/auth';
+import CategoryIcon from '~/components/CategoryIcon';
 import { Home as HomeIcon } from '~/icons/home';
 import { Trending as TrendingIcon } from '~/icons/trending';
 import { Bookmark as BookmarkIcon } from '~/icons/bookmark';
-import { Article as ArticleIcon } from '~/icons/article';
-import { Video as VideoIcon } from '~/icons/video';
-import { Package as PackageIcon } from '~/icons/package';
-import { Template as TemplateIcon } from '~/icons/template';
-import { Example as ExampleIcon } from '~/icons/example';
 import { Github as GithubIcon } from '~/icons/github';
 import { Discord as DiscordIcon } from '~/icons/discord';
 import { Remix as RemixIcon } from '~/icons/remix';
@@ -40,7 +36,7 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
     <div className="flex items-center flex-row-reverse text-xs">
       <input
         id="search"
-        className="h-8 w-full pr-4 pl-9 py-2 bg-black text-gray-200 border rounded-md border-gray-600 focus:outline-none focus:border-white appearance-none"
+        className="h-8 w-full pr-4 pl-9 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
         type="text"
         name={name}
         defaultValue={value ?? ''}
@@ -77,7 +73,7 @@ function LinkMenu({ title, value, children }: MenuProps): ReactElement {
         <div className="py-2 text-xs text-gray-500">
           <button
             type="button"
-            className="relative w-full px-3 py-1.5 flex items-center gap-4 rounded-md"
+            className="relative w-full px-3 py-1.5 flex items-center gap-4 rounded-lg"
             onClick={() => setExpanded((b) => !b)}
           >
             <span className="w-4 h-4 flex items-center justify-center">
@@ -188,7 +184,7 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
 
     return [isActive, search];
   }, [location, name, value]);
-  const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-md ${
+  const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg ${
     isActive
       ? 'shadow-inner bg-gray-700'
       : 'hover:shadow-inner hover:bg-gray-800'
@@ -261,7 +257,7 @@ function SidebarNavigation({
 
   return (
     <Form
-      className="h-full flex flex-col text-sm capitalize"
+      className="h-full max-h-screen overflow-y-auto flex flex-col text-sm capitalize"
       method="get"
       action="/search"
       ref={formRef}
@@ -274,10 +270,10 @@ function SidebarNavigation({
         <input type="hidden" name="category" value={category} />
       ) : null}
       {list ? <input type="hidden" name="list" value={list} /> : null}
-      <section className="flex-grow px-5 py-3 divide-y overflow-y-auto">
+      <section className="flex-1 px-5 py-3 divide-y overflow-y-auto">
         <LinkMenu>
           <MenuItem to="/" name="list" value={null}>
-            <HomeIcon className="w-4 h-4" /> Home
+            <HomeIcon className="w-4 h-4" /> Explore
           </MenuItem>
           <MenuItem to="/search" name="list" value="trending">
             <TrendingIcon className="w-4 h-4" /> Trending
@@ -294,14 +290,7 @@ function SidebarNavigation({
               name="category"
               value={category}
             >
-              {{
-                articles: <ArticleIcon className="w-4 h-4" />,
-                videos: <VideoIcon className="w-4 h-4" />,
-                packages: <PackageIcon className="w-4 h-4" />,
-                templates: <TemplateIcon className="w-4 h-4" />,
-                examples: <ExampleIcon className="w-4 h-4" />,
-              }[category] ?? <i className="w-4 h-4" />}{' '}
-              {category}
+              <CategoryIcon category={category} fallback /> {category}
             </MenuItem>
           ))}
         </LinkMenu>
@@ -344,13 +333,13 @@ function SidebarNavigation({
       <footer className="px-5 py-3 border-t">
         {user ? (
           <Form action="/logout" method="post" reloadDocument>
-            <button className="w-full py-1 text-center rounded-md hover:shadow-md hover:shadow-inner hover:bg-gray-800">
+            <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-800">
               Logout
             </button>
           </Form>
         ) : (
           <Form action="/login" method="post" reloadDocument>
-            <button className="w-full py-1 text-center rounded-md hover:shadow-md hover:shadow-inner hover:bg-gray-800">
+            <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-800">
               Login
             </button>
           </Form>

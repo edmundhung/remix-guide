@@ -76,7 +76,7 @@ export default function App() {
 
   return (
     <Document>
-      <nav className="w-64 border-r max-h-screen overflow-y-auto">
+      <nav className="w-64 border-r">
         <SidebarNavigation
           categories={categories}
           platforms={platforms}
@@ -85,7 +85,7 @@ export default function App() {
           user={user}
         />
       </nav>
-      <main className="flex-grow max-h-screen overflow-y-auto">
+      <main className="flex-1">
         <Outlet />
       </main>
     </Document>
