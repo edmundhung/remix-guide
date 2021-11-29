@@ -1,7 +1,19 @@
-import type { LoaderFunction } from 'remix';
-import { Outlet, useLoaderData, json } from 'remix';
+import type { HeadersFunction, MetaFunction, LoaderFunction } from 'remix';
+import { Outlet, useLoaderData, useParams, json } from 'remix';
 import SearchList from '~/components/SearchList';
 import type { Entry } from '~/types';
+
+export let headers: HeadersFunction = ({ loaderHeaders }) => {
+  return {
+    'Cache-Control': loaderHeaders.get('Cache-Control'),
+  };
+};
+
+export let meta: MetaFunction = () => {
+  return {
+    title: 'Remix Guide - Search',
+  };
+};
 
 export let loader: LoaderFunction = async ({ request, context }) => {
   const url = new URL(request.url);
@@ -34,12 +46,13 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   );
 };
 
-export default function Index() {
+export default function Resources() {
   let { entries } = useLoaderData<{ entries: Entry[] }>();
+  let params = useParams();
 
   return (
-    <div className="flex">
-      <SearchList entries={entries} />
+    <div className="h-full flex">
+      <SearchList entries={entries} currentId={params.id ?? null} />
       <div className="flex-1">
         <Outlet />
       </div>

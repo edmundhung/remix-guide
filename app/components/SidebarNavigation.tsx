@@ -6,14 +6,7 @@ import {
   useRef,
   useState,
 } from 'react';
-import {
-  Form,
-  Link,
-  useSubmit,
-  useTransition,
-  useLocation,
-  useSearchParams,
-} from 'remix';
+import { Form, Link, useSubmit, useTransition, useLocation } from 'remix';
 import { throttle } from '~/helpers';
 import type { UserProfile } from '../../worker/auth';
 import CategoryIcon from '~/components/CategoryIcon';
@@ -230,7 +223,8 @@ function SidebarNavigation({
   versions,
 }: SidebarNavigationProps): ReactElement {
   const submit = useSubmit();
-  const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
   const keyword = searchParams.get('q');
   const list = searchParams.get('list');
   const category = searchParams.get('category');
@@ -245,7 +239,7 @@ function SidebarNavigation({
     if (
       transition.state === 'loading' &&
       transition.type === 'normalLoad' &&
-      transition.location.pathname !== '/search'
+      !transition.location.pathname.startsWith('/resources')
     ) {
       formRef.current.reset();
     }
@@ -255,11 +249,16 @@ function SidebarNavigation({
     handleSubmit(event.currentTarget);
   }
 
+  let action = location.pathname.startsWith('/resources')
+    ? location.pathname
+    : '/resources';
+  console.log('location.pathname', location.pathname);
+
   return (
     <Form
       className="h-full max-h-screen overflow-y-auto flex flex-col text-sm capitalize"
       method="get"
-      action="/search"
+      action={action}
       ref={formRef}
       onChange={handleChange}
     >
@@ -275,10 +274,10 @@ function SidebarNavigation({
           <MenuItem to="/" name="list" value={null}>
             <HomeIcon className="w-4 h-4" /> Explore
           </MenuItem>
-          <MenuItem to="/search" name="list" value="trending">
+          <MenuItem to="/resources" name="list" value="trending">
             <TrendingIcon className="w-4 h-4" /> Trending
           </MenuItem>
-          <MenuItem to="/search" name="list" value="bookmarks">
+          <MenuItem to="/resources" name="list" value="bookmarks">
             <BookmarkIcon className="w-4 h-4" /> Bookmarks
           </MenuItem>
         </LinkMenu>
@@ -286,7 +285,7 @@ function SidebarNavigation({
           {categories.map((category) => (
             <MenuItem
               key={category}
-              to="/search"
+              to={action}
               name="category"
               value={category}
             >

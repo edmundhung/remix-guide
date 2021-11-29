@@ -13,9 +13,6 @@ module.exports = {
       colors: {
         gray: colors.trueGray,
       },
-      gridTemplateColumns: {
-        masonry: 'repeat(auto-fill, minmax(260px, 1fr))',
-      },
     },
   },
   variants: {
