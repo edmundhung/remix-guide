@@ -44,7 +44,10 @@ export default function EntryDetail() {
       <div className="max-w-screen-xl divide-y">
         <div className="px-3 pt-3 pb-8">
           <div className="flex flex-col xl:flex-row justify-between gap-8 2xl:gap-12">
-            <div className="pt-3">
+            <div className="pt-0.5 flex-1">
+              <div className="text-xs pb-1.5 text-gray-500">
+                {`${entry.date ?? new Date().toISOString()}`.substr(0, 10)}
+              </div>
               <a href={entry.url} target="_blank" rel="noopener noreferrer">
                 <h2 className="text-xl break-words">{entry.title}</h2>
               </a>
