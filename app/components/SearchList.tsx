@@ -29,8 +29,8 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
                 key={entry.slug}
                 className={`rounded-lg ${
                   currentId === `${entry.category}-${entry.slug}`
-                    ? 'shadow-inner bg-gray-700'
-                    : 'hover:shadow-inner hover:bg-gray-800'
+                    ? 'shadow-inner bg-gray-800'
+                    : 'hover:shadow-inner hover:bg-gray-900'
                 }`}
               >
                 <Link

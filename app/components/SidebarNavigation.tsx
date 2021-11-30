@@ -179,8 +179,8 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
   }, [location, name, value]);
   const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg ${
     isActive
-      ? 'shadow-inner bg-gray-700'
-      : 'hover:shadow-inner hover:bg-gray-800'
+      ? 'shadow-inner bg-gray-800'
+      : 'hover:shadow-inner hover:bg-gray-900'
   }`;
 
   if (/http:\/\/|https:\/\/|\/\//.test(to)) {
@@ -331,13 +331,13 @@ function SidebarNavigation({
       <footer className="px-5 py-3 border-t">
         {user ? (
           <Form action="/logout" method="post" reloadDocument>
-            <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-800">
+            <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-900">
               Logout
             </button>
           </Form>
         ) : (
           <Form action="/login" method="post" reloadDocument>
-            <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-800">
+            <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-900">
               Login with Github
             </button>
           </Form>
