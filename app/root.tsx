@@ -4,6 +4,7 @@ import {
   Links,
   Scripts,
   useLoaderData,
+  useLocation,
   LiveReload,
   useCatch,
   Outlet,
@@ -72,11 +73,17 @@ function Document({
 }
 
 export default function App() {
-  let { categories, platforms, languages, versions, user } = useLoaderData();
+  const { categories, platforms, languages, versions, user } = useLoaderData();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
 
   return (
     <Document>
-      <nav className="w-64 border-r">
+      <nav
+        className={`${
+          searchParams.has('menu') ? 'absolute xl:relative bg-black' : 'hidden'
+        } z-40 xl:block w-64 h-full md:border-r`}
+      >
         <SidebarNavigation
           categories={categories}
           platforms={platforms}

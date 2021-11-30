@@ -40,10 +40,10 @@ export default function EntryDetail() {
     useLoaderData<{ category: string; slug: string; entry: Entry }>();
 
   return (
-    <List title={entry.title}>
+    <List title={entry.title} button="back">
       <div className="max-w-screen-xl divide-y">
         <div className="px-3 pt-3 pb-8">
-          <div className="flex flex-col xl:flex-row justify-between gap-8 2xl:gap-12">
+          <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
               <div className="text-xs pb-1.5 text-gray-500">
                 {`${entry.date ?? new Date().toISOString()}`.substr(0, 10)}
@@ -75,9 +75,9 @@ export default function EntryDetail() {
                 </p>
               )}
             </div>
-            <div className="xl:max-w-xs w-auto">
+            <div className="lg:max-w-xs w-auto">
               {entry.category === 'videos' && entry.video ? (
-                <div className="pt-1 w-full xl:w-64">
+                <div className="pt-1 w-full lg:w-64">
                   <div
                     className="relative h-0"
                     style={{ paddingBottom: '56.25%' }}

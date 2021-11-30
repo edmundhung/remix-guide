@@ -1,7 +1,8 @@
 import { ReactElement } from 'react';
-import { Link, useLocation } from 'remix';
+import { Link } from 'remix';
 import List from '~/components/List';
 import type { Entry } from '~/types';
+import { useResourcesSearchParams } from '~/search';
 
 interface SearchListProps {
   entries: Entry[];
@@ -9,14 +10,19 @@ interface SearchListProps {
 }
 
 function SearchList({ entries, currentId }: SearchListProps): ReactElement {
-  const location = useLocation();
+  const searchParams = useResourcesSearchParams();
 
   return (
-    <div className="w-96 border-r">
+    <div
+      className={`md:border-r w-auto md:w-72 xl:w-96 ${
+        currentId !== null ? 'hidden md:block' : ''
+      }`}
+    >
       <List
         title={`Showing ${entries.length} ${
           entries.length > 1 ? 'entries' : 'entry'
         }`}
+        button="menu"
       >
         {entries.length === 0 ? (
           <div className="text-center pt-8 text-gray-500">
@@ -32,7 +38,9 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
                       ? 'shadow-inner bg-gray-800'
                       : 'hover:shadow-inner hover:bg-gray-900'
                   }`}
-                  to={`/resources/${entry.category}-${entry.slug}${location.search}`}
+                  to={`/resources/${entry.category}-${
+                    entry.slug
+                  }?${searchParams.toString()}`}
                   prefetch="intent"
                 >
                   <section className="px-3 py-2.5 text-sm">
