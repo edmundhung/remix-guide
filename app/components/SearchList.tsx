@@ -12,7 +12,7 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
   const location = useLocation();
 
   return (
-    <div className="w-96">
+    <div className="w-96 border-r">
       <List
         title={`Showing ${entries.length} ${
           entries.length > 1 ? 'entries' : 'entry'

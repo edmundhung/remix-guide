@@ -48,9 +48,18 @@ export default function EntryDetail() {
               <div className="text-xs pb-1.5 text-gray-500">
                 {`${entry.date ?? new Date().toISOString()}`.substr(0, 10)}
               </div>
-              <a href={entry.url} target="_blank" rel="noopener noreferrer">
-                <h2 className="text-xl break-words">{entry.title}</h2>
-              </a>
+              <div>
+                <a
+                  className="sticky top-0"
+                  href={entry.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <h2 className="inline-block text-xl break-words">
+                    {entry.title}
+                  </h2>
+                </a>
+              </div>
               <a
                 className="hover:underline text-gray-400"
                 href={entry.url}
