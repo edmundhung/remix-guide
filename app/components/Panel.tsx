@@ -2,22 +2,23 @@ import { ReactElement, ReactNode } from 'react';
 import { Link } from 'remix';
 import { Menu as MenuIcon } from '~/icons/menu';
 import { Back as BackIcon } from '~/icons/back';
+import { Plus as PlusIcon } from '~/icons/plus';
 import { useResourcesSearchParams } from '~/search';
 
-interface ListProps {
+interface PanelProps {
   title: string;
-  button?: 'back' | 'menu';
+  type?: 'list' | 'details';
   children: ReactNode;
 }
 
-function List({ title, button, children }: ListProps): ReactElement {
+function Panel({ title, type, children }: PanelProps): ReactElement {
   const searchParams = useResourcesSearchParams();
   const search = searchParams.toString();
 
   return (
     <section className="w-full h-full max-h-screen overflow-y-auto">
       <header className="sticky top-0 backdrop-blur flex items-center gap-2 z-20 px-8 py-4 text-sm">
-        {button !== 'back' ? null : (
+        {type !== 'details' ? null : (
           <Link
             className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={search === '' ? '/' : `/resources?${search}`}
@@ -27,7 +28,7 @@ function List({ title, button, children }: ListProps): ReactElement {
             <BackIcon className="w-3 h-3" />
           </Link>
         )}
-        {button !== 'menu' ? null : (
+        {type !== 'list' ? null : (
           <Link
             className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={`?${search === '' ? 'menu' : `${search}&menu`}`}
@@ -36,11 +37,19 @@ function List({ title, button, children }: ListProps): ReactElement {
             <MenuIcon className="w-3 h-3" />
           </Link>
         )}
-        <div className="line-clamp-1">{title}</div>
+        <div className="flex-1 leading-8 line-clamp-1">{title}</div>
+        {type !== 'list' ? null : (
+          <Link
+            className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+            to="/submit"
+          >
+            <PlusIcon className="w-3 h-3" />
+          </Link>
+        )}
       </header>
       <div className="px-5 py-3">{children}</div>
     </section>
   );
 }
 
-export default List;
+export default Panel;

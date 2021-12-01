@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { Link } from 'remix';
-import List from '~/components/List';
+import Panel from '~/components/Panel';
 import type { Entry } from '~/types';
 import { useResourcesSearchParams } from '~/search';
 
@@ -13,11 +13,11 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
   const searchParams = useResourcesSearchParams();
 
   return (
-    <List
+    <Panel
       title={`Showing ${entries.length} ${
         entries.length > 1 ? 'entries' : 'entry'
       }`}
-      button="menu"
+      type="list"
     >
       {entries.length === 0 ? (
         <div className="text-center pt-8 text-gray-500">
@@ -60,7 +60,7 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
           ))}
         </div>
       )}
-    </List>
+    </Panel>
   );
 }
 

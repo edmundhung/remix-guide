@@ -2,9 +2,8 @@ import type { HeadersFunction, LoaderFunction } from 'remix';
 import { json, useLoaderData } from 'remix';
 import { notFound } from '~/helpers';
 import { Entry } from '~/types';
-import List from '~/components/List';
+import Panel from '~/components/Panel';
 import { Link as LinkIcon } from '~/icons/link';
-import { User as UserIcon } from '~/icons/user';
 
 export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
@@ -40,7 +39,7 @@ export default function EntryDetail() {
     useLoaderData<{ category: string; slug: string; entry: Entry }>();
 
   return (
-    <List title={entry.title} button="back">
+    <Panel title={entry.title} type="details">
       <div className="max-w-screen-xl divide-y">
         <div className="px-3 pt-3 pb-8">
           <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
@@ -115,6 +114,6 @@ export default function EntryDetail() {
         </div>
         <div className="px-3 py-8"></div>
       </div>
-    </List>
+    </Panel>
   );
 }
