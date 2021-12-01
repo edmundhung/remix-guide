@@ -26,17 +26,17 @@ interface SearchInputProps {
 
 function SearchInput({ name, value }: SearchInputProps): ReactElement {
   return (
-    <div className="flex items-center flex-row-reverse text-xs">
+    <div className="flex items-center text-xs">
       <input
-        id="search"
-        className="h-8 w-full pr-4 pl-9 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
+        className="h-8 w-full pr-10 pl-4 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
         type="text"
         name={name}
         defaultValue={value ?? ''}
         autoFocus
         placeholder="Search"
+        maxLength={24}
       />
-      <label htmlFor="search" className="-mr-7">
+      <button type="submit" className="-ml-7">
         <svg
           className="w-4 h-4 fill-current text-gray-500 z-10"
           xmlns="http://www.w3.org/2000/svg"
@@ -46,7 +46,7 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
           <path d="M0 0h24v24H0V0z" fill="none" />
           <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
         </svg>
-      </label>
+      </button>
     </div>
   );
 }
