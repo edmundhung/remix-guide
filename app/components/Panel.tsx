@@ -18,7 +18,15 @@ function Panel({ title, type, children }: PanelProps): ReactElement {
   return (
     <section className="w-full h-full max-h-screen overflow-y-auto">
       <header className="sticky top-0 backdrop-blur flex items-center gap-2 z-20 px-8 py-4 text-sm">
-        {type !== 'details' ? null : (
+        {type !== 'details' ? (
+          <Link
+            className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+            to={`?${search === '' ? 'menu' : `${search}&menu`}`}
+            prefetch="intent"
+          >
+            <MenuIcon className="w-3 h-3" />
+          </Link>
+        ) : (
           <Link
             className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={search === '' ? '/' : `/resources?${search}`}
@@ -26,15 +34,6 @@ function Panel({ title, type, children }: PanelProps): ReactElement {
             replace
           >
             <BackIcon className="w-3 h-3" />
-          </Link>
-        )}
-        {type !== 'list' ? null : (
-          <Link
-            className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-            to={`?${search === '' ? 'menu' : `${search}&menu`}`}
-            prefetch="intent"
-          >
-            <MenuIcon className="w-3 h-3" />
           </Link>
         )}
         <div className="flex-1 leading-8 line-clamp-1">{title}</div>
