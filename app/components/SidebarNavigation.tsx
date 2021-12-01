@@ -255,7 +255,7 @@ function SidebarNavigation({
 
   return (
     <Form
-      className="h-full max-h-screen overflow-y-auto flex flex-col text-sm capitalize"
+      className="h-full max-h-screen min-h-screen overflow-y-auto flex flex-col text-sm capitalize"
       method="get"
       action={action}
       ref={formRef}
@@ -268,7 +268,7 @@ function SidebarNavigation({
         <input type="hidden" name="category" value={category} />
       ) : null}
       {list ? <input type="hidden" name="list" value={list} /> : null}
-      <section className="flex-1 px-5 py-3 divide-y overflow-y-auto">
+      <section className="flex-1 px-5 py-3 divide-y">
         <LinkMenu>
           <MenuItem to="/" name="list" value={null}>
             <HomeIcon className="w-4 h-4" /> Explore

@@ -52,7 +52,13 @@ export default function List() {
 
   return (
     <div className="h-full flex">
-      <SearchList entries={entries} currentId={params.id ?? null} />
+      <div
+        className={`md:border-r w-auto md:w-72 lg:w-80 xl:w-96 ${
+          params.id ? 'hidden md:block' : ''
+        }`}
+      >
+        <SearchList entries={entries} currentId={params.id ?? null} />
+      </div>
       <div className="flex-1">
         <Outlet />
       </div>

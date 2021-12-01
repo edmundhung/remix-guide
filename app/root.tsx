@@ -1,4 +1,4 @@
-import type { LinksFunction, MetaFunction, LoaderFunction } from 'remix';
+import { LinksFunction, MetaFunction, LoaderFunction, Link } from 'remix';
 import {
   Meta,
   Links,
@@ -11,6 +11,7 @@ import {
   ScrollRestoration,
   json,
 } from 'remix';
+import { useMemo } from 'react';
 import SidebarNavigation from '~/components/SidebarNavigation';
 import { categories, platforms } from '~/meta';
 import stylesUrl from '~/styles/tailwind.css';
@@ -75,14 +76,23 @@ function Document({
 export default function App() {
   const { categories, platforms, languages, versions, user } = useLoaderData();
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
+  const [isMenuEnabled, closeMenuLink] = useMemo(() => {
+    const searchPararms = new URLSearchParams(location.search);
+    const isMenuShown = searchPararms.has('menu');
+
+    if (isMenuShown) {
+      searchPararms.delete('menu');
+    }
+
+    return [isMenuShown, searchPararms.toString()];
+  }, [location.search]);
 
   return (
     <Document>
       <nav
         className={`${
-          searchParams.has('menu') ? 'absolute xl:relative bg-black' : 'hidden'
-        } z-40 xl:block w-64 h-full md:border-r`}
+          isMenuEnabled ? 'absolute xl:relative bg-black' : 'hidden'
+        } z-40 xl:block w-64 h-full border-r`}
       >
         <SidebarNavigation
           categories={categories}
@@ -92,6 +102,13 @@ export default function App() {
           user={user}
         />
       </nav>
+      {!isMenuEnabled ? null : (
+        <Link
+          className={`xl:hidden backdrop-filter z-30 absolute top-0 left-0 right-0 bottom-0 backdrop-blur-sm`}
+          to={`?${closeMenuLink}`}
+          replace
+        />
+      )}
       <main className="flex-1">
         <Outlet />
       </main>

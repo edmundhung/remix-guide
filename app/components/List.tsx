@@ -22,6 +22,7 @@ function List({ title, button, children }: ListProps): ReactElement {
             className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={search === '' ? '/' : `/resources?${search}`}
             prefetch="intent"
+            replace
           >
             <BackIcon className="w-3 h-3" />
           </Link>
