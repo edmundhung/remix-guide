@@ -5,6 +5,13 @@ import { Entry } from '~/types';
 import Panel from '~/components/Panel';
 import { Link as LinkIcon } from '~/icons/link';
 
+function getScreenshotURL(url: string): string {
+  return `https://cdn.statically.io/screenshot/${url.replace(
+    `${new URL(url).protocol}//`,
+    ''
+  )}`;
+}
+
 export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
     'Cache-Control': loaderHeaders.get('Cache-Control'),
@@ -93,7 +100,7 @@ export default function EntryDetail() {
                     />
                   </div>
                 </div>
-              ) : entry.image ? (
+              ) : (
                 <a
                   className="relative"
                   href={entry.url}
@@ -102,13 +109,13 @@ export default function EntryDetail() {
                 >
                   <img
                     className="max-h-96 rounded-lg bg-white"
-                    src={entry.image}
+                    src={entry.image ?? getScreenshotURL(entry.url)}
                     width="auto"
                     height="auto"
                     alt="cover"
                   />
                 </a>
-              ) : null}
+              )}
             </div>
           </div>
         </div>
