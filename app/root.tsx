@@ -14,6 +14,7 @@ import {
 import { useMemo } from 'react';
 import SidebarNavigation from '~/components/SidebarNavigation';
 import { categories, platforms } from '~/meta';
+import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
 export let links: LinksFunction = () => {
@@ -29,7 +30,8 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-  const { languages } = await context.query('meta', 'data');
+  const { store } = context as Context;
+  const { languages } = await store.query('meta-data');
   const user = await context.auth.isAuthenticated();
 
   return json(

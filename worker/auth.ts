@@ -9,6 +9,12 @@ export interface UserProfile {
   email: string;
 }
 
+export interface Auth {
+  login(): Promise<UserProfile>;
+  logout(): Promise<Response>;
+  isAuthenticated(): Promise<UserProfile | null>;
+}
+
 function getUserProfile(profile: GitHubProfile): UserProfile {
   return {
     email: profile.emails[0].value,
@@ -19,7 +25,7 @@ export function createAuth<Env>(
   request: Request,
   env: Env,
   ctx: ExecutionContext
-) {
+): Auth {
   if (process.env.NODE_ENV === 'production') {
     return {
       async login() {

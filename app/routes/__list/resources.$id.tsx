@@ -1,7 +1,7 @@
 import type { HeadersFunction, LoaderFunction } from 'remix';
 import { json, useLoaderData } from 'remix';
 import { notFound } from '~/helpers';
-import { Entry } from '~/types';
+import type { Entry, Context } from '~/types';
 import Panel from '~/components/Panel';
 import { Link as LinkIcon } from '~/icons/link';
 
@@ -19,9 +19,8 @@ export let headers: HeadersFunction = ({ loaderHeaders }) => {
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  const [category, ...rest] = params.id.split('-');
-  const slug = rest.join('-');
-  const entry = await context.query(category, slug);
+  const { store } = context as Context;
+  const entry = await store.query(params.id ?? '');
 
   if (!entry) {
     throw notFound();
@@ -29,8 +28,6 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 
   return json(
     {
-      category,
-      slug,
       entry,
     },
     {
@@ -42,8 +39,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 };
 
 export default function EntryDetail() {
-  const { entry } =
-    useLoaderData<{ category: string; slug: string; entry: Entry }>();
+  const { entry } = useLoaderData<{ entry: Entry }>();
 
   return (
     <Panel title={entry.title} type="details">
