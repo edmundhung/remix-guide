@@ -1,9 +1,10 @@
 import { ReactElement, ReactNode } from 'react';
 import { Link } from 'remix';
-import { Menu as MenuIcon } from '~/icons/menu';
-import { Back as BackIcon } from '~/icons/back';
-import { Plus as PlusIcon } from '~/icons/plus';
 import { useResourcesSearchParams } from '~/search';
+import SvgIcon from '~/components/SvgIcon';
+import menuIcon from '~/icons/menu.svg';
+import backIcon from '~/icons/back.svg';
+import plusIcon from '~/icons/plus.svg';
 
 interface PanelProps {
   title: string;
@@ -24,7 +25,7 @@ function Panel({ title, type, children }: PanelProps): ReactElement {
             to={`?${search === '' ? 'menu' : `${search}&menu`}`}
             prefetch="intent"
           >
-            <MenuIcon className="w-3 h-3" />
+            <SvgIcon className="w-3 h-3" hef={menuIcon} />
           </Link>
         ) : (
           <Link
@@ -33,7 +34,7 @@ function Panel({ title, type, children }: PanelProps): ReactElement {
             prefetch="intent"
             replace
           >
-            <BackIcon className="w-3 h-3" />
+            <SvgIcon className="w-3 h-3" href={backIcon} />
           </Link>
         )}
         <div className="flex-1 leading-8 line-clamp-1">{title}</div>
@@ -42,7 +43,7 @@ function Panel({ title, type, children }: PanelProps): ReactElement {
             className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to="/submit"
           >
-            <PlusIcon className="w-3 h-3" />
+            <SvgIcon className="w-3 h-3" href={plusIcon} />
           </Link>
         )}
       </header>

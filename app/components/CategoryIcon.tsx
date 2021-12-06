@@ -1,9 +1,10 @@
 import { ReactElement } from 'react';
-import { Article as ArticleIcon } from '~/icons/article';
-import { Video as VideoIcon } from '~/icons/video';
-import { Package as PackageIcon } from '~/icons/package';
-import { Template as TemplateIcon } from '~/icons/template';
-import { Example as ExampleIcon } from '~/icons/example';
+import SvgIcon from '~/components/SvgIcon';
+import articleIcon from '~/icons/article.svg';
+import videoIcon from '~/icons/video.svg';
+import packageIcon from '~/icons/package.svg';
+import templateIcon from '~/icons/template.svg';
+import exampleIcon from '~/icons/example.svg';
 
 interface CategoryIconProps {
   category: string;
@@ -14,20 +15,31 @@ function CategoryIcon({
   category,
   fallback,
 }: CategoryIconProps): ReactElement | null {
+  let iconUrl: string | null = null;
+
   switch (category) {
     case 'articles':
-      return <ArticleIcon className="inline-block w-4 h-4" />;
+      iconUrl = articleIcon;
+      break;
     case 'videos':
-      return <VideoIcon className="inline-block w-4 h-4" />;
+      iconUrl = videoIcon;
+      break;
     case 'packages':
-      return <PackageIcon className="inline-block w-4 h-4" />;
+      iconUrl = packageIcon;
+      break;
     case 'templates':
-      return <TemplateIcon className="inline-block w-4 h-4" />;
+      iconUrl = templateIcon;
+      break;
     case 'examples':
-      return <ExampleIcon className="inline-block w-4 h-4" />;
-    default:
-      return fallback ? <i className="inline-block w-4 h-4" /> : null;
+      iconUrl = exampleIcon;
+      break;
   }
+
+  if (!iconUrl) {
+    return <i className="inline-block w-4 h-4" />;
+  }
+
+  return <SvgIcon className="inline-block w-4 h-4" href={iconUrl} />;
 }
 
 export default CategoryIcon;

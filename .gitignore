@@ -11,9 +11,6 @@ node_modules
 # Tailwind
 /app/styles/tailwind.css
 
-# svgo
-/app/icons
-
 # Cypress
 /cypress/videos
 

@@ -3,7 +3,8 @@ import { json, useLoaderData } from 'remix';
 import { notFound } from '~/helpers';
 import type { Entry, Context } from '~/types';
 import Panel from '~/components/Panel';
-import { Link as LinkIcon } from '~/icons/link';
+import SvgIcon from '~/components/SvgIcon';
+import linkIcon from '~/icons/link.svg';
 
 function getScreenshotURL(url: string): string {
   return `https://cdn.statically.io/screenshot/${url.replace(
@@ -68,7 +69,10 @@ export default function EntryDetail() {
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <LinkIcon className="inline-block w-3 h-3 mr-2" />
+                <SvgIcon
+                  className="inline-block w-3 h-3 mr-2"
+                  href={linkIcon}
+                />
                 {new URL(entry.url).hostname}
               </a>
               {!entry.description ? null : (

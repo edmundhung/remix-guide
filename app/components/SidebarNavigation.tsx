@@ -10,14 +10,15 @@ import { Form, Link, useSubmit, useTransition, useLocation } from 'remix';
 import { throttle } from '~/helpers';
 import type { UserProfile } from '../../worker/auth';
 import CategoryIcon from '~/components/CategoryIcon';
-import { Home as HomeIcon } from '~/icons/home';
-import { Trending as TrendingIcon } from '~/icons/trending';
-import { Bookmark as BookmarkIcon } from '~/icons/bookmark';
-import { Github as GithubIcon } from '~/icons/github';
-import { Discord as DiscordIcon } from '~/icons/discord';
-import { Remix as RemixIcon } from '~/icons/remix';
-import { Expand as ExpandIcon } from '~/icons/expand';
-import { Collapse as CollapseIcon } from '~/icons/collapse';
+import SvgIcon from '~/components/SvgIcon';
+import homeIcon from '~/icons/home.svg';
+import trendingIcon from '~/icons/trending.svg';
+import bookmarkIcon from '~/icons/bookmark.svg';
+import githubIcon from '~/icons/github.svg';
+import discordIcon from '~/icons/discord.svg';
+import remixIcon from '~/icons/remix.svg';
+import expandIcon from '~/icons/expand.svg';
+import collapseIcon from '~/icons/collapse.svg';
 
 interface SearchInputProps {
   name: string;
@@ -71,9 +72,9 @@ function LinkMenu({ title, value, children }: MenuProps): ReactElement {
           >
             <span className="w-4 h-4 flex items-center justify-center">
               {expanded ? (
-                <CollapseIcon className="w-2 h-2" />
+                <SvgIcon className="w-2 h-2" href={collapseIcon} />
               ) : (
-                <ExpandIcon className="w-2 h-2" />
+                <SvgIcon className="w-2 h-2" href={expandIcon} />
               )}
             </span>
             {title}
@@ -128,7 +129,7 @@ function SelectMenu({
         </select>
         <div className="absolute left-3 flex gap-4">
           <span className="w-4 h-4 flex items-center justify-center">
-            <ExpandIcon className="w-2 h-2" />
+            <SvgIcon className="w-2 h-2" href={expandIcon} />
           </span>
           {title}
         </div>
@@ -271,13 +272,13 @@ function SidebarNavigation({
       <section className="flex-1 px-5 py-3 divide-y">
         <LinkMenu>
           <MenuItem to="/" name="list" value={null}>
-            <HomeIcon className="w-4 h-4" /> Explore
+            <SvgIcon className="w-4 h-4" href={homeIcon} /> Explore
           </MenuItem>
           <MenuItem to="/resources" name="list" value="trending">
-            <TrendingIcon className="w-4 h-4" /> Trending
+            <SvgIcon className="w-4 h-4" href={trendingIcon} /> Trending
           </MenuItem>
           <MenuItem to="/resources" name="list" value="bookmarks">
-            <BookmarkIcon className="w-4 h-4" /> Bookmarks
+            <SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
           </MenuItem>
         </LinkMenu>
         <LinkMenu title="Categories" value={category}>
@@ -318,13 +319,13 @@ function SidebarNavigation({
         )}
         <LinkMenu title="Remix Official">
           <MenuItem to="https://remix.run/docs">
-            <RemixIcon className="w-4 h-4" /> Docs
+            <SvgIcon className="w-4 h-4" href={remixIcon} /> Docs
           </MenuItem>
           <MenuItem to="https://github.com/remix-run/remix">
-            <GithubIcon className="w-4 h-4" /> Github
+            <SvgIcon className="w-4 h-4" href={githubIcon} /> Github
           </MenuItem>
           <MenuItem to="https://discord.com/invite/remix">
-            <DiscordIcon className="w-4 h-4" /> Discord
+            <SvgIcon className="w-4 h-4" href={discordIcon} /> Discord
           </MenuItem>
         </LinkMenu>
       </section>
