@@ -1,35 +1,64 @@
+import type { ActionFunction } from 'remix';
+import { Form, redirect, json, useActionData } from 'remix';
 import Panel from '~/components/Panel';
+import { Context } from '~/types';
+
+function isValidURL(text: string): boolean {
+  try {
+    return ['http:', 'https:'].includes(new URL(text).protocol);
+  } catch (e) {
+    return false;
+  }
+}
+
+export let action: ActionFunction = async ({ request, context }) => {
+  const { store } = context as Context;
+  const formData = await request.formData();
+  const url = formData.get('url');
+
+  if (!isValidURL(url)) {
+    return json({ message: 'Invalid URL provided' }, { status: 422 });
+  }
+
+  try {
+    const id = await store.submit(url);
+
+    return redirect(`/resources/${id}`);
+  } catch (e) {
+    return json(
+      { message: 'Something wrong with the URL; Please try again later' },
+      { status: 500 }
+    );
+  }
+};
 
 export default function Submit() {
+  const error = useActionData();
+
   return (
     <Panel title="Submission">
       <section className="px-8 pt-8">
-        <div className="prose-sm">
-          <h1>Contributing</h1>
-          <p className="py-4">
-            Hello! Thanks for your interest in contributing to Remix Guide.
-          </p>
-          <p>
-            We would love to collect your submission with a simple interface
-            here. But we are not there yet.
-          </p>
-          <p>
-            For now, all the contents are managed within our{' '}
-            <a
-              className="underline"
-              href="https://github.com/edmundhung/remix-guide"
+        <Form className="max-w-3xl" method="post">
+          <div className="flex flex-row gap-4">
+            <div className="flex-1">
+              <input
+                name="url"
+                type="text"
+                className="w-full h-8 px-4 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
+                placeholder="URL"
+              />
+            </div>
+            <button
+              type="submit"
+              className="shadow-inner bg-gray-800 hover:bg-gray-200 hover:text-black rounded-md px-4 h-8"
             >
-              GitHub repository
-            </a>{' '}
-            under the `content` directory.
-          </p>
-          <p>
-            Please take a reference from existing content and create a Pull
-            Request with your submission details.
-          </p>
-          <p>We will publish it as soon as possible.</p>
-          <p className="py-4">Thank you.</p>
-        </div>
+              Submit
+            </button>
+          </div>
+          {!error ? null : (
+            <div className="mt-1 px-4 py-2 text-xs">{error.message}</div>
+          )}
+        </Form>
       </section>
     </Panel>
   );

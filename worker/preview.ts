@@ -1,3 +1,5 @@
+import { decode } from 'html-entities';
+
 interface Parser {
   setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
   getResult(): string | null;
@@ -119,7 +121,11 @@ function createResponseParser<T extends { [keys in string]: Parser }>(
     await res.text();
 
     return Object.fromEntries(
-      Object.entries(config).map(([key, parser]) => [key, parser.getResult()])
+      Object.entries(config).map(([key, parser]) => {
+        const result = parser.getResult();
+
+        return [key, result ? decode(result) : null];
+      })
     );
   };
 }
@@ -134,8 +140,12 @@ export async function preview(url: string) {
       site: createSiteParser(),
       url: createURLParser(),
     });
+    const page = await parse(response);
 
-    return await parse(response);
+    return {
+      ...page,
+      url: page.url ?? url,
+    };
   } catch (e) {
     console.error('Error parsing response from ', url, ';Received ', e);
 

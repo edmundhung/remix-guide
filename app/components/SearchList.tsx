@@ -29,24 +29,22 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
             <article key={entry.slug} className="py-1">
               <Link
                 className={`block rounded-lg no-underline ${
-                  currentId === `${entry.category}-${entry.slug}`
+                  currentId === entry.id
                     ? 'shadow-inner bg-gray-800'
                     : 'hover:shadow-inner hover:bg-gray-900'
                 }`}
-                to={`/resources/${entry.category}-${
-                  entry.slug
-                }?${searchParams.toString()}`}
+                to={`/resources/${entry.id}?${searchParams.toString()}`}
                 prefetch="intent"
               >
                 <section className="px-3 py-2.5 text-sm">
                   <div className="text-xs pb-1.5 text-gray-500 flex flex-row justify-between">
-                    <span>{entry.author}</span>
                     <span>
                       {`${entry.date ?? new Date().toISOString()}`.substr(
                         0,
                         10
                       )}
                     </span>
+                    <span>{entry.author}</span>
                   </div>
                   <h2 className="break-words line-clamp-2">{entry.title}</h2>
                   {!entry.description ? null : (

@@ -30,15 +30,14 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-  const { store } = context as Context;
-  const { languages } = await store.query('meta-data');
-  const user = await context.auth.isAuthenticated();
+  const { auth } = context as Context;
+  const user = await auth.isAuthenticated();
 
   return json(
     {
       versions: [],
       categories,
-      languages,
+      languages: [],
       platforms,
       user,
     },
