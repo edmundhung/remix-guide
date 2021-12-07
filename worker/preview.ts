@@ -5,147 +5,118 @@ interface Parser {
   getResult(): string | null;
 }
 
-function createTitleParser(): Parser {
-  let ogTitle: string | null = null;
-  let twitterTitle: string | null = null;
-  let baseTitle: string | null = null;
+export interface Preview {
+  title: string | null;
+  description: string | null;
+  image: string | null;
+  site: string | null;
+  url: string | null;
+}
+
+function createAttributeParser(selector: string, attribute: string): Parser {
+  let result: string | null = null;
 
   return {
     setup(htmlRewriter: HTMLRewriter): HTMLRewriter {
-      return htmlRewriter
-        .on('meta[property="og:title"]', {
-          element(element) {
-            ogTitle = element.getAttribute('content');
-          },
-        })
-        .on('meta[name="twitter:title"]', {
-          element(element) {
-            twitterTitle = element.getAttribute('content');
-          },
-        })
-        .on('head > title', {
-          text(element) {
-            baseTitle = (baseTitle ?? '') + element.text;
-          },
-        });
-    },
-    getResult() {
-      return ogTitle ?? twitterTitle ?? baseTitle;
-    },
-  };
-}
-
-function createMetaParser(name: string): Parser {
-  let ogContent: string | null = null;
-  let twitterContent: string | null = null;
-  let baseContent: string | null = null;
-
-  return {
-    setup(htmlRewriter: HTMLRewriter): HTMLRewriter {
-      return htmlRewriter
-        .on(`meta[property="og:${name}"]`, {
-          element(element) {
-            ogContent = element.getAttribute('content');
-          },
-        })
-        .on(`meta[name="twitter:${name}"]`, {
-          element(element) {
-            twitterContent = element.getAttribute('content');
-          },
-        })
-        .on(`meta[name="${name}"]`, {
-          element(element) {
-            baseContent = element.getAttribute('content');
-          },
-        });
-    },
-    getResult() {
-      return ogContent ?? twitterContent ?? baseContent;
-    },
-  };
-}
-
-function createURLParser(): Parser {
-  let linkContent: string | null = null;
-  let ogContent: string | null = null;
-
-  return {
-    setup(htmlRewriter) {
-      return htmlRewriter
-        .on('link[rel="canonical"]', {
-          element(element) {
-            linkContent = element.getAttribute('href');
-          },
-        })
-        .on('meta[property="og:url"]', {
-          element(element) {
-            ogContent = element.getAttribute('content');
-          },
-        });
-    },
-    getResult() {
-      return linkContent ?? ogContent;
-    },
-  };
-}
-
-function createSiteParser(): Parser {
-  let ogContent: string | null = null;
-
-  return {
-    setup(htmlRewriter) {
-      return htmlRewriter.on('meta[property="og:site_name"]', {
+      return htmlRewriter.on(selector, {
         element(element) {
-          ogContent = element.getAttribute('content');
+          result = element.getAttribute(attribute);
         },
       });
     },
     getResult() {
-      return ogContent;
+      return result ? decode(result) : null;
     },
   };
 }
 
-function createResponseParser<T extends { [keys in string]: Parser }>(
+function createTextParser(selector: string): Parser {
+  let text: string | null = null;
+
+  return {
+    setup(htmlRewriter: HTMLRewriter): HTMLRewriter {
+      return htmlRewriter.on(selector, {
+        text(element) {
+          text = (text ?? '') + element.text;
+        },
+      });
+    },
+    getResult() {
+      return result ? decode(result) : null;
+    },
+  };
+}
+
+function mergeParsers(...parsers: Parser[]): Parser {
+  return {
+    setup(htmlRewriter: HTMLRewriter): HTMLRewriter {
+      return parsers.reduce(
+        (rewriter, parser) => parser.setup(rewriter),
+        htmlRewriter
+      );
+    },
+    getResult() {
+      let result: string | null = null;
+
+      for (let parser of parsers) {
+        result = parser.getResult();
+
+        if (result !== null) {
+          break;
+        }
+      }
+
+      return result;
+    },
+  };
+}
+
+async function parseResponse<T extends { [keys in string]: Parser }>(
+  response: Response,
   config: T
-) {
+): Record<keyof T, string | null> {
   let htmlRewriter = new HTMLRewriter();
 
   for (const parser of Object.values(config)) {
     htmlRewriter = parser.setup(htmlRewriter);
   }
 
-  return async (response: Response): Record<keyof T, string | null> => {
-    let res = htmlRewriter.transform(response);
+  let res = htmlRewriter.transform(response);
 
-    await res.text();
+  await res.arrayBuffer();
 
-    return Object.fromEntries(
-      Object.entries(config).map(([key, parser]) => {
-        const result = parser.getResult();
-
-        return [key, result ? decode(result) : null];
-      })
-    );
-  };
+  return Object.fromEntries(
+    Object.entries(config).map(([key, parser]) => [key, parser.getResult()])
+  );
 }
 
-export async function preview(url: string) {
+export async function preview(url: string): Promise<Preview | null> {
   try {
     const response = await fetch(url);
-    const parse = createResponseParser({
-      title: createTitleParser(),
-      description: createMetaParser('description'),
-      image: createMetaParser('image'),
-      site: createSiteParser(),
-      url: createURLParser(),
+    const page = await parseResponse(response, {
+      title: mergeParsers(
+        createAttributeParser('meta[property="og:title"]', 'content'),
+        createAttributeParser('meta[name="twitter:title"]', 'content'),
+        createTextParser('head > title')
+      ),
+      description: mergeParsers(
+        createAttributeParser('meta[property="og:description"]', 'content'),
+        createAttributeParser('meta[name="twitter:description"]', 'content'),
+        createAttributeParser('meta[name="description"]', 'content')
+      ),
+      image: mergeParsers(
+        createAttributeParser('meta[property="og:image"]', 'content'),
+        createAttributeParser('meta[name="twitter:image"]', 'content'),
+        createAttributeParser('meta[name="image"]', 'content')
+      ),
+      site: createAttributeParser('meta[property="og:site_name"]', 'content'),
+      url: mergeParsers(
+        createAttributeParser('link[rel="canonical"]', 'href'),
+        createAttributeParser('meta[property="og:url"]', 'content')
+      ),
     });
-    const page = await parse(response);
 
-    return {
-      ...page,
-      url: page.url ?? url,
-    };
+    return page;
   } catch (e) {
     console.error('Error parsing response from ', url, ';Received ', e);
 
