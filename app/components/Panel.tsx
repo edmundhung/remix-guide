@@ -25,7 +25,7 @@ function Panel({ title, type, children }: PanelProps): ReactElement {
             to={`?${search === '' ? 'menu' : `${search}&menu`}`}
             prefetch="intent"
           >
-            <SvgIcon className="w-3 h-3" hef={menuIcon} />
+            <SvgIcon className="w-3 h-3" href={menuIcon} />
           </Link>
         ) : (
           <Link
