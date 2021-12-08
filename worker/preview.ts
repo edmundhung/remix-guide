@@ -1,16 +1,10 @@
+import { customAlphabet } from 'nanoid';
 import { decode } from 'html-entities';
+import type { Entry } from './types';
 
 interface Parser {
   setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
   getResult(): string | null;
-}
-
-export interface Preview {
-  title: string | null;
-  description: string | null;
-  image: string | null;
-  site: string | null;
-  url: string | null;
 }
 
 function createAttributeParser(selector: string, attribute: string): Parser {
@@ -42,7 +36,7 @@ function createTextParser(selector: string): Parser {
       });
     },
     getResult() {
-      return result ? decode(result) : null;
+      return text ? decode(text) : null;
     },
   };
 }
@@ -90,7 +84,7 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
   );
 }
 
-export async function preview(url: string): Promise<Preview | null> {
+async function preview(url: string) {
   try {
     const response = await fetch(url);
     const page = await parseResponse(response, {
@@ -122,4 +116,51 @@ export async function preview(url: string): Promise<Preview | null> {
 
     return null;
   }
+}
+
+export async function createEntry(url: string): Entry {
+  const page = await preview(url);
+  const generateId = customAlphabet(
+    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+    12
+  );
+
+  let entry = {
+    id: generateId(),
+    url: page.url ?? url,
+    title: page.title,
+    description: page.description,
+    image: page.image,
+  };
+
+  switch (page.site) {
+    case 'GitHub': {
+      const [repo, description] = entry.title
+        .replace('GitHub - ', '')
+        .split(':');
+      const [author, title] = repo.split('/');
+
+      entry.title = title;
+      entry.description = description;
+      entry.author = author;
+      break;
+    }
+    case 'Gist': {
+      const [author] = entry.url
+        .replace('https://gist.github.com/', '')
+        .split('/');
+
+      entry.author = author;
+      entry.description = '';
+      break;
+    }
+    case 'YouTube': {
+      const videoId = new URL(entry.url).searchParams.get('v');
+
+      entry.video = `https://www.youtube.com/embed/${videoId}`;
+      break;
+    }
+  }
+
+  return entry;
 }

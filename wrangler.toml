@@ -16,7 +16,10 @@ bucket = "./public"
 entry-point = "."
 
 [durable_objects]
-bindings = [{ name = "COUNTER", class_name = "Counter" }]
+bindings = [
+  { name = "COUNTER", class_name = "Counter" },
+  { name = "ENTRIES_DO", class_name = "Entries" },
+]
 
 [[migrations]]
 tag = "v0.1"

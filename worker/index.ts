@@ -5,6 +5,8 @@ import { createStore } from './store';
 import { createAuth } from './auth';
 import { Counter } from './counter';
 
+export { Entries } from './entries';
+
 const handleFetch = createFetchHandler({
   build,
   manifest,
