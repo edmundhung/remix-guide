@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 import { decode } from 'html-entities';
-import type { Entry } from './types';
+import type { Entry, Metadata } from '../types';
 
 interface Parser {
   setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
@@ -163,4 +163,19 @@ export async function createEntry(url: string): Entry {
   }
 
   return entry;
+}
+
+export function getMetadata(entry: Entry): Metadata {
+  return {
+    id: entry.id,
+    url: entry.url,
+    category: entry.category,
+    author: entry.author,
+    title: entry.title,
+    description: entry.description,
+    language: entry.language,
+    integrations: entry.integrations,
+    viewCounts: entry.viewCounts,
+    bookmarkCounts: entry.bookmarkCounts,
+  };
 }

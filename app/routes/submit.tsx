@@ -37,8 +37,8 @@ export default function Submit() {
 
   return (
     <Panel title="Submission">
-      <section className="px-8 pt-8">
-        <Form className="max-w-3xl" method="post">
+      <section className="px-3 pt-8">
+        <Form className="max-w-3xl" method="post" reloadDocument>
           <div className="flex flex-row gap-4">
             <div className="flex-1">
               <input

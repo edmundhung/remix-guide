@@ -17,8 +17,8 @@ entry-point = "."
 
 [durable_objects]
 bindings = [
-  { name = "COUNTER", class_name = "Counter" },
-  { name = "ENTRIES_DO", class_name = "Entries" },
+  { name = "ENTRIES_STORE", class_name = "EntriesStore" },
+  { name = "USER_STORE", class_name = "UserStore" },
 ]
 
 [[migrations]]

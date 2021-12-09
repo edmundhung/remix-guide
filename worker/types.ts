@@ -1,17 +1,19 @@
-import type { Auth } from './auth';
-import type { Store } from './store';
-
-export type { UserProfile } from './auth';
-export type { Entry } from './store';
+export type { Context } from './context';
 
 export interface Env {
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+  GITHUB_CALLBACK_URL?: string;
+  SESSION_SECERTS?: string;
   CONTENT: KVNamespace;
-  ENTRIES_DO: DurableObjectNamespace;
+  ENTRIES_STORE: DurableObjectNamespace;
+  USER_STORE: DurableObjectNamespace;
 }
 
-export interface Context {
-  auth: Auth;
-  store: Store;
+export interface UserProfile {
+  id: string;
+  name: string;
+  email: string;
 }
 
 export type Category =

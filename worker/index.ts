@@ -1,11 +1,10 @@
 import manifest from '__STATIC_CONTENT_MANIFEST';
-import { createFetchHandler } from './adapter';
 import * as build from '../build/index.js';
-import { createStore } from './store';
-import { createAuth } from './auth';
-import { Counter } from './counter';
+import { createFetchHandler } from './adapter';
+import { createContext } from './context';
 
-export { Entries } from './entries';
+// Setup Durable Objects
+export { EntriesStore, UserStore } from './store';
 
 const handleFetch = createFetchHandler({
   build,
@@ -14,13 +13,7 @@ const handleFetch = createFetchHandler({
     return caches.open(process.env.VERSION);
   },
   getLoadContext(request, env, ctx) {
-    const auth = createAuth(request, env, ctx);
-    const store = createStore(request, env, ctx);
-
-    return {
-      auth,
-      store,
-    };
+    return createContext(request, env, ctx);
   },
 });
 
@@ -29,5 +22,3 @@ const worker: ExportedHandler = {
 };
 
 export default worker;
-
-export { Counter };

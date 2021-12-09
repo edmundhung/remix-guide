@@ -8,7 +8,6 @@ import {
 } from 'react';
 import { Form, Link, useSubmit, useTransition, useLocation } from 'remix';
 import { throttle } from '~/helpers';
-import type { UserProfile } from '../../worker/auth';
 import CategoryIcon from '~/components/CategoryIcon';
 import SvgIcon from '~/components/SvgIcon';
 import homeIcon from '~/icons/home.svg';
@@ -19,6 +18,7 @@ import discordIcon from '~/icons/discord.svg';
 import remixIcon from '~/icons/remix.svg';
 import expandIcon from '~/icons/expand.svg';
 import collapseIcon from '~/icons/collapse.svg';
+import type { UserProfile } from '~/types';
 
 interface SearchInputProps {
   name: string;
