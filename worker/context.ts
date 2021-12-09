@@ -111,6 +111,13 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   const id = env.ENTRIES_STORE.idFromName('');
   const entriesStore = env.ENTRIES_STORE.get(id);
 
+  function getUserStore(userId: string) {
+    const id = env.USER_STORE.idFromName(userId);
+    const store = env.USER_STORE.get(id);
+
+    return store;
+  }
+
   return {
     async search(options: SearchOptions) {
       const list = await env.CONTENT.list<Metadata>({ prefix: 'entry/' });
@@ -136,14 +143,12 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     async query(id: string) {
       return await env.CONTENT.get<Entry>(`entry/${id}`, 'json');
     },
-    async submit(url: string) {
-      const body = new URLSearchParams({ url });
+    async submit(userId: string, url: string) {
       const response = await entriesStore.fetch('http://entries/submit', {
         method: 'POST',
-        body,
+        body: JSON.stringify({ userId, url }),
       });
-      const formData = await response.formData();
-      const id = formData.get('id');
+      const { id } = await response.json();
 
       if (!id) {
         throw new Error('Submission failed; Entry id is missing');
@@ -151,19 +156,79 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       return id;
     },
-    async refresh(id: string): void {
-      // const entry = await ENTRIES.get(hash);
-      // if (!entry) {
-      //   return;
-      // }
-      // const page = await preview(url);
-      // await entryCache.set(entry.id, {
-      //   ...entry,
-      //   ...createEntry(entry.id, page),
-      // });
+    async refresh(entryId: string): Promise<void> {
+      const response = await entriesStore.fetch('http://entries/refresh', {
+        method: 'POST',
+        body: JSON.stringify({ entryId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          'View failed; Entry is not marked as viewed on the UserStore'
+        );
+      }
     },
-    async bookmark(id: string) {
-      throw new Error(`bookmark(${id}) is not implemented yet`);
+    async view(userId: string | null, entryId: string): Promise<void> {
+      if (userId) {
+        const userStore = getUserStore(userId);
+        const response = await userStore.fetch('http://user/view', {
+          method: 'PUT',
+          body: JSON.stringify({ userId, entryId }),
+        });
+
+        if (!response.ok) {
+          throw new Error(
+            'View failed; Entry is not marked as viewed on the UserStore'
+          );
+        }
+      }
+
+      ctx.waitUntil(
+        entriesStore.fetch('http://entries/view', {
+          method: 'PUT',
+          body: JSON.stringify({ entryId }),
+        })
+      );
+    },
+    async bookmark(userId: string, entryId: string): Promise<void> {
+      const userStore = getUserStore(userId);
+      const response = await userStore.fetch('http://user/bookmark', {
+        method: 'PUT',
+        body: JSON.stringify({ userId, entryId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          'Bookmark failed; Entry is not bookmarked on the UserStore'
+        );
+      }
+
+      ctx.waitUntil(
+        entriesStore.fetch('http://entries/bookmark', {
+          method: 'PUT',
+          body: JSON.stringify({ entryId }),
+        })
+      );
+    },
+    async unbookmark(userId: string, entryId: string): Promise<void> {
+      const userStore = getUserStore(userId);
+      const response = await userStore.fetch('http://user/bookmark', {
+        method: 'DELETE',
+        body: JSON.stringify({ userId, entryId }),
+      });
+
+      if (!response.ok) {
+        throw new Error(
+          'Unbookmark failed; Entry is not unbookmarked on the UserStore'
+        );
+      }
+
+      ctx.waitUntil(
+        entriesStore.fetch('http://entries/bookmark', {
+          method: 'DELETE',
+          body: JSON.stringify({ entryId }),
+        })
+      );
     },
   };
 }
