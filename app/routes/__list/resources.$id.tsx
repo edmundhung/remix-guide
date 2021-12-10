@@ -1,10 +1,12 @@
-import type { HeadersFunction, LoaderFunction } from 'remix';
-import { json, useLoaderData } from 'remix';
+import type { HeadersFunction, LoaderFunction, ActionFunction } from 'remix';
+import { Form, Link, json, redirect, useLoaderData } from 'remix';
 import { notFound } from '~/helpers';
+import { useResourcesSearchParams } from '~/search';
 import type { Entry, Context } from '~/types';
-import Panel from '~/components/Panel';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
+import backIcon from '~/icons/back.svg';
+import bookmarkIcon from '~/icons/bookmark.svg';
 
 function getScreenshotURL(url: string): string {
   return `https://cdn.statically.io/screenshot/${url.replace(
@@ -19,6 +21,19 @@ export let headers: HeadersFunction = ({ loaderHeaders }) => {
   };
 };
 
+export let action: ActionFunction = async ({ context, params, request }) => {
+  const { auth, store } = context as Context;
+  const profile = await auth.isAuthenticated();
+
+  if (!profile) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
+  await store.bookmark(profile.id, params.id ?? '');
+
+  return redirect(request.headers.get('referrer') ?? request.url);
+};
+
 export let loader: LoaderFunction = async ({ context, params }) => {
   const { store } = context as Context;
   const entry = await store.query(params.id ?? '');
@@ -27,24 +42,39 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     throw notFound();
   }
 
-  return json(
-    {
-      entry,
-    },
-    {
-      headers: {
-        'Cache-Control': 'public, max-age=60',
-      },
-    }
-  );
+  return json({
+    entry,
+  });
 };
 
 export default function EntryDetail() {
   const { entry } = useLoaderData<{ entry: Entry }>();
+  const searchParams = useResourcesSearchParams();
+  const search = searchParams.toString();
 
   return (
-    <Panel title={entry.title} type="details">
-      <div className="max-w-screen-xl divide-y">
+    <section className="w-full h-full max-h-screen overflow-y-auto">
+      <header className="sticky top-0 backdrop-blur flex items-center gap-2 z-20 px-8 py-4 text-sm">
+        <Link
+          className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+          to={search === '' ? '/' : `/resources?${search}`}
+          prefetch="intent"
+          replace
+        >
+          <SvgIcon className="w-3 h-3" href={backIcon} />
+        </Link>
+        <div className="flex-1 leading-8 line-clamp-1">{entry.title}</div>
+        <Form className="flex flex-row items-center" method="post">
+          <button
+            type="submit"
+            className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+          >
+            <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
+          </button>
+          <label className="px-2">{entry.bookmarkCounts ?? 0}</label>
+        </Form>
+      </header>
+      <div className="px-5 py-3x max-w-screen-xl divide-y">
         <div className="px-3 pt-3 pb-8">
           <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
@@ -121,6 +151,6 @@ export default function EntryDetail() {
         </div>
         <div className="px-3 py-8"></div>
       </div>
-    </Panel>
+    </section>
   );
 }

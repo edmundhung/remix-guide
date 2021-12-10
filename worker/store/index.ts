@@ -118,7 +118,7 @@ export class EntriesStore {
 
           this.updateEntry({
             ...entry,
-            viewCounts: entry.viewCounts + 1,
+            viewCounts: (entry.viewCounts ?? 0) + 1,
           });
 
           return new Response('OK', { status: 200 });
@@ -137,8 +137,11 @@ export class EntriesStore {
 
           this.updateEntry({
             ...entry,
-            bookmarkCounts: entry.bookmarkCounts + (method === 'PUT' ? 1 : -1),
+            bookmarkCounts:
+              (entry.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1),
           });
+
+          return new Response('OK', { status: 200 });
         }
       }
 
@@ -246,9 +249,7 @@ export class UserStore {
             break;
           }
 
-          const formData = await request.formData();
-          const userId = formData.get('userId');
-          const entryId = formData.get('entryId');
+          const { userId, entryId } = await request.json();
 
           if (this.profile.id !== userId) {
             throw new Error(
@@ -266,9 +267,7 @@ export class UserStore {
             break;
           }
 
-          const formData = await request.formData();
-          const userId = formData.get('userId');
-          const entryId = formData.get('entryId');
+          const { userId, entryId } = await request.json();
 
           if (this.profile.id !== userId) {
             throw new Error(
@@ -279,10 +278,11 @@ export class UserStore {
           this.bookmarked = this.bookmarked.filter((id) => id !== entryId);
 
           if (method === 'PUT') {
-            this.bookmarked.unshift(id);
+            this.bookmarked.unshift(entryId);
           }
 
           this.state.storage.put('bookmarked', this.bookmarked);
+          this.updateUserCache();
 
           return new Response('OK', { status: 200 });
         }
@@ -296,5 +296,19 @@ export class UserStore {
 
       return new Response('Internal Server Error', { status: 500 });
     }
+  }
+
+  async updateUserCache() {
+    const user = {
+      profile: this.profile,
+      viewed: this.viewed,
+      bookmarked: this.bookmarked,
+    };
+
+    await this.env.CONTENT.put(
+      `user/${user.profile.id}`,
+      JSON.stringify(user),
+      { metadata: user.profile }
+    );
   }
 }
