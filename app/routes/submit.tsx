@@ -12,7 +12,13 @@ function isValidURL(text: string): boolean {
 }
 
 export let action: ActionFunction = async ({ request, context }) => {
-  const { store } = context as Context;
+  const { auth, store } = context as Context;
+  const profile = await auth.isAuthenticated();
+
+  if (!profile) {
+    return new Response('Unauthorized', { status: 401 });
+  }
+
   const formData = await request.formData();
   const url = formData.get('url');
 
@@ -21,10 +27,11 @@ export let action: ActionFunction = async ({ request, context }) => {
   }
 
   try {
-    const id = await store.submit(url);
+    const id = await store.submit(profile.id, url);
 
     return redirect(`/resources/${id}`);
-  } catch (e) {
+  } catch (error) {
+    console.log('Error while submitting new url; Received', error);
     return json(
       { message: 'Something wrong with the URL; Please try again later' },
       { status: 500 }

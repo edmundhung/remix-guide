@@ -24,20 +24,22 @@ export type Category =
   | 'templates'
   | 'examples';
 
-export interface Metadata {
-  id: string;
+export interface Page {
   url: string;
-  category: Category;
   author?: string;
-  title: string;
+  category?: Category;
+  title?: string;
   description?: string;
-  language?: string;
   integrations?: string[];
-  viewCounts?: number;
-  bookmarkCounts?: number;
-}
-
-export interface Entry extends Metadata {
   image?: string;
   video?: string;
+}
+
+export type Metadata = Omit<Entry, 'author' | 'image' | 'video'>;
+
+export interface Entry extends Page {
+  id: string;
+  language?: string;
+  viewCounts?: number;
+  bookmarkCounts?: number;
 }

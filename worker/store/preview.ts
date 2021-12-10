@@ -1,6 +1,5 @@
-import { customAlphabet } from 'nanoid';
 import { decode } from 'html-entities';
-import type { Entry, Metadata } from '../types';
+import type { Page, Entry, Metadata } from '../types';
 
 interface Parser {
   setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
@@ -84,7 +83,7 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
   );
 }
 
-async function preview(url: string) {
+async function getMeta(url: string) {
   try {
     const response = await fetch(url);
     const page = await parseResponse(response, {
@@ -118,19 +117,11 @@ async function preview(url: string) {
   }
 }
 
-export async function createEntry(url: string): Entry {
-  const page = await preview(url);
-  const generateId = customAlphabet(
-    '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
-    12
-  );
-
-  let entry = {
-    id: generateId(),
-    url: page.url ?? url,
-    title: page.title,
-    description: page.description,
-    image: page.image,
+export async function loadPage(url: string): Page {
+  const meta = await getMeta(url);
+  const page: Page = {
+    ...meta,
+    url: meta.url ?? url,
   };
 
   switch (page.site) {
@@ -140,9 +131,9 @@ export async function createEntry(url: string): Entry {
         .split(':');
       const [author, title] = repo.split('/');
 
-      entry.title = title;
-      entry.description = description;
-      entry.author = author;
+      page.title = title;
+      page.description = description;
+      page.author = author;
       break;
     }
     case 'Gist': {
@@ -150,32 +141,36 @@ export async function createEntry(url: string): Entry {
         .replace('https://gist.github.com/', '')
         .split('/');
 
-      entry.author = author;
-      entry.description = '';
+      page.author = author;
+      page.description = '';
       break;
     }
     case 'YouTube': {
       const videoId = new URL(entry.url).searchParams.get('v');
 
-      entry.video = `https://www.youtube.com/embed/${videoId}`;
+      page.video = `https://www.youtube.com/embed/${videoId}`;
       break;
     }
   }
 
-  return entry;
+  return page;
 }
 
 export function getMetadata(entry: Entry): Metadata {
-  return {
-    id: entry.id,
-    url: entry.url,
-    category: entry.category,
-    author: entry.author,
-    title: entry.title,
-    description: entry.description,
-    language: entry.language,
-    integrations: entry.integrations,
-    viewCounts: entry.viewCounts,
-    bookmarkCounts: entry.bookmarkCounts,
-  };
+  const keys = [
+    'id',
+    'url',
+    'category',
+    'author',
+    'title',
+    'description',
+    'language',
+    'integrations',
+    'viewCounts',
+    'bookmarkCounts',
+  ];
+
+  return Object.fromEntries(
+    Object.entries(entry).filter(([key]) => keys.includes(key))
+  );
 }

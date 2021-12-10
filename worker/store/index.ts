@@ -1,5 +1,15 @@
+import { customAlphabet } from 'nanoid';
 import type { Entry, Env, UserProfile } from '../types';
-import { createEntry, getMetadata } from './preview';
+import { loadPage, getMetadata } from './preview';
+
+/**
+ * ID Generator based on nanoid
+ * Using alphabets and digits only
+ */
+const generateId = customAlphabet(
+  '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
+  12
+);
 
 /**
  * EntriesStore - A durable object that keeps entries data and preview info
@@ -50,12 +60,11 @@ export class EntriesStore {
           const entries = Array.from(entryById.values());
           const result = await Promise.allSettled(
             entries.map(async (entry) => {
-              const updated = await this.generateEntry(entry.url);
+              const page = await loadPage(entry.url);
 
               await this.updateEntry({
                 ...entry,
-                ...updated,
-                id: entry.id,
+                ...page,
               });
 
               return entry.id;
@@ -147,32 +156,23 @@ export class EntriesStore {
     let id = this.entryIdByURL[url] ?? null;
 
     if (!id) {
-      const entry = await createEntry(url);
+      const page = await loadPage(url);
 
-      if (url !== entry.url) {
-        id = await this.createEntry(entry.url);
+      if (url !== page.url) {
+        id = this.entryIdByURL[page.url] ?? null;
       }
 
       if (!id) {
-        id = entry.id;
-        this.updateEntry(entry);
+        id = generateId();
+        this.updateEntry({ ...page, id });
       }
 
+      this.entryIdByURL[page.url] = id;
       this.entryIdByURL[url] = id;
       this.state.storage.put('entryIdByURL', this.entryIdByURL);
     }
 
     return id;
-  }
-
-  async generateEntry(url: string) {
-    let entry = await createEntry(url);
-
-    if (url !== entry.url) {
-      entry = await this.refreshEntry(entry.url);
-    }
-
-    return entry;
   }
 
   async getEntry(entryId: string) {
