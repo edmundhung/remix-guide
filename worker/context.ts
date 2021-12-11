@@ -129,8 +129,8 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       const list = await env.CONTENT.list<Metadata>({ prefix: 'entry/' });
       let entries = list.keys.flatMap((key) => key.metadata ?? []);
 
-      if (userId !== null && options.list !== null) {
-        const user = await getUser(userId);
+      if (options.list !== null) {
+        const user = userId ? await getUser(userId) : null;
 
         switch (options.list) {
           case 'bookmarks':
