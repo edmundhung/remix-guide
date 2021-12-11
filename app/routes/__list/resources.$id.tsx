@@ -29,14 +29,35 @@ export let action: ActionFunction = async ({ context, params, request }) => {
     return new Response('Unauthorized', { status: 401 });
   }
 
-  await store.bookmark(profile.id, params.id ?? '');
+  const formData = await request.formData();
+  const type = formData.get('type');
+
+  switch (type) {
+    case 'bookmark':
+      await store.bookmark(profile.id, params.id ?? '');
+      break;
+    case 'unbookmark':
+      await store.unbookmark(profile.id, params.id ?? '');
+      break;
+  }
 
   return redirect(request.headers.get('referrer') ?? request.url);
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  const { store } = context as Context;
-  const entry = await store.query(params.id ?? '');
+  const { auth, store } = context as Context;
+  const [entry, user] = await Promise.all([
+    store.query(params.id ?? ''),
+    (async () => {
+      const profile = await auth.isAuthenticated();
+
+      if (!profile) {
+        return null;
+      }
+
+      return await store.getUser(profile.id);
+    })(),
+  ]);
 
   if (!entry) {
     throw notFound();
@@ -44,11 +65,13 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 
   return json({
     entry,
+    bookmarked: user?.bookmarked.includes(entry.id),
   });
 };
 
 export default function EntryDetail() {
-  const { entry } = useLoaderData<{ entry: Entry }>();
+  const { entry, bookmarked } =
+    useLoaderData<{ entry: Entry; bookmarked: boolean }>();
   const searchParams = useResourcesSearchParams();
   const search = searchParams.toString();
 
@@ -65,13 +88,24 @@ export default function EntryDetail() {
         </Link>
         <div className="flex-1 leading-8 line-clamp-1">{entry.title}</div>
         <Form className="flex flex-row items-center" method="post">
+          <input
+            type="hidden"
+            name="type"
+            value={bookmarked ? 'unbookmark' : 'bookmark'}
+          />
           <button
             type="submit"
-            className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+            className={`flex items-center justify-center w-6 h-6 ${
+              bookmarked
+                ? 'rounded-full text-red-500 bg-gray-200'
+                : 'hover:rounded-full hover:bg-gray-200 hover:text-black'
+            }`}
           >
             <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
           </button>
-          <label className="px-2">{entry.bookmarkCounts ?? 0}</label>
+          <label className="px-2 w-10 text-right">
+            {entry.bookmarkCounts ?? 0}
+          </label>
         </Form>
       </header>
       <div className="px-5 py-3x max-w-screen-xl divide-y">

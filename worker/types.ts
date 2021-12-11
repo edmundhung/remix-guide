@@ -16,6 +16,12 @@ export interface UserProfile {
   email: string;
 }
 
+export interface User {
+  profile: UserProfile;
+  viewd: string[];
+  bookmarked: string[];
+}
+
 export type Category =
   | 'others'
   | 'articles'

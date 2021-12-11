@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 import type { Entry, Env, UserProfile } from '../types';
-import { loadPage, getMetadata } from './preview';
+import { loadPage } from './preview';
 
 /**
  * ID Generator based on nanoid
@@ -189,9 +189,25 @@ export class EntriesStore {
   }
 
   async updateEntry(entry: Entry) {
+    const keys = [
+      'id',
+      'url',
+      'category',
+      'author',
+      'title',
+      'description',
+      'language',
+      'integrations',
+      'viewCounts',
+      'bookmarkCounts',
+    ];
+    const metadata = Object.fromEntries(
+      Object.entries(entry).filter(([key]) => keys.includes(key))
+    );
+
     this.state.storage.put(entry.id, entry);
     this.env.CONTENT.put(`entry/${entry.id}`, JSON.stringify(entry), {
-      metadata: getMetadata(entry),
+      metadata,
     });
   }
 }

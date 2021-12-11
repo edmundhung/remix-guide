@@ -1,7 +1,7 @@
 import { Authenticator } from 'remix-auth/build/authenticator';
 import { GitHubStrategy } from 'remix-auth/build/strategies/github';
 import { createCookieSessionStorage, redirect } from 'remix';
-import type { Category, Env, Entry, UserProfile } from './types';
+import type { Category, Env, Entry, User, UserProfile } from './types';
 
 export type Context = ReturnType<typeof createContext>;
 
@@ -140,8 +140,11 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       return result;
     },
-    async query(id: string) {
-      return await env.CONTENT.get<Entry>(`entry/${id}`, 'json');
+    async query(entryId: string) {
+      return await env.CONTENT.get<Entry>(`entry/${entryId}`, 'json');
+    },
+    async getUser(userId: string) {
+      return await env.CONTENT.get<User>(`user/${userId}`, 'json');
     },
     async submit(userId: string, url: string) {
       const response = await entriesStore.fetch('http://entries/submit', {

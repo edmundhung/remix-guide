@@ -155,22 +155,3 @@ export async function loadPage(url: string): Page {
 
   return page;
 }
-
-export function getMetadata(entry: Entry): Metadata {
-  const keys = [
-    'id',
-    'url',
-    'category',
-    'author',
-    'title',
-    'description',
-    'language',
-    'integrations',
-    'viewCounts',
-    'bookmarkCounts',
-  ];
-
-  return Object.fromEntries(
-    Object.entries(entry).filter(([key]) => keys.includes(key))
-  );
-}
