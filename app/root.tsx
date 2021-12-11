@@ -33,20 +33,13 @@ export let loader: LoaderFunction = async ({ context }) => {
   const { auth } = context as Context;
   const user = await auth.isAuthenticated();
 
-  return json(
-    {
-      versions: [],
-      categories,
-      languages: [],
-      platforms,
-      user,
-    },
-    {
-      headers: {
-        'Cache-Control': 'public, max-age=3600',
-      },
-    }
-  );
+  return json({
+    versions: [],
+    categories,
+    languages: [],
+    platforms,
+    user,
+  });
 };
 
 function Document({
