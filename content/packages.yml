@@ -15,3 +15,6 @@ remix-tailwind:
 remix-postcss:
   url: https://github.com/l-mbert/remix-postcss
   version: '>=1'
+remix-params-helper:
+  url: https://github.com/kiliman/remix-params-helper
+  version: '>=1'
