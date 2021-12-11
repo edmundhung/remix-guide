@@ -1,5 +1,6 @@
 import type { HeadersFunction, LoaderFunction, ActionFunction } from 'remix';
-import { Form, Link, json, redirect, useLoaderData } from 'remix';
+import { Form, Link, json, redirect, useLoaderData, useFetcher } from 'remix';
+import { useEffect } from 'react';
 import { notFound } from '~/helpers';
 import { useResourcesSearchParams } from '~/search';
 import type { Entry, Context } from '~/types';
@@ -35,13 +36,14 @@ export let action: ActionFunction = async ({ context, params, request }) => {
   switch (type) {
     case 'bookmark':
       await store.bookmark(profile.id, params.id ?? '');
-      break;
+      return redirect(request.headers.get('referrer') ?? request.url);
     case 'unbookmark':
       await store.unbookmark(profile.id, params.id ?? '');
-      break;
+      return redirect(request.headers.get('referrer') ?? request.url);
+    case 'view':
+      await store.view(profile.id, params.id ?? '');
+      return new Response('OK', { status: 200 });
   }
-
-  return redirect(request.headers.get('referrer') ?? request.url);
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
@@ -65,15 +67,29 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 
   return json({
     entry,
+    authenticated: user !== null,
     bookmarked: user?.bookmarked.includes(entry.id),
   });
 };
 
 export default function EntryDetail() {
-  const { entry, bookmarked } =
-    useLoaderData<{ entry: Entry; bookmarked: boolean }>();
+  const { submit } = useFetcher();
+  const { entry, authenticated, bookmarked } =
+    useLoaderData<{
+      entry: Entry;
+      authenticated: boolean;
+      bookmarked: boolean;
+    }>();
   const searchParams = useResourcesSearchParams();
   const search = searchParams.toString();
+
+  useEffect(() => {
+    if (!authenticated) {
+      return;
+    }
+
+    submit({ type: 'view' }, { method: 'post' });
+  }, [submit, authenticated, entry.id]);
 
   return (
     <section className="w-full h-full max-h-screen overflow-y-auto">

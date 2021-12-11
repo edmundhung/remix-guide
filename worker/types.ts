@@ -18,7 +18,7 @@ export interface UserProfile {
 
 export interface User {
   profile: UserProfile;
-  viewd: string[];
+  viewed: string[];
   bookmarked: string[];
 }
 

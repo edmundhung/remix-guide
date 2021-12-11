@@ -102,7 +102,7 @@ export function createAuth(request: Request, env: Env, ctx: ExecutionContext) {
 
 interface SearchOptions {
   keyword: string;
-  list: 'bookmarks' | null;
+  list: 'bookmarks' | 'history' | null;
   categories: Category[] | null;
   authors: string[] | null;
   integrations: string[] | null;
@@ -142,6 +142,17 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
                     (prev, next) =>
                       user.bookmarked.indexOf(prev.id) -
                       user.bookmarked.indexOf(next.id)
+                  );
+            break;
+          case 'history':
+            entries = !user
+              ? []
+              : entries
+                  .filter((entry) => user.viewed.includes(entry.id))
+                  .sort(
+                    (prev, next) =>
+                      user.viewed.indexOf(prev.id) -
+                      user.viewed.indexOf(next.id)
                   );
             break;
         }

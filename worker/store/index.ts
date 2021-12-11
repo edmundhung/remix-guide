@@ -1,5 +1,5 @@
 import { customAlphabet } from 'nanoid';
-import type { Entry, Env, UserProfile } from '../types';
+import type { Entry, Env, UserProfile, User } from '../types';
 import { loadPage } from './preview';
 
 /**
@@ -273,8 +273,10 @@ export class UserStore {
             );
           }
 
-          this.viewed = this.viewed.filter((id) => id !== entryId).unshift(id);
+          this.viewed = this.viewed.filter((id) => id !== entryId);
+          this.viewed.unshift(entryId);
           this.state.storage.put('viewed', this.viewed);
+          this.updateUserCache();
 
           return new Response('OK', { status: 200 });
         }
@@ -315,7 +317,7 @@ export class UserStore {
   }
 
   async updateUserCache() {
-    const user = {
+    const user: User = {
       profile: this.profile,
       viewed: this.viewed,
       bookmarked: this.bookmarked,

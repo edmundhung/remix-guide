@@ -11,7 +11,7 @@ import { throttle } from '~/helpers';
 import CategoryIcon from '~/components/CategoryIcon';
 import SvgIcon from '~/components/SvgIcon';
 import homeIcon from '~/icons/home.svg';
-import trendingIcon from '~/icons/trending.svg';
+import historyIcon from '~/icons/history.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
 import githubIcon from '~/icons/github.svg';
 import discordIcon from '~/icons/discord.svg';
@@ -274,11 +274,11 @@ function SidebarNavigation({
           <MenuItem to="/" name="list" value={null}>
             <SvgIcon className="w-4 h-4" href={homeIcon} /> Explore
           </MenuItem>
-          <MenuItem to="/resources" name="list" value="trending">
-            <SvgIcon className="w-4 h-4" href={trendingIcon} /> Trending
-          </MenuItem>
           <MenuItem to="/resources" name="list" value="bookmarks">
             <SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
+          </MenuItem>
+          <MenuItem to="/resources" name="list" value="history">
+            <SvgIcon className="w-4 h-4" href={historyIcon} /> History
           </MenuItem>
         </LinkMenu>
         <LinkMenu title="Categories" value={category}>
