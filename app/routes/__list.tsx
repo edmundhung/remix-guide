@@ -1,4 +1,9 @@
-import type { HeadersFunction, MetaFunction, LoaderFunction } from 'remix';
+import type {
+  HeadersFunction,
+  MetaFunction,
+  LoaderFunction,
+  ShouldReloadFunction,
+} from 'remix';
 import { Outlet, useLoaderData, useParams, json } from 'remix';
 import SearchList from '~/components/SearchList';
 import type { Entry, Context } from '~/types';
@@ -36,6 +41,13 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   return json({
     entries,
   });
+};
+
+export const unstable_shouldReload: ShouldReloadFunction = ({
+  url,
+  prevUrl,
+}) => {
+  return url.searchParams.get('list') !== prevUrl.searchParams.get('list');
 };
 
 export default function List() {
