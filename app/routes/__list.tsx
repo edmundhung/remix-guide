@@ -16,30 +16,26 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ request, context }) => {
-  const { store } = context as Context;
+  const { auth, store } = context as Context;
+  const profile = await auth.isAuthenticated();
   const url = new URL(request.url);
   const keyword = url.searchParams.get('q') ?? '';
+  const list = url.searchParams.get('list');
   const category = url.searchParams.get('category');
   const language = url.searchParams.get('language');
   const platform = url.searchParams.get('platform');
 
-  const entries = await store.search({
+  const entries = await store.search(profile?.id ?? null, {
     keyword,
+    list,
     categories: category ? [category] : null,
     integrations: platform ? [platform] : null,
     languages: language ? [language] : null,
   });
 
-  return json(
-    {
-      entries,
-    },
-    {
-      headers: {
-        'Cache-Control': 'public, max-age=60',
-      },
-    }
-  );
+  return json({
+    entries,
+  });
 };
 
 export default function List() {

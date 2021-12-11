@@ -2,6 +2,7 @@ import { Authenticator } from 'remix-auth/build/authenticator';
 import { GitHubStrategy } from 'remix-auth/build/strategies/github';
 import { createCookieSessionStorage, redirect } from 'remix';
 import type { Category, Env, Entry, User, UserProfile } from './types';
+import { Metadata } from '~/types';
 
 export type Context = ReturnType<typeof createContext>;
 
@@ -101,6 +102,7 @@ export function createAuth(request: Request, env: Env, ctx: ExecutionContext) {
 
 interface SearchOptions {
   keyword: string;
+  list: 'bookmarks' | null;
   categories: Category[] | null;
   authors: string[] | null;
   integrations: string[] | null;
@@ -118,10 +120,33 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     return store;
   }
 
+  async function getUser(userId: string): Promise<User | null> {
+    return await env.CONTENT.get<User>(`user/${userId}`, 'json');
+  }
+
   return {
-    async search(options: SearchOptions) {
+    async search(userId: string | null, options: SearchOptions) {
       const list = await env.CONTENT.list<Metadata>({ prefix: 'entry/' });
-      const entries = list.keys.flatMap((key) => key.metadata ?? []);
+      let entries = list.keys.flatMap((key) => key.metadata ?? []);
+
+      if (userId !== null && options.list !== null) {
+        const user = await getUser(userId);
+
+        switch (options.list) {
+          case 'bookmarks':
+            entries = !user
+              ? []
+              : entries
+                  .filter((entry) => user.bookmarked.includes(entry.id))
+                  .sort(
+                    (prev, next) =>
+                      user.bookmarked.indexOf(prev.id) -
+                      user.bookmarked.indexOf(next.id)
+                  );
+            break;
+        }
+      }
+
       const match = (wanted: string[] | null, value: string) => {
         if (!wanted) {
           return true;
@@ -144,7 +169,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       return await env.CONTENT.get<Entry>(`entry/${entryId}`, 'json');
     },
     async getUser(userId: string) {
-      return await env.CONTENT.get<User>(`user/${userId}`, 'json');
+      return await getUser(userId);
     },
     async submit(userId: string, url: string) {
       const response = await entriesStore.fetch('http://entries/submit', {
