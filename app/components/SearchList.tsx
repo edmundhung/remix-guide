@@ -1,7 +1,7 @@
 import { ReactElement } from 'react';
 import { Link } from 'remix';
 import SvgIcon from '~/components/SvgIcon';
-import { useResourcesSearchParams } from '~/search';
+import { useResourcesSearch } from '~/search';
 import type { Entry } from '~/types';
 import menuIcon from '~/icons/menu.svg';
 import plusIcon from '~/icons/plus.svg';
@@ -11,8 +11,7 @@ interface SearchListProps {
 }
 
 function SearchList({ entries, currentId }: SearchListProps): ReactElement {
-  const searchParams = useResourcesSearchParams();
-  const search = searchParams.toString();
+  const search = useResourcesSearch();
 
   return (
     <section className="w-full h-full max-h-screen overflow-y-auto">
@@ -24,9 +23,11 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
         >
           <SvgIcon className="w-3 h-3" href={menuIcon} />
         </Link>
-        <div className="flex-1 leading-8 line-clamp-1">{`Showing ${
-          entries.length
-        } ${entries.length > 1 ? 'entries' : 'entry'}`}</div>
+        <div className="flex-1 leading-8 line-clamp-1 capitalize">
+          {`${new URLSearchParams(search).get('list') ?? 'Latest resources'} ${
+            entries.length > 0 ? `(${entries.length})` : ''
+          }`.trim()}
+        </div>
         <Link
           className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
           to="/submit"
@@ -48,7 +49,7 @@ function SearchList({ entries, currentId }: SearchListProps): ReactElement {
                     ? 'shadow-inner bg-gray-800'
                     : 'hover:shadow-inner hover:bg-gray-900'
                 }`}
-                to={`/resources/${entry.id}?${searchParams.toString()}`}
+                to={`/resources/${entry.id}?${search}`}
                 prefetch="intent"
               >
                 <section className="px-3 py-2.5 text-sm">

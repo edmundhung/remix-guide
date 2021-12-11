@@ -1,9 +1,9 @@
 import { useMemo } from 'react';
 import { useLocation } from 'remix';
 
-export function useResourcesSearchParams(): URLSearchParams {
+export function useResourcesSearch(): string {
   const location = useLocation();
-  const searchParams = useMemo(() => {
+  const search = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
     const supported = ['list', 'q', 'category', 'platform', 'language'];
 
@@ -18,5 +18,5 @@ export function useResourcesSearchParams(): URLSearchParams {
     return searchParams.toString();
   }, [location.search]);
 
-  return searchParams;
+  return search;
 }

@@ -1,6 +1,6 @@
 import { ReactElement, ReactNode } from 'react';
 import { Link } from 'remix';
-import { useResourcesSearchParams } from '~/search';
+import { useResourcesSearch } from '~/search';
 import SvgIcon from '~/components/SvgIcon';
 import menuIcon from '~/icons/menu.svg';
 import backIcon from '~/icons/back.svg';
@@ -13,8 +13,7 @@ interface PanelProps {
 }
 
 function Panel({ title, type, children }: PanelProps): ReactElement {
-  const searchParams = useResourcesSearchParams();
-  const search = searchParams.toString();
+  const search = useResourcesSearch();
 
   return (
     <section className="w-full h-full max-h-screen overflow-y-auto">

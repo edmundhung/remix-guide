@@ -272,7 +272,7 @@ function SidebarNavigation({
       <section className="flex-1 px-5 py-3 divide-y">
         <LinkMenu>
           <MenuItem to="/" name="list" value={null}>
-            <SvgIcon className="w-4 h-4" href={homeIcon} /> Explore
+            <SvgIcon className="w-4 h-4" href={homeIcon} /> Home
           </MenuItem>
           <MenuItem to="/resources" name="list" value="bookmarks">
             <SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks

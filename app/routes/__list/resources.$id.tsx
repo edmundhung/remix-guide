@@ -2,7 +2,7 @@ import type { HeadersFunction, LoaderFunction, ActionFunction } from 'remix';
 import { Form, Link, json, redirect, useLoaderData, useFetcher } from 'remix';
 import { useEffect } from 'react';
 import { notFound } from '~/helpers';
-import { useResourcesSearchParams } from '~/search';
+import { useResourcesSearch } from '~/search';
 import type { Entry, Context } from '~/types';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
@@ -74,14 +74,12 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 
 export default function EntryDetail() {
   const { submit } = useFetcher();
-  const { entry, authenticated, bookmarked } =
-    useLoaderData<{
-      entry: Entry;
-      authenticated: boolean;
-      bookmarked: boolean;
-    }>();
-  const searchParams = useResourcesSearchParams();
-  const search = searchParams.toString();
+  const { entry, authenticated, bookmarked } = useLoaderData<{
+    entry: Entry;
+    authenticated: boolean;
+    bookmarked: boolean;
+  }>();
+  const search = useResourcesSearch();
 
   useEffect(() => {
     if (!authenticated) {
