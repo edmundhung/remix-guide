@@ -158,20 +158,22 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         }
       }
 
-      const match = (wanted: string[] | null, value: string) => {
-        if (!wanted) {
+      const match = (wanted: string[], value: string | string[]) => {
+        if (wanted.length === 0) {
           return true;
         }
 
-        return wanted.length > 0 && wanted.includes(value);
+        if (Array.isArray(value)) {
+          return wanted.every((item) => value.includes(item));
+        }
+
+        return wanted.includes(value);
       };
       const result = entries.filter(
         (item) =>
           true &&
-          match(options.categories, item.category) &&
-          match(options.author, item.author) &&
-          match(options.languages, item.language)
-        // && item.integrations?.some(integration => match(options.integrations, integration))
+          match(options.categories ?? [], item.category) &&
+          match(options.integrations ?? [], item.integrations ?? [])
       );
 
       return result;

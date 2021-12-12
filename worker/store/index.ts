@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
-import type { Entry, Env, UserProfile, User } from '../types';
-import { loadPage } from './preview';
+import type { Entry, Env, Metadata, UserProfile, User } from '../types';
+import { createPageLoader } from './preview';
 
 /**
  * ID Generator based on nanoid
@@ -24,6 +24,7 @@ export class EntriesStore {
     this.state = state;
     this.env = env;
     this.scheduledEntryIds = [];
+    this.loadPage = createPageLoader(env);
     this.state.blockConcurrencyWhile(async () => {
       let stored = await this.state.storage.get('entryIdByURL');
       this.entryIdByURL = stored || {};
@@ -60,7 +61,7 @@ export class EntriesStore {
           const entries = Array.from(entryById.values());
           const result = await Promise.allSettled(
             entries.map(async (entry) => {
-              const page = await loadPage(entry.url);
+              const page = await this.loadPage(entry.url);
 
               await this.updateEntry({
                 ...entry,
@@ -159,7 +160,7 @@ export class EntriesStore {
     let id = this.entryIdByURL[url] ?? null;
 
     if (!id) {
-      const page = await loadPage(url);
+      const page = await this.loadPage(url);
 
       if (url !== page.url) {
         id = this.entryIdByURL[page.url] ?? null;
@@ -189,21 +190,56 @@ export class EntriesStore {
   }
 
   async updateEntry(entry: Entry) {
-    const keys = [
-      'id',
-      'url',
-      'category',
-      'author',
-      'title',
-      'description',
-      'language',
-      'integrations',
-      'viewCounts',
-      'bookmarkCounts',
-    ];
-    const metadata = Object.fromEntries(
-      Object.entries(entry).filter(([key]) => keys.includes(key))
-    );
+    const metadata: Metadata = {
+      id: entry.id,
+      url: entry.url,
+      category: entry.category,
+      author: entry.author,
+      title: entry.title,
+      description: entry.description,
+      integrations: Array.from(
+        Object.keys(entry.dependencies ?? {}).reduce((result, packageName) => {
+          switch (packageName) {
+            case 'cypress':
+            case 'tailwindcss':
+            case 'prisma':
+              result.add(packageName);
+              break;
+            case '@remix-run/architect':
+              result.add('architect');
+              break;
+            case '@azure/functions':
+              result.add('azure');
+              break;
+            case '@remix-run/cloudflare-workers':
+            case '@cloudflare/workers-types':
+            case '@cloudflare/wrangler':
+              result.add('cloudflare');
+              break;
+            case 'express':
+            case '@remix-run/express':
+              result.add('express');
+              break;
+            case 'firebase':
+            case 'firebase-admin':
+              result.add('firebase');
+              break;
+            case '@remix-run/netlify':
+              result.add('netlify');
+              break;
+            case 'vercel':
+            case '@vercel/node':
+            case '@remix-run/vercel':
+              result.add('vercel');
+              break;
+          }
+
+          return result;
+        }, new Set<string>())
+      ),
+      viewCounts: entry.viewCounts,
+      bookmarkCounts: entry.bookmarkCounts,
+    };
 
     this.state.storage.put(entry.id, entry);
     this.env.CONTENT.put(`entry/${entry.id}`, JSON.stringify(entry), {

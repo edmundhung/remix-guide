@@ -50,7 +50,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
   url,
   prevUrl,
 }) => {
-  return url.searchParams.get('list') !== prevUrl.searchParams.get('list');
+  return url.searchParams.toString() !== prevUrl.searchParams.toString();
 };
 
 export default function List() {

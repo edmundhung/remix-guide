@@ -1,6 +1,7 @@
 export type { Context } from './context';
 
 export interface Env {
+  GITHUB_TOKEN?: string;
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
   GITHUB_CALLBACK_URL?: string;
@@ -36,16 +37,28 @@ export interface Page {
   category?: Category;
   title?: string;
   description?: string;
-  integrations?: string[];
+  dependencies?: Record<string, string>;
   image?: string;
   video?: string;
 }
 
-export type Metadata = Omit<Entry, 'author' | 'image' | 'video'>;
+export interface Metadata
+  extends Pick<
+    Entry,
+    | 'id'
+    | 'url'
+    | 'category'
+    | 'author'
+    | 'title'
+    | 'description'
+    | 'viewCounts'
+    | 'bookmarkCounts'
+  > {
+  integrations: string[];
+}
 
 export interface Entry extends Page {
   id: string;
-  language?: string;
   viewCounts?: number;
   bookmarkCounts?: number;
 }
