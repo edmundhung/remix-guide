@@ -52,6 +52,7 @@ export function createAuth(request: Request, env: Env, ctx: ExecutionContext) {
         clientID: env.GITHUB_CLIENT_ID,
         clientSecret: env.GITHUB_CLIENT_SECRET,
         callbackURL: env.GITHUB_CALLBACK_URL,
+        userAgent: 'remix-guide',
       },
       async (accessToken, refreshToken, extraParams, githubProfile) => {
         const profile: UserProfile = {
