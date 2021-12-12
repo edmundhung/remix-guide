@@ -7,20 +7,6 @@ import { Metadata } from '~/types';
 export type Context = ReturnType<typeof createContext>;
 
 export function createAuth(request: Request, env: Env, ctx: ExecutionContext) {
-  if (process.env.NODE_ENV === 'production') {
-    return {
-      async login() {
-        return redirect('/');
-      },
-      async logout() {
-        return redirect('/');
-      },
-      async isAuthenticated() {
-        return null;
-      },
-    };
-  }
-
   if (
     !env.GITHUB_CLIENT_ID ||
     !env.GITHUB_CLIENT_SECRET ||
