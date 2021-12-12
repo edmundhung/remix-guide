@@ -127,7 +127,7 @@ export default function EntryDetail() {
           <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
               <div className="text-xs pb-1.5 text-gray-500">
-                {`${entry.date ?? new Date().toISOString()}`.substr(0, 10)}
+                {entry.createdAt.substr(0, 10)}
               </div>
               <div>
                 <a

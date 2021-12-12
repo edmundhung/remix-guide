@@ -50,7 +50,10 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
   url,
   prevUrl,
 }) => {
-  return url.searchParams.toString() !== prevUrl.searchParams.toString();
+  return (
+    !prevUrl.pathname.startsWith('/resources') ||
+    url.searchParams.toString() !== prevUrl.searchParams.toString()
+  );
 };
 
 export default function List() {
@@ -105,13 +108,8 @@ export default function List() {
                   >
                     <section className="px-3 py-2.5 text-sm">
                       <div className="text-xs pb-1.5 text-gray-500 flex flex-row justify-between">
-                        <span>
-                          {`${entry.date ?? new Date().toISOString()}`.substr(
-                            0,
-                            10
-                          )}
-                        </span>
-                        <span>{entry.author}</span>
+                        <span>{entry.createdAt.substr(0, 10)}</span>
+                        <span>{new URL(entry.url).hostname}</span>
                       </div>
                       <h2 className="break-words line-clamp-2">
                         {entry.title}

@@ -53,6 +53,7 @@ export interface Metadata
     | 'description'
     | 'viewCounts'
     | 'bookmarkCounts'
+    | 'createdAt'
   > {
   integrations: string[];
 }
@@ -61,4 +62,8 @@ export interface Entry extends Page {
   id: string;
   viewCounts?: number;
   bookmarkCounts?: number;
+  createdAt: string;
+  createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }

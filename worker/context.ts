@@ -127,7 +127,11 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   return {
     async search(userId: string | null, options: SearchOptions) {
       const list = await env.CONTENT.list<Metadata>({ prefix: 'entry/' });
-      let entries = list.keys.flatMap((key) => key.metadata ?? []);
+      let entries = list.keys
+        .flatMap((key) => key.metadata ?? [])
+        .sort(
+          (prev, next) => new Date(next.createdAt) - new Date(prev.createdAt)
+        );
 
       if (options.list !== null) {
         const user = userId ? await getUser(userId) : null;

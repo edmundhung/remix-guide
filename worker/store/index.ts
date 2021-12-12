@@ -156,7 +156,7 @@ export class EntriesStore {
     }
   }
 
-  async createEntry(url: string) {
+  async createEntry(url: string, userId: string) {
     let id = this.entryIdByURL[url] ?? null;
 
     if (!id) {
@@ -168,7 +168,15 @@ export class EntriesStore {
 
       if (!id) {
         id = generateId();
-        this.updateEntry({ ...page, id });
+        const now = new Date().toISOString();
+        this.updateEntry({
+          ...page,
+          id,
+          createdAt: now,
+          createdBy: userId,
+          updatedAt: now,
+          updatedBy: userId,
+        });
       }
 
       this.entryIdByURL[page.url] = id;
@@ -239,6 +247,7 @@ export class EntriesStore {
       ),
       viewCounts: entry.viewCounts,
       bookmarkCounts: entry.bookmarkCounts,
+      createdAt: entry.createdAt,
     };
 
     this.state.storage.put(entry.id, entry);
