@@ -6,8 +6,6 @@
   "license": "MIT",
   "scripts": {
     "cleanup": "rimraf .cache ./dist ./build ./public/build ./app/styles/tailwind.css",
-    "content:build": "workaholic build ./content.json",
-    "content:publish": "workaholic publish ./content.json",
     "build:remix": "remix build",
     "build:style": "cross-env NODE_ENV=production tailwindcss -o ./app/styles/tailwind.css --minify",
     "build:worker": "cross-env NODE_ENV=production VERSION=$(git rev-parse HEAD) node ./scripts/build.mjs",
