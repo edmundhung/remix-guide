@@ -86,7 +86,14 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
 
 async function getMeta(url: string) {
   try {
-    const response = await fetch(url);
+    const response = await fetch(url, {
+      headers: {
+        Accept: 'text/html',
+        'User-Agent':
+          'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      },
+      redirect: 'follow',
+    });
     const page = await parseResponse(response, {
       title: mergeParsers(
         createAttributeParser('meta[property="og:title"]', 'content'),
@@ -245,7 +252,7 @@ export function createPageLoader(env: Env) {
         break;
       }
       case 'YouTube': {
-        const videoId = new URL(entry.url).searchParams.get('v');
+        const videoId = new URL(page.url).searchParams.get('v');
 
         page.category = 'videos';
         page.video = `https://www.youtube.com/embed/${videoId}`;
