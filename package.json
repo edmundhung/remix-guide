@@ -27,7 +27,6 @@
     "@remix-run/cloudflare-workers": "^1.0.6",
     "@remix-run/react": "^1.0.6",
     "@tailwindcss/typography": "^0.4.1",
-    "fuse.js": "^6.4.6",
     "html-entities": "^2.3.2",
     "nanoid": "^3.1.30",
     "react": "^17.0.1",

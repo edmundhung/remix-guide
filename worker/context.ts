@@ -149,12 +149,16 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         }
       }
 
-      const match = (wanted: string[], value: string | string[]) => {
+      const match = (
+        wanted: string[],
+        value: string | string[],
+        partialMatch = false
+      ) => {
         if (wanted.length === 0) {
           return true;
         }
 
-        if (Array.isArray(value)) {
+        if (partialMatch || Array.isArray(value)) {
           return wanted.every((item) => value.includes(item));
         }
 
@@ -162,7 +166,13 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       };
       const result = entries.filter(
         (item) =>
-          true &&
+          match(
+            options.keyword !== ''
+              ? options.keyword.toLowerCase().split(' ')
+              : [],
+            `${item.title} ${item.description}`.toLowerCase(),
+            true
+          ) &&
           match(options.categories ?? [], item.category) &&
           match(options.integrations ?? [], item.integrations ?? [])
       );
