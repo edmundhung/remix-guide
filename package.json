@@ -19,7 +19,7 @@
     "prebuild": "npm run cleanup",
     "test:cypress": "cypress run",
     "test": "start-server-and-test http-get://localhost:8787 test:cypress",
-    "start": "node ./scripts/preview.mjs && miniflare --kv-persist",
+    "start": "miniflare --kv-persist",
     "prepare": "husky install"
   },
   "dependencies": {
