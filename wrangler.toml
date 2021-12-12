@@ -33,8 +33,3 @@ watch_dir = "./build/index.js"
 format = "modules"
 dir = "./dist"
 main = "./worker.mjs"
-
-[workaholic]
-source = "content"
-binding = "CONTENT"
-config = "./scripts/workaholic.ts"
