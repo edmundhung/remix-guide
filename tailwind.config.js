@@ -1,9 +1,7 @@
 const colors = require('tailwindcss/colors');
 
 module.exports = {
-  mode: 'jit',
-  purge: ['./app/**/*.tsx', './app/**/*.ts'],
-  darkMode: false,
+  content: ['./app/**/*.tsx', './app/**/*.ts'],
   theme: {
     borderColor: (theme) => ({
       ...theme('colors'),
@@ -11,12 +9,9 @@ module.exports = {
     }),
     extend: {
       colors: {
-        gray: colors.trueGray,
+        gray: colors.neutral,
       },
     },
-  },
-  variants: {
-    extend: {},
   },
   plugins: [
     require('@tailwindcss/line-clamp'),
