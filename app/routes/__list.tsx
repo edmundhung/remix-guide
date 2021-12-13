@@ -30,15 +30,14 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const keyword = url.searchParams.get('q') ?? '';
   const list = url.searchParams.get('list');
   const category = url.searchParams.get('category');
-  const language = url.searchParams.get('language');
   const platform = url.searchParams.get('platform');
+  const integrations = url.searchParams.getAll('integration');
 
   const entries = await store.search(profile?.id ?? null, {
     keyword,
     list,
-    categories: category ? [category] : null,
-    integrations: platform ? [platform] : null,
-    languages: language ? [language] : null,
+    categories: category ? [category] : [],
+    integrations: integrations.concat(platform ? [platform] : []),
   });
 
   return json({
@@ -96,7 +95,7 @@ export default function List() {
           ) : (
             <div className="px-5 py-3">
               {entries.map((entry) => (
-                <article key={entry.slug} className="py-1">
+                <article key={entry.id} className="py-1">
                   <Link
                     className={`block rounded-lg no-underline ${
                       params.id === entry.id

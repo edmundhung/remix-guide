@@ -11,10 +11,11 @@ export const platforms = [
   'aws',
   'azure',
   'cloudflare',
-  'express',
   'firebase',
   'fly',
   'netlify',
   'render',
   'vercel',
 ];
+
+export const integrations = ['cypress', 'express', 'prisma', 'tailwindcss'];

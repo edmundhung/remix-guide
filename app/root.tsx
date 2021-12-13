@@ -13,7 +13,7 @@ import {
 } from 'remix';
 import { useMemo } from 'react';
 import SidebarNavigation from '~/components/SidebarNavigation';
-import { categories, platforms } from '~/meta';
+import { categories, platforms, integrations } from '~/meta';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
@@ -34,10 +34,6 @@ export let loader: LoaderFunction = async ({ context }) => {
   const user = await auth.isAuthenticated();
 
   return json({
-    versions: [],
-    categories,
-    languages: [],
-    platforms,
     user,
   });
 };
@@ -57,7 +53,7 @@ function Document({
         <Meta />
         <Links />
       </head>
-      <body className="relative w-full h-full min-h-screen flex bg-black text-gray-200 bg-gradient-to-bl from-gray-900 via-black to-gray-900">
+      <body className="relative w-full h-full min-h-screen flex bg-black text-gray-200">
         {children}
         <ScrollRestoration />
         <Scripts />
@@ -68,7 +64,7 @@ function Document({
 }
 
 export default function App() {
-  const { categories, platforms, languages, versions, user } = useLoaderData();
+  const { user } = useLoaderData();
   const location = useLocation();
   const [isMenuEnabled, closeMenuLink] = useMemo(() => {
     const searchPararms = new URLSearchParams(location.search);
@@ -91,8 +87,7 @@ export default function App() {
         <SidebarNavigation
           categories={categories}
           platforms={platforms}
-          languages={languages}
-          versions={versions}
+          integrations={integrations}
           user={user}
         />
       </nav>
