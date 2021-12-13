@@ -1,11 +1,4 @@
-import {
-  ReactElement,
-  ReactNode,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { ReactElement, ReactNode, useEffect, useMemo, useRef } from 'react';
 import { Form, Link, useSubmit, useTransition, useLocation } from 'remix';
 import { throttle } from '~/helpers';
 import CategoryIcon from '~/components/CategoryIcon';
@@ -19,6 +12,7 @@ import remixIcon from '~/icons/remix.svg';
 import expandIcon from '~/icons/expand.svg';
 import collapseIcon from '~/icons/collapse.svg';
 import circleIcon from '~/icons/circle.svg';
+import timesIcon from '~/icons/times.svg';
 import type { UserProfile } from '~/types';
 
 interface SearchInputProps {
@@ -55,56 +49,76 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
 
 interface MenuProps {
   title?: string;
-  value?: string;
-  active?: string | null;
-  onActive?: (title: string) => void;
+  name?: string;
+  to?: string;
+  value?: string | string[];
+  defaultOpen?: boolean;
   children: ReactNode;
 }
 
 function LinkMenu({
   title,
+  name,
+  to,
   value,
-  active,
-  onActive,
+  defaultOpen,
   children,
 }: MenuProps): ReactElement {
-  return (
-    <div>
-      {!title ? null : (
-        <div className="sticky top-0 bg-black py-2 text-xs text-gray-500">
-          <button
-            type="button"
-            className="relative w-full px-3 py-1.5 flex items-center gap-4 rounded-lg"
-            onClick={() =>
-              onActive((current) => (current !== title ? title : null))
-            }
-          >
-            <span className="w-4 h-4 flex items-center justify-center">
-              {title === active ? (
-                <SvgIcon className="w-2 h-2" href={collapseIcon} />
-              ) : (
-                <SvgIcon className="w-2 h-2" href={expandIcon} />
-              )}
-            </span>
-            {title}
-            {typeof value !== 'undefined' && title !== active ? (
-              <div className="absolute left-32 text-gray-200">
-                {value ? <span className="capitalize">{value}</span> : ''}
-              </div>
-            ) : null}
-          </button>
-        </div>
+  const location = useLocation();
+  const search = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+
+    searchParams.delete(name);
+
+    return searchParams.toString();
+  }, [location.search, name]);
+
+  const menu = (
+    <ul className="space-y-1">
+      {Array.isArray(children) ? (
+        children.map((child, i) => <li key={i}>{child}</li>)
+      ) : (
+        <li key={i}>{children}</li>
       )}
-      {!title || title === active ? (
-        <ul className="space-y-1 pb-4">
-          {Array.isArray(children) ? (
-            children.map((child, i) => <li key={i}>{child}</li>)
-          ) : (
-            <li key={i}>{children}</li>
+    </ul>
+  );
+
+  if (!title) {
+    return <div className="py-4">{menu}</div>;
+  }
+
+  return (
+    <details className="group" open={defaultOpen}>
+      <summary className="list-none cursor-pointer sticky top-0 bg-black py-2 text-xs text-gray-500">
+        <div className="relative w-full px-3 py-1.5 flex flex-row items-center gap-4 rounded-lg">
+          <span className="w-4 h-4 flex items-center justify-center">
+            <SvgIcon
+              className="w-2 h-2 hidden group-open:inline-block"
+              href={collapseIcon}
+            />
+            <SvgIcon
+              className="w-2 h-2 inline-block group-open:hidden"
+              href={expandIcon}
+            />
+          </span>
+          <span className="w-16">{title}</span>
+          {!value || value.length === 0 ? null : (
+            <div className="flex flex-1 text-gray-200 group-open:hidden">
+              <span className="flex-1  capitalize line-clamp-1">
+                {[].concat(value).sort().join(', ')}
+              </span>
+              <Link
+                className="w-4 h-4 flex items-center justify-center hover:rounded-full hover:bg-gray-200 hover:text-black"
+                to={search ? `${to}?${search}` : to}
+              >
+                <SvgIcon className="w-3 h-3" href={timesIcon} />
+              </Link>
+            </div>
           )}
-        </ul>
-      ) : null}
-    </div>
+        </div>
+      </summary>
+      <div className="pb-4">{menu}</div>
+    </details>
   );
 }
 
@@ -190,11 +204,7 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
   }
 
   return (
-    <Link
-      className={className}
-      to={search ? `${to}?${search}` : to}
-      prefetch="intent"
-    >
+    <Link className={className} to={search ? `${to}?${search}` : to}>
       {children}
     </Link>
   );
@@ -215,7 +225,6 @@ function SidebarNavigation({
 }: SidebarNavigationProps): ReactElement {
   const submit = useSubmit();
   const location = useLocation();
-  const [active, setActive] = useState<string | null>('Categories');
   const searchParams = new URLSearchParams(location.search);
   const keyword = searchParams.get('q');
   const list = searchParams.get('list');
@@ -274,9 +283,10 @@ function SidebarNavigation({
         </LinkMenu>
         <LinkMenu
           title="Categories"
+          name="category"
+          to={action}
           value={category}
-          active={active}
-          onActive={setActive}
+          defaultOpen
         >
           {categories.map((option) => (
             <MenuItem key={option} to={action} name="category" value={option}>
@@ -284,12 +294,29 @@ function SidebarNavigation({
             </MenuItem>
           ))}
         </LinkMenu>
+        {platforms.length === 0 ? null : (
+          <LinkMenu
+            title="Platform"
+            name="platform"
+            to={action}
+            value={platform}
+          >
+            {platforms.map((option) => (
+              <MenuItem key={option} to={action} name="platform" value={option}>
+                <span className="w-4 h-4 flex items-center justify-center">
+                  <SvgIcon className="inline-block w-3 h-3" href={circleIcon} />
+                </span>{' '}
+                {option}
+              </MenuItem>
+            ))}
+          </LinkMenu>
+        )}
         {integrations.length === 0 ? null : (
           <LinkMenu
             title="Integrations"
-            value={integration[0] ?? ''}
-            active={active}
-            onActive={setActive}
+            name="integration"
+            to={action}
+            value={integration}
           >
             {integrations.map((option) => (
               <MenuItem
@@ -306,29 +333,12 @@ function SidebarNavigation({
             ))}
           </LinkMenu>
         )}
-        {platforms.length === 0 ? null : (
-          <LinkMenu
-            title="Platform"
-            value={platform}
-            active={active}
-            onActive={setActive}
-          >
-            {platforms.map((option) => (
-              <MenuItem key={option} to={action} name="platform" value={option}>
-                <span className="w-4 h-4 flex items-center justify-center">
-                  <SvgIcon className="inline-block w-3 h-3" href={circleIcon} />
-                </span>{' '}
-                {option}
-              </MenuItem>
-            ))}
-          </LinkMenu>
-        )}
         <LinkMenu>
           <MenuItem to="https://remix.run/docs">
-            <SvgIcon className="w-4 h-4" href={remixIcon} /> Docs
+            <SvgIcon className="w-4 h-4" href={remixIcon} /> Remix Docs
           </MenuItem>
           <MenuItem to="https://github.com/remix-run/remix">
-            <SvgIcon className="w-4 h-4" href={githubIcon} /> Github
+            <SvgIcon className="w-4 h-4" href={githubIcon} /> Repository
           </MenuItem>
           <MenuItem to="https://discord.com/invite/remix">
             <SvgIcon className="w-4 h-4" href={discordIcon} /> Discord

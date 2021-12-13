@@ -82,7 +82,7 @@ export default function App() {
       <nav
         className={`${
           isMenuEnabled ? 'absolute xl:relative bg-black' : 'hidden'
-        } z-40 xl:block w-64 h-full border-r`}
+        } z-40 xl:block w-72 h-full border-r`}
       >
         <SidebarNavigation
           categories={categories}

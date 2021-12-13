@@ -5,7 +5,7 @@ export function useResourcesSearch(): string {
   const location = useLocation();
   const search = useMemo(() => {
     const searchParams = new URLSearchParams(location.search);
-    const supported = ['list', 'q', 'category', 'platform', 'language'];
+    const supported = ['list', 'q', 'category', 'platform', 'integration'];
 
     for (const key of searchParams.keys()) {
       if (supported.includes(key)) {
