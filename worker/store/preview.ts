@@ -254,7 +254,6 @@ export function createPageLoader(env: Env) {
       case 'YouTube': {
         const videoId = new URL(page.url).searchParams.get('v');
 
-        page.category = 'videos';
         page.video = `https://www.youtube.com/embed/${videoId}`;
         break;
       }

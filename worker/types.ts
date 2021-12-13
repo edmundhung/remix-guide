@@ -24,12 +24,12 @@ export interface User {
 }
 
 export type Category =
-  | 'others'
-  | 'articles'
-  | 'videos'
+  | 'concepts'
+  | 'tutorials'
   | 'packages'
   | 'templates'
-  | 'examples';
+  | 'examples'
+  | 'others';
 
 export interface Page {
   url: string;

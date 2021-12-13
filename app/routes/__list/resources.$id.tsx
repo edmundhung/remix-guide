@@ -160,7 +160,7 @@ export default function EntryDetail() {
               )}
             </div>
             <div className="lg:max-w-xs w-auto">
-              {entry.category === 'videos' && entry.video ? (
+              {entry.video ? (
                 <div className="pt-1 w-full lg:w-64">
                   <div
                     className="relative h-0"

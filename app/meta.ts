@@ -1,9 +1,10 @@
 export const categories = [
-  'articles',
-  'videos',
+  'concepts',
+  'tutorials',
   'packages',
   'templates',
   'examples',
+  'others',
 ];
 
 export const platforms = [

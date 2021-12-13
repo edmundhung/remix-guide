@@ -1,10 +1,11 @@
 import { ReactElement } from 'react';
 import SvgIcon from '~/components/SvgIcon';
-import articleIcon from '~/icons/article.svg';
-import videoIcon from '~/icons/video.svg';
-import packageIcon from '~/icons/package.svg';
-import templateIcon from '~/icons/template.svg';
-import exampleIcon from '~/icons/example.svg';
+import tutorialscon from '~/icons/chalkboard-teacher.svg';
+import conceptsIcon from '~/icons/coffee.svg';
+import packagesIcon from '~/icons/box-open.svg';
+import templatesIcon from '~/icons/paste.svg';
+import examplesIcon from '~/icons/map-signs.svg';
+import othersIcon from '~/icons/mail-bulk.svg';
 
 interface CategoryIconProps {
   category: string;
@@ -18,20 +19,23 @@ function CategoryIcon({
   let iconUrl: string | null = null;
 
   switch (category) {
-    case 'articles':
-      iconUrl = articleIcon;
+    case 'concepts':
+      iconUrl = conceptsIcon;
       break;
-    case 'videos':
-      iconUrl = videoIcon;
+    case 'tutorials':
+      iconUrl = tutorialscon;
       break;
     case 'packages':
-      iconUrl = packageIcon;
+      iconUrl = packagesIcon;
       break;
     case 'templates':
-      iconUrl = templateIcon;
+      iconUrl = templatesIcon;
       break;
     case 'examples':
-      iconUrl = exampleIcon;
+      iconUrl = examplesIcon;
+      break;
+    case 'others':
+      iconUrl = othersIcon;
       break;
   }
 
