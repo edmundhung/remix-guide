@@ -12,6 +12,7 @@ import remixIcon from '~/icons/remix.svg';
 import expandIcon from '~/icons/expand.svg';
 import collapseIcon from '~/icons/collapse.svg';
 import circleIcon from '~/icons/circle.svg';
+import squareIcon from '~/icons/square.svg';
 import timesIcon from '~/icons/times.svg';
 import type { UserProfile } from '~/types';
 
@@ -45,6 +46,23 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
       </button>
     </div>
   );
+}
+
+function getColor(index: number, step: number): string {
+  const colors = [
+    'text-red-500',
+    'text-yellow-400',
+    'text-green-200',
+    'text-green-300',
+    'text-blue-300',
+    'text-blue-500',
+    'text-indigo-300',
+    'text-indigo-500',
+    'text-purple-400',
+    'text-pink-400',
+  ];
+
+  return colors[(index * step) % colors.length];
 }
 
 interface MenuProps {
@@ -263,12 +281,18 @@ function SidebarNavigation({
           onChange={handleChange}
         >
           <SearchInput name="q" value={keyword} />
+          {list ? <input type="hidden" name="list" value={list} /> : null}
           {category ? (
             <input type="hidden" name="category" value={category} />
           ) : null}
+          {platform ? (
+            <input type="hidden" name="platform" value={platform} />
+          ) : null}
+          {integration.map((value) => (
+            <input key={value} type="hidden" name="integration" value={value} />
+          ))}
         </Form>
       </header>
-      {list ? <input type="hidden" name="list" value={list} /> : null}
       <section className="flex-1 px-5 divide-y overflow-y-auto">
         <LinkMenu>
           <MenuItem to="/" name="list" value={null}>
@@ -282,7 +306,7 @@ function SidebarNavigation({
           </MenuItem>
         </LinkMenu>
         <LinkMenu
-          title="Categories"
+          title="Category"
           name="category"
           to={action}
           value={category}
@@ -301,10 +325,13 @@ function SidebarNavigation({
             to={action}
             value={platform}
           >
-            {platforms.map((option) => (
+            {platforms.map((option, index) => (
               <MenuItem key={option} to={action} name="platform" value={option}>
                 <span className="w-4 h-4 flex items-center justify-center">
-                  <SvgIcon className="inline-block w-3 h-3" href={circleIcon} />
+                  <SvgIcon
+                    className={`inline-block w-2 h-2 ${getColor(index, 1)}`}
+                    href={circleIcon}
+                  />
                 </span>{' '}
                 {option}
               </MenuItem>
@@ -318,7 +345,7 @@ function SidebarNavigation({
             to={action}
             value={integration}
           >
-            {integrations.map((option) => (
+            {integrations.map((option, index) => (
               <MenuItem
                 key={option}
                 to={action}
@@ -326,7 +353,10 @@ function SidebarNavigation({
                 value={option}
               >
                 <span className="w-4 h-4 flex items-center justify-center">
-                  <SvgIcon className="inline-block w-3 h-3" href={circleIcon} />
+                  <SvgIcon
+                    className={`inline-block w-2 h-2 ${getColor(index, 2)}`}
+                    href={squareIcon}
+                  />
                 </span>{' '}
                 {option}
               </MenuItem>
