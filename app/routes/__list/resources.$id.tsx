@@ -161,15 +161,11 @@ export default function EntryDetail() {
             </div>
             <div className="lg:max-w-xs w-auto">
               {entry.video ? (
-                <div className="pt-1 w-full lg:w-64">
-                  <div
-                    className="relative h-0"
-                    style={{ paddingBottom: '56.25%' }}
-                  >
+                <div className="pt-1 w-full lg:w-72">
+                  <div className="aspect-w-16 aspect-h-9">
                     <iframe
-                      className="absolute top-0 left-0 w-full h-full"
-                      width="480"
-                      height="270"
+                      width="720"
+                      height="405"
                       src={entry.video}
                       title={entry.title}
                       frameBorder="0"
