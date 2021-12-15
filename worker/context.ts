@@ -2,13 +2,13 @@ import { Authenticator } from 'remix-auth/build/authenticator';
 import { GitHubStrategy } from 'remix-auth/build/strategies/github';
 import { createCookieSessionStorage, redirect } from 'remix';
 import type {
-  Category,
   Env,
   Entry,
   User,
   MessageType,
   Metadata,
   UserProfile,
+  SearchOptions,
   SubmissionStatus,
 } from './types';
 
@@ -122,15 +122,6 @@ export function createAuth(request: Request, env: Env, ctx: ExecutionContext) {
   };
 }
 
-interface SearchOptions {
-  keyword: string;
-  list: 'bookmarks' | 'history' | null;
-  categories: Category[] | null;
-  authors: string[] | null;
-  integrations: string[] | null;
-  languages: string[] | null;
-}
-
 export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   const id = env.ENTRIES_STORE.idFromName('');
   const entriesStore = env.ENTRIES_STORE.get(id);
@@ -146,73 +137,118 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     return await env.CONTENT.get<User>(`user/${userId}`, 'json');
   }
 
+  function match(
+    wanted: string[],
+    value: string | string[],
+    partialMatch = false
+  ) {
+    if (wanted.length === 0) {
+      return true;
+    }
+
+    if (partialMatch || Array.isArray(value)) {
+      return wanted.every((item) => value.includes(item));
+    }
+
+    return wanted.includes(value);
+  }
+
   return {
     async search(userId: string | null, options: SearchOptions) {
-      const list = await env.CONTENT.list<Metadata>({ prefix: 'entry/' });
-      let entries = list.keys
-        .flatMap((key) => key.metadata ?? [])
-        .sort(
-          (prev, next) => new Date(next.createdAt) - new Date(prev.createdAt)
-        );
+      const [list, includes] = await Promise.all([
+        env.CONTENT.list<Metadata>({ prefix: 'entry/' }),
+        options.list !== null
+          ? (async () => {
+              const user = userId ? await getUser(userId) : null;
 
-      if (options.list !== null) {
-        const user = userId ? await getUser(userId) : null;
+              switch (options.list) {
+                case 'bookmarks':
+                  return user?.bookmarked ?? [];
+                case 'history':
+                  return user?.viewed ?? [];
+                default:
+                  return null;
+              }
+            })()
+          : null,
+      ]);
 
-        switch (options.list) {
-          case 'bookmarks':
-            entries = !user
-              ? []
-              : entries
-                  .filter((entry) => user.bookmarked.includes(entry.id))
-                  .sort(
-                    (prev, next) =>
-                      user.bookmarked.indexOf(prev.id) -
-                      user.bookmarked.indexOf(next.id)
-                  );
-            break;
-          case 'history':
-            entries = !user
-              ? []
-              : entries
-                  .filter((entry) => user.viewed.includes(entry.id))
-                  .sort(
-                    (prev, next) =>
-                      user.viewed.indexOf(prev.id) -
-                      user.viewed.indexOf(next.id)
-                  );
-            break;
-        }
+      const entries = list.keys
+        .flatMap((key) => {
+          const item = key.metadata;
+
+          if (!item) {
+            return [];
+          }
+
+          if (includes && !includes.includes(item.id)) {
+            return [];
+          }
+
+          if (options.excludes && options.excludes.includes(item.id)) {
+            return [];
+          }
+
+          const isMatching =
+            match(
+              options?.keyword ? options.keyword.toLowerCase().split(' ') : [],
+              `${item.title} ${item.description}`.toLowerCase(),
+              true
+            ) &&
+            match(options.author ? [options.author] : [], item.author) &&
+            match(options.categories ?? [], item.category) &&
+            match(
+              options.hostname ? [options.hostname] : [],
+              new URL(item.url).hostname
+            ) &&
+            match(options.integrations ?? [], item.integrations ?? []);
+
+          if (!isMatching) {
+            return [];
+          }
+
+          return item;
+        })
+        .sort((prev, next) => {
+          switch (options.sortBy) {
+            case 'hotness': {
+              let diff;
+
+              for (const key of ['bookmarkCounts', 'viewCounts', 'createdAt']) {
+                switch (key) {
+                  case 'createdAt':
+                    diff = new Date(next.createdAt) - new Date(prev.createdAt);
+                    break;
+                  case 'bookmarkCounts':
+                    diff = next.bookmarkCounts - prev.bookmarkCounts;
+                    break;
+                  case 'viewCounts':
+                    diff = next.viewCounts - prev.viewCounts;
+                    break;
+                }
+
+                if (diff !== 0) {
+                  break;
+                }
+              }
+
+              return diff;
+            }
+            default: {
+              if (includes) {
+                return includes.indexOf(prev.id) - includes.indexOf(next.id);
+              } else {
+                return new Date(next.createdAt) - new Date(prev.createdAt);
+              }
+            }
+          }
+        });
+
+      if (options.limit) {
+        return entries.slice(0, options.limit);
       }
 
-      const match = (
-        wanted: string[],
-        value: string | string[],
-        partialMatch = false
-      ) => {
-        if (wanted.length === 0) {
-          return true;
-        }
-
-        if (partialMatch || Array.isArray(value)) {
-          return wanted.every((item) => value.includes(item));
-        }
-
-        return wanted.includes(value);
-      };
-      const result = entries.filter(
-        (item) =>
-          match(
-            options.keyword !== ''
-              ? options.keyword.toLowerCase().split(' ')
-              : [],
-            `${item.title} ${item.description}`.toLowerCase(),
-            true
-          ) &&
-          match(options.categories ?? [], item.category) &&
-          match(options.integrations ?? [], item.integrations ?? [])
-      );
-
-      return result;
+      return entries;
     },
     async query(entryId: string) {
       return await env.CONTENT.get<Entry>(`entry/${entryId}`, 'json');

@@ -5,6 +5,7 @@ import type {
   ShouldReloadFunction,
 } from 'remix';
 import { Link, Outlet, useLoaderData, useParams, json } from 'remix';
+import Card from '~/components/Card';
 import Panel from '~/components/Panel';
 import SvgIcon from '~/components/SvgIcon';
 import { capitalize } from '~/helpers';
@@ -32,11 +33,15 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const list = url.searchParams.get('list');
   const category = url.searchParams.get('category');
   const platform = url.searchParams.get('platform');
+  const author = url.searchParams.get('author');
+  const hostname = url.searchParams.get('hostname');
   const integrations = url.searchParams.getAll('integration');
 
   const entries = await store.search(profile?.id ?? null, {
     keyword,
     list,
+    author,
+    hostname,
     categories: category ? [category] : [],
     integrations: integrations.concat(platform ? [platform] : []),
   });
@@ -90,32 +95,12 @@ export default function List() {
           ) : (
             <div>
               {entries.map((entry) => (
-                <article key={entry.id} className="py-1">
-                  <Link
-                    className={`block rounded-lg no-underline ${
-                      params.id === entry.id
-                        ? 'shadow-inner bg-gray-800'
-                        : 'hover:shadow-inner hover:bg-gray-900'
-                    }`}
-                    to={`/resources/${entry.id}?${search}`}
-                    prefetch="intent"
-                  >
-                    <section className="px-3 py-2.5 text-sm">
-                      <div className="text-xs pb-1.5 text-gray-500 flex flex-row justify-between">
-                        <span>{entry.createdAt.substr(0, 10)}</span>
-                        <span>{new URL(entry.url).hostname}</span>
-                      </div>
-                      <h2 className="break-words line-clamp-2">
-                        {entry.title}
-                      </h2>
-                      {!entry.description ? null : (
-                        <p className="pt-1 text-gray-400 line-clamp-2">
-                          {entry.description}
-                        </p>
-                      )}
-                    </section>
-                  </Link>
-                </article>
+                <Card
+                  key={entry.id}
+                  entry={entry}
+                  search={search}
+                  selected={params.id === entry.id}
+                />
               ))}
             </div>
           )}

@@ -72,3 +72,15 @@ export interface Entry extends Page {
   updatedAt: string;
   updatedBy: string;
 }
+
+export interface SearchOptions {
+  keyword?: string;
+  list?: 'bookmarks' | 'history' | null;
+  author?: string | null;
+  hostname?: string | null;
+  categories?: Category[] | null;
+  integrations?: string[] | null;
+  excludes?: string[] | null;
+  limit?: number;
+  sortBy?: 'hotness' | null;
+}

@@ -1,6 +1,6 @@
 import { ReactElement, ReactNode, useEffect, useMemo, useRef } from 'react';
 import { Form, Link, useSubmit, useTransition, useLocation } from 'remix';
-import { throttle } from '~/helpers';
+import { capitalize, throttle } from '~/helpers';
 import CategoryIcon from '~/components/CategoryIcon';
 import SvgIcon from '~/components/SvgIcon';
 import homeIcon from '~/icons/home.svg';
@@ -14,6 +14,7 @@ import collapseIcon from '~/icons/collapse.svg';
 import circleIcon from '~/icons/circle.svg';
 import squareIcon from '~/icons/square.svg';
 import timesIcon from '~/icons/times.svg';
+import mapPinIcon from '~/icons/map-pin.svg';
 import type { UserProfile } from '~/types';
 
 interface SearchInputProps {
@@ -71,7 +72,7 @@ interface MenuProps {
   to?: string;
   value?: string | string[];
   defaultOpen?: boolean;
-  children: ReactNode;
+  children?: ReactNode;
 }
 
 function LinkMenu({
@@ -91,7 +92,7 @@ function LinkMenu({
     return searchParams.toString();
   }, [location.search, name]);
 
-  const menu = (
+  const menu = children ? (
     <ul className="space-y-1">
       {Array.isArray(children) ? (
         children.map((child, i) => <li key={i}>{child}</li>)
@@ -99,7 +100,7 @@ function LinkMenu({
         <li key={i}>{children}</li>
       )}
     </ul>
-  );
+  ) : null;
 
   if (!title) {
     return <div className="py-4">{menu}</div>;
@@ -110,19 +111,29 @@ function LinkMenu({
       <summary className="list-none cursor-pointer sticky top-0 bg-black py-2 text-xs text-gray-500">
         <div className="relative w-full px-3 py-1.5 flex flex-row items-center gap-4 rounded-lg">
           <span className="w-4 h-4 flex items-center justify-center">
-            <SvgIcon
-              className="w-2 h-2 hidden group-open:inline-block"
-              href={collapseIcon}
-            />
-            <SvgIcon
-              className="w-2 h-2 inline-block group-open:hidden"
-              href={expandIcon}
-            />
+            {children ? (
+              <>
+                <SvgIcon
+                  className="w-2 h-2 hidden group-open:inline-block"
+                  href={collapseIcon}
+                />
+                <SvgIcon
+                  className="w-2 h-2 inline-block group-open:hidden"
+                  href={expandIcon}
+                />
+              </>
+            ) : (
+              <SvgIcon className="w-3 h-3 inline-block" href={mapPinIcon} />
+            )}
           </span>
           <span className="w-16">{title}</span>
           {!value || value.length === 0 ? null : (
-            <div className="flex flex-1 text-gray-200 group-open:hidden">
-              <span className="flex-1  capitalize line-clamp-1">
+            <div
+              className={`flex flex-1 text-gray-200 ${
+                children ? 'group-open:hidden' : ''
+              }`}
+            >
+              <span className="flex-1 w-px truncate break-words">
                 {[].concat(value).sort().join(', ')}
               </span>
               <Link
@@ -135,7 +146,7 @@ function LinkMenu({
           )}
         </div>
       </summary>
-      <div className="pb-4">{menu}</div>
+      {menu ? <div className="pb-4">{menu}</div> : null}
     </details>
   );
 }
@@ -202,7 +213,7 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
 
     return [isActive, search];
   }, [location, name, value]);
-  const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg ${
+  const className = `px-3 py-1.5 flex items-center gap-4 capitalize transition-colors rounded-lg ${
     isActive
       ? 'shadow-inner bg-gray-800'
       : 'hover:shadow-inner hover:bg-gray-900'
@@ -246,6 +257,8 @@ function SidebarNavigation({
   const searchParams = new URLSearchParams(location.search);
   const keyword = searchParams.get('q');
   const list = searchParams.get('list');
+  const author = searchParams.get('author');
+  const hostname = searchParams.get('hostname');
   const category = searchParams.get('category');
   const platform = searchParams.get('platform') ?? '';
   const integration = searchParams.getAll('integration') ?? [];
@@ -272,7 +285,7 @@ function SidebarNavigation({
     : '/resources';
 
   return (
-    <div className="h-full max-h-screen min-h-screen flex flex-col text-sm capitalize">
+    <div className="h-full max-h-screen min-h-screen flex flex-col text-sm">
       <header className="px-5 py-4">
         <Form
           method="get"
@@ -305,11 +318,22 @@ function SidebarNavigation({
             <SvgIcon className="w-4 h-4" href={historyIcon} /> History
           </MenuItem>
         </LinkMenu>
+        {author ? (
+          <LinkMenu title="Author" name="author" to={action} value={author} />
+        ) : null}
+        {hostname ? (
+          <LinkMenu
+            title="Hostname"
+            name="hostname"
+            to={action}
+            value={hostname}
+          />
+        ) : null}
         <LinkMenu
           title="Category"
           name="category"
           to={action}
-          value={category}
+          value={capitalize(category)}
           defaultOpen
         >
           {categories.map((option) => (
@@ -323,7 +347,7 @@ function SidebarNavigation({
             title="Platform"
             name="platform"
             to={action}
-            value={platform}
+            value={capitalize(platform)}
           >
             {platforms.map((option, index) => (
               <MenuItem key={option} to={action} name="platform" value={option}>
@@ -343,7 +367,7 @@ function SidebarNavigation({
             title="Integrations"
             name="integration"
             to={action}
-            value={integration}
+            value={integration.map(capitalize)}
           >
             {integrations.map((option, index) => (
               <MenuItem

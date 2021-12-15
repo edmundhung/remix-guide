@@ -5,9 +5,10 @@ import type {
   ShouldReloadFunction,
 } from 'remix';
 import { Form, json, redirect, useLoaderData, useFetcher } from 'remix';
-import { useEffect } from 'react';
+import { ReactElement, useEffect } from 'react';
 import { notFound } from '~/helpers';
-import type { Entry, Context } from '~/types';
+import type { Entry, Context, Metadata, SearchOptions } from '~/types';
+import Card from '~/components/Card';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
@@ -51,48 +52,101 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  const { auth, store } = context as Context;
-  const [entry, user, [message, setCookieHeader]] = await Promise.all([
-    store.query(params.id ?? ''),
-    (async () => {
-      const profile = await auth.isAuthenticated();
+  try {
+    const { auth, store } = context as Context;
+    const [entry, user] = await Promise.all([
+      store.query(params.id ?? ''),
+      (async () => {
+        const profile = await auth.isAuthenticated();
 
-      if (!profile) {
-        return null;
-      }
+        if (!profile) {
+          return null;
+        }
 
-      return await store.getUser(profile.id);
-    })(),
-    auth.getFlashMessage(),
-  ]);
+        return await store.getUser(profile.id);
+      })(),
+    ]);
 
-  if (!entry) {
-    throw notFound();
-  }
-
-  return json(
-    {
-      entry,
-      authenticated: user !== null,
-      bookmarked: user?.bookmarked.includes(entry.id),
-      message,
-    },
-    {
-      headers: setCookieHeader,
+    if (!entry) {
+      throw notFound();
     }
-  );
+
+    const searchOptions: SearchOptions = {
+      sortBy: 'hotness',
+      excludes: [entry.id],
+      limit: 6,
+    };
+    const [
+      [message, setCookieHeader],
+      builtWithPackage,
+      madeByAuthor,
+      alsoOnHostname,
+    ] = await Promise.all([
+      auth.getFlashMessage(),
+      entry.category === 'packages'
+        ? store.search(user?.profile.id ?? null, {
+            ...searchOptions,
+            integrations: [entry.title],
+          })
+        : null,
+      typeof entry.author !== 'undefined' && entry.author !== null
+        ? store.search(user?.profile.id ?? null, {
+            ...searchOptions,
+            author: entry.author,
+          })
+        : null,
+      ['concepts', 'tutorials', 'others'].includes(entry.category)
+        ? store.search(user?.profile.id ?? null, {
+            ...searchOptions,
+            hostname: new URL(entry.url).hostname,
+          })
+        : null,
+    ]);
+
+    return json(
+      {
+        entry,
+        authenticated: user !== null,
+        bookmarked: user?.bookmarked.includes(entry.id),
+        message,
+        builtWithPackage,
+        madeByAuthor,
+        alsoOnHostname,
+      },
+      {
+        headers: setCookieHeader,
+      }
+    );
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
-  return typeof submission === 'undefined';
+  return (
+    typeof submission === 'undefined' ||
+    submission.formData.get('type') !== 'view'
+  );
 };
 
 export default function EntryDetail() {
   const { submit } = useFetcher();
-  const { entry, authenticated, bookmarked, message } = useLoaderData<{
+  const {
+    entry,
+    authenticated,
+    bookmarked,
+    message,
+    builtWithPackage,
+    madeByAuthor,
+    alsoOnHostname,
+  } = useLoaderData<{
     entry: Entry;
     authenticated: boolean;
     bookmarked: boolean;
+    builtWithPackage: Metadata[] | null;
+    madeByAuthor: Metadata[] | null;
+    alsoOnHostname: Metadata[] | null;
   }>();
 
   useEffect(() => {
@@ -102,6 +156,8 @@ export default function EntryDetail() {
 
     submit({ type: 'view' }, { method: 'post' });
   }, [submit, authenticated, entry.id]);
+
+  const { hostname } = new URL(entry.url);
 
   return (
     <Panel
@@ -120,8 +176,11 @@ export default function EntryDetail() {
             className={`flex items-center justify-center w-6 h-6 ${
               bookmarked
                 ? 'rounded-full text-red-500 bg-gray-200'
-                : 'hover:rounded-full hover:bg-gray-200 hover:text-black'
+                : authenticated
+                ? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
+                : ''
             }`}
+            disabled={!authenticated}
           >
             <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
           </button>
@@ -160,7 +219,7 @@ export default function EntryDetail() {
                   className="inline-block w-3 h-3 mr-2"
                   href={linkIcon}
                 />
-                {new URL(entry.url).hostname}
+                {hostname}
               </a>
               {!entry.description ? null : (
                 <p className="pt-6 text-gray-500 text-sm">
@@ -202,8 +261,64 @@ export default function EntryDetail() {
             </div>
           </div>
         </div>
-        <div className="px-3 py-8"></div>
+        {builtWithPackage ? (
+          <div className="py-8">
+            <h3 className="px-3 pb-4">Built with {entry.title}</h3>
+            <RelatedResources
+              entries={builtWithPackage}
+              search={new URLSearchParams([
+                ['integration', entry.title],
+              ]).toString()}
+            />
+          </div>
+        ) : null}
+        {madeByAuthor ? (
+          <div className="py-8">
+            <h3 className="px-3 pb-4">Made by {entry.author}</h3>
+            <RelatedResources
+              entries={madeByAuthor}
+              search={new URLSearchParams([
+                ['author', entry.author],
+              ]).toString()}
+            />
+          </div>
+        ) : null}
+        {alsoOnHostname ? (
+          <div className="py-8">
+            <h3 className="px-3 pb-4">Also on {hostname}</h3>
+            <RelatedResources
+              entries={alsoOnHostname}
+              search={new URLSearchParams([['hostname', hostname]]).toString()}
+            />
+          </div>
+        ) : null}
       </div>
     </Panel>
+  );
+}
+
+interface RelatedResourcesProps {
+  entries: Metadata[];
+  search: string;
+}
+
+function RelatedResources({
+  entries,
+  search,
+}: RelatedResourcesProps): ReactElement {
+  if (entries.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No entry found at the moment
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2">
+      {entries.map((entry) => (
+        <Card key={entry.id} entry={entry} search={search} />
+      ))}
+    </div>
   );
 }

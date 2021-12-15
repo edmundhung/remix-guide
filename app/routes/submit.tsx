@@ -153,7 +153,7 @@ export default function Submit() {
 
   return (
     <Panel title="Submission" message={message}>
-      <section className="px-3 pt-8">
+      <section className="px-3 pt-2">
         <Form className="lg:max-w-3xl" method="post" reloadDocument>
           <h3 className="">Please select a cateogry</h3>
           <div>
