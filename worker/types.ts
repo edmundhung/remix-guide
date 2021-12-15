@@ -33,6 +33,7 @@ export type Category =
 
 export interface Page {
   url: string;
+  site?: string;
   author?: string;
   category?: Category;
   title?: string;

@@ -185,18 +185,18 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     async getUser(userId: string) {
       return await getUser(userId);
     },
-    async submit(userId: string, url: string) {
+    async submit(url: string, category: string, userId: string) {
       const response = await entriesStore.fetch('http://entries/submit', {
         method: 'POST',
-        body: JSON.stringify({ userId, url }),
+        body: JSON.stringify({ url, category, userId }),
       });
-      const { id } = await response.json();
 
-      if (!id) {
-        throw new Error('Submission failed; Entry id is missing');
-      }
+      const { id, message } = await response.json();
 
-      return id;
+      return {
+        id,
+        message,
+      };
     },
     async refresh(entryId: string): Promise<void> {
       const response = await entriesStore.fetch('http://entries/refresh', {

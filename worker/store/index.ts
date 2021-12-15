@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
-import type { Entry, Env, Metadata, UserProfile, User } from '../types';
-import { createPageLoader } from './preview';
+import type { Entry, Env, Metadata, UserProfile, User, Page } from '../types';
+import { scrapeUrl, isSupportedSite, getAdditionalMetadata } from './preview';
 
 /**
  * ID Generator based on nanoid
@@ -24,7 +24,6 @@ export class EntriesStore {
     this.state = state;
     this.env = env;
     this.scheduledEntryIds = [];
-    this.loadPage = createPageLoader(env);
     this.state.blockConcurrencyWhile(async () => {
       let stored = await this.state.storage.get('entryIdByURL');
       this.entryIdByURL = stored || {};
@@ -42,9 +41,34 @@ export class EntriesStore {
             break;
           }
 
-          const { userId, url } = await request.json();
-          const id = await this.createEntry(url, userId);
-          const body = JSON.stringify({ id });
+          const { url, category, userId } = await request.json();
+
+          let message = null;
+          let id = this.entryIdByURL[url] ?? null;
+
+          if (!id) {
+            const page = await scrapeUrl(url);
+
+            if (url !== page.url) {
+              id = this.entryIdByURL[page.url] ?? null;
+              message = 'The provided URL is already submitted previously';
+            }
+
+            if (!id) {
+              let result = await this.createEntry(page, category, userId);
+
+              id = result.id;
+              message = result.message;
+              this.entryIdByURL[page.url] = id;
+            }
+
+            this.entryIdByURL[url] = id;
+            this.state.storage.put('entryIdByURL', this.entryIdByURL);
+          } else {
+            message = 'The provided URL is already submitted previously';
+          }
+
+          const body = JSON.stringify({ id, message });
 
           return new Response(body, { status: 201 });
         }
@@ -156,35 +180,33 @@ export class EntriesStore {
     }
   }
 
-  async createEntry(url: string, userId: string) {
-    let id = this.entryIdByURL[url] ?? null;
-
-    if (!id) {
-      const page = await this.loadPage(url);
-
-      if (url !== page.url) {
-        id = this.entryIdByURL[page.url] ?? null;
-      }
-
-      if (!id) {
-        id = generateId();
-        const now = new Date().toISOString();
-        this.updateEntry({
-          ...page,
-          id,
-          createdAt: now,
-          createdBy: userId,
-          updatedAt: now,
-          updatedBy: userId,
-        });
-      }
-
-      this.entryIdByURL[page.url] = id;
-      this.entryIdByURL[url] = id;
-      this.state.storage.put('entryIdByURL', this.entryIdByURL);
+  async createEntry(page: Page, category: string, userId: string) {
+    if (!isSupportedSite(page, category)) {
+      return {
+        id: null,
+        message:
+          'The provided URL does not match the choosen category; Pleae refine your selection and submit again',
+      };
     }
 
-    return id;
+    const id = generateId();
+    const now = new Date().toISOString();
+    const data = await getAdditionalMetadata(page, this.env);
+
+    this.updateEntry({
+      ...data,
+      id,
+      category,
+      createdAt: now,
+      createdBy: userId,
+      updatedAt: now,
+      updatedBy: userId,
+    });
+
+    return {
+      id,
+      message: 'Resourced created',
+    };
   }
 
   async getEntry(entryId: string) {

@@ -1,6 +1,5 @@
 import { decode } from 'html-entities';
-import { Env } from '~/types';
-import type { Page } from '../types';
+import type { Category, Env, Page } from '../types';
 
 interface Parser {
   setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
@@ -126,8 +125,6 @@ async function getMeta(url: string) {
 }
 
 async function getPackageInfo(packageName: string) {
-  console.log(`getPackageInfo(${packageName})`);
-
   const response = await fetch(`https://registry.npmjs.org/${packageName}`);
   const info = await response.json();
 
@@ -135,8 +132,6 @@ async function getPackageInfo(packageName: string) {
 }
 
 async function getGithubRepositoryMetadata(repo: string, token: string) {
-  console.log(`getGithubRepositoryMetadata(${repo})`);
-
   const response = await fetch(`https://api.github.com/repos/${repo}`, {
     headers: {
       Accept: 'application/vnd.github.v3+json',
@@ -150,8 +145,6 @@ async function getGithubRepositoryMetadata(repo: string, token: string) {
 }
 
 async function getGithubRepositoryPackacgeJSON(repo: string, branch: string) {
-  console.log(`getGithubRepositoryPackacgeJSON(${repo}, ${branch})`);
-
   const response = await fetch(
     `https://raw.githubusercontent.com/${repo}/${branch}/package.json`
   );
@@ -174,12 +167,6 @@ async function parseGithubRepository(
     title: metadata['full_name'],
     description: metadata['description'],
     author: metadata['owner']?.['login'],
-    category:
-      metadata['is_template'] ||
-      metadata['name']?.includes('template') ||
-      metadata['description']?.includes('template')
-        ? 'templates'
-        : 'examples',
     dependencies: {
       ...packageJSON.dependencies,
       ...packageJSON.devDependencies,
@@ -206,61 +193,84 @@ async function parseNpmPackage(
     ...details,
     title: info.name,
     description: info.description,
-    category: 'packages',
   };
 }
 
-export function createPageLoader(env: Env) {
+export async function scrapeUrl(url: string): Promise<Page> {
+  const meta = await getMeta(url);
+
+  return {
+    ...meta,
+    url: meta.url ?? url,
+  };
+}
+
+export function isSupportedSite(page: Page, category: Category): boolean {
+  let supportedSites: string[] | null = null;
+
+  switch (category) {
+    case 'packages':
+      supportedSites = ['npm'];
+      break;
+    case 'templates':
+      supportedSites = ['GitHub', 'Gist'];
+      break;
+    case 'examples':
+      supportedSites = ['GitHub'];
+      break;
+  }
+
+  return supportedSites === null || supportedSites.includes(page.site);
+}
+
+export async function getAdditionalMetadata(
+  page: Page,
+  env: Env
+): Promise<Page> {
   if (!env.GITHUB_TOKEN) {
     throw new Error(
       'Error creating page loader; GITHUB_TOKEN is not available'
     );
   }
 
-  async function loadPage(url: string): Promise<Page> {
-    const meta = await getMeta(url);
-    let page: Page = {
-      ...meta,
-      url: meta.url ?? url,
-    };
+  switch (page.site) {
+    case 'npm': {
+      const metadata = await parseNpmPackage(page.title, env.GITHUB_TOKEN);
 
-    switch (page.site) {
-      case 'npm': {
-        page = {
-          ...page,
-          ...(await parseNpmPackage(page.title, env.GITHUB_TOKEN)),
-        };
-        break;
-      }
-      case 'GitHub': {
-        const [repo] = page.title.replace('GitHub - ', '').split(':');
-
-        page = {
-          ...page,
-          ...(await parseGithubRepository(repo, env.GITHUB_TOKEN)),
-        };
-        break;
-      }
-      case 'Gist': {
-        const [author] = page.url
-          .replace('https://gist.github.com/', '')
-          .split('/');
-
-        page.category = 'templates';
-        page.author = author;
-        page.description = '';
-        break;
-      }
-      case 'YouTube': {
-        const videoId = new URL(page.url).searchParams.get('v');
-
-        page.video = `https://www.youtube.com/embed/${videoId}`;
-        break;
-      }
+      return {
+        ...page,
+        ...metadata,
+      };
     }
+    case 'GitHub': {
+      const [repo] = page.title.replace('GitHub - ', '').split(':');
+      const metadata = await parseGithubRepository(repo, env.GITHUB_TOKEN);
 
-    return page;
+      return {
+        ...page,
+        ...metadata,
+      };
+    }
+    case 'Gist': {
+      const [author] = page.url
+        .replace('https://gist.github.com/', '')
+        .split('/');
+
+      return {
+        ...page,
+        author,
+        description: '',
+      };
+    }
+    case 'YouTube': {
+      const videoId = new URL(page.url).searchParams.get('v');
+
+      return {
+        ...page,
+        video: `https://www.youtube.com/embed/${videoId}`,
+      };
+    }
   }
 
-  return loadPage;
+  return page;
 }
