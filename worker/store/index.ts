@@ -1,5 +1,13 @@
 import { customAlphabet } from 'nanoid';
-import type { Entry, Env, Metadata, UserProfile, User, Page } from '../types';
+import type {
+  Entry,
+  Env,
+  Metadata,
+  UserProfile,
+  User,
+  Page,
+  SubmissionStatus,
+} from '../types';
 import { scrapeUrl, isSupportedSite, getAdditionalMetadata } from './preview';
 
 /**
@@ -43,7 +51,7 @@ export class EntriesStore {
 
           const { url, category, userId } = await request.json();
 
-          let message = null;
+          let status: SubmissionStatus | null = null;
           let id = this.entryIdByURL[url] ?? null;
 
           if (!id) {
@@ -51,24 +59,24 @@ export class EntriesStore {
 
             if (url !== page.url) {
               id = this.entryIdByURL[page.url] ?? null;
-              message = 'The provided URL is already submitted previously';
+              status = 'RESUBMITTED';
             }
 
             if (!id) {
-              let result = await this.createEntry(page, category, userId);
+              const result = await this.createEntry(page, category, userId);
 
               id = result.id;
-              message = result.message;
+              status = result.status;
               this.entryIdByURL[page.url] = id;
             }
 
             this.entryIdByURL[url] = id;
             this.state.storage.put('entryIdByURL', this.entryIdByURL);
           } else {
-            message = 'The provided URL is already submitted previously';
+            status = 'RESUBMITTED';
           }
 
-          const body = JSON.stringify({ id, message });
+          const body = JSON.stringify({ id, status });
 
           return new Response(body, { status: 201 });
         }
@@ -180,12 +188,15 @@ export class EntriesStore {
     }
   }
 
-  async createEntry(page: Page, category: string, userId: string) {
+  async createEntry(
+    page: Page,
+    category: string,
+    userId: string
+  ): Promise<{ id: string | null; status: SubmissionStatus }> {
     if (!isSupportedSite(page, category)) {
       return {
         id: null,
-        message:
-          'The provided URL does not match the choosen category; Pleae refine your selection and submit again',
+        status: 'INVALID_CATEGORY',
       };
     }
 
@@ -205,7 +216,7 @@ export class EntriesStore {
 
     return {
       id,
-      message: 'Resourced created',
+      status: 'PUBLISHED',
     };
   }
 

@@ -5,8 +5,9 @@ import type {
   ShouldReloadFunction,
 } from 'remix';
 import { Link, Outlet, useLoaderData, useParams, json } from 'remix';
+import Panel from '~/components/Panel';
 import SvgIcon from '~/components/SvgIcon';
-import menuIcon from '~/icons/menu.svg';
+import { capitalize } from '~/helpers';
 import plusIcon from '~/icons/plus.svg';
 import { useResourcesSearch } from '~/search';
 import type { Entry, Context } from '~/types';
@@ -67,33 +68,27 @@ export default function List() {
           params.id ? 'hidden md:block' : ''
         }`}
       >
-        <section className="w-full h-full max-h-screen overflow-y-auto">
-          <header className="sticky top-0 backdrop-blur flex items-center gap-2 z-20 px-8 py-4 text-sm">
-            <Link
-              className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-              to={`?${search === '' ? 'menu' : `${search}&menu`}`}
-              prefetch="intent"
-            >
-              <SvgIcon className="w-3 h-3" href={menuIcon} />
-            </Link>
-            <div className="flex-1 leading-8 line-clamp-1 capitalize">
-              {`${
-                new URLSearchParams(search).get('list') ?? 'Latest resources'
-              } ${entries.length > 0 ? `(${entries.length})` : ''}`.trim()}
-            </div>
+        <Panel
+          title={`${
+            capitalize(new URLSearchParams(search).get('list')) ??
+            'Latest resources'
+          } ${entries.length > 0 ? `(${entries.length})` : ''}`.trim()}
+          type="list"
+          elements={
             <Link
               className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
               to="/submit"
             >
               <SvgIcon className="w-3 h-3" href={plusIcon} />
             </Link>
-          </header>
+          }
+        >
           {entries.length === 0 ? (
             <div className="text-center py-16 text-gray-500">
               No entry found at the moment
             </div>
           ) : (
-            <div className="px-5 py-3">
+            <div>
               {entries.map((entry) => (
                 <article key={entry.id} className="py-1">
                   <Link
@@ -124,7 +119,7 @@ export default function List() {
               ))}
             </div>
           )}
-        </section>
+        </Panel>
       </div>
       <div className="flex-1">
         <Outlet />

@@ -1,13 +1,17 @@
-import type { HeadersFunction, LoaderFunction, ActionFunction } from 'remix';
-import { Form, Link, json, redirect, useLoaderData, useFetcher } from 'remix';
+import type {
+  HeadersFunction,
+  LoaderFunction,
+  ActionFunction,
+  ShouldReloadFunction,
+} from 'remix';
+import { Form, json, redirect, useLoaderData, useFetcher } from 'remix';
 import { useEffect } from 'react';
 import { notFound } from '~/helpers';
-import { useResourcesSearch } from '~/search';
 import type { Entry, Context } from '~/types';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
-import backIcon from '~/icons/back.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
+import Panel from '~/components/Panel';
 
 function getScreenshotURL(url: string): string {
   return `https://cdn.statically.io/screenshot/${url.replace(
@@ -48,7 +52,7 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 
 export let loader: LoaderFunction = async ({ context, params }) => {
   const { auth, store } = context as Context;
-  const [entry, user] = await Promise.all([
+  const [entry, user, [message, setCookieHeader]] = await Promise.all([
     store.query(params.id ?? ''),
     (async () => {
       const profile = await auth.isAuthenticated();
@@ -59,27 +63,37 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 
       return await store.getUser(profile.id);
     })(),
+    auth.getFlashMessage(),
   ]);
 
   if (!entry) {
     throw notFound();
   }
 
-  return json({
-    entry,
-    authenticated: user !== null,
-    bookmarked: user?.bookmarked.includes(entry.id),
-  });
+  return json(
+    {
+      entry,
+      authenticated: user !== null,
+      bookmarked: user?.bookmarked.includes(entry.id),
+      message,
+    },
+    {
+      headers: setCookieHeader,
+    }
+  );
+};
+
+export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
+  return typeof submission === 'undefined';
 };
 
 export default function EntryDetail() {
   const { submit } = useFetcher();
-  const { entry, authenticated, bookmarked } = useLoaderData<{
+  const { entry, authenticated, bookmarked, message } = useLoaderData<{
     entry: Entry;
     authenticated: boolean;
     bookmarked: boolean;
   }>();
-  const search = useResourcesSearch();
 
   useEffect(() => {
     if (!authenticated) {
@@ -90,17 +104,11 @@ export default function EntryDetail() {
   }, [submit, authenticated, entry.id]);
 
   return (
-    <section className="w-full h-full max-h-screen overflow-y-auto">
-      <header className="sticky top-0 backdrop-blur flex items-center gap-2 z-20 px-8 py-4 text-sm">
-        <Link
-          className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-          to={search === '' ? '/' : `/resources?${search}`}
-          prefetch="intent"
-          replace
-        >
-          <SvgIcon className="w-3 h-3" href={backIcon} />
-        </Link>
-        <div className="flex-1 leading-8 line-clamp-1">{entry.title}</div>
+    <Panel
+      title={entry.title}
+      type="details"
+      message={message}
+      elements={
         <Form className="flex flex-row items-center" method="post">
           <input
             type="hidden"
@@ -121,8 +129,9 @@ export default function EntryDetail() {
             {entry.bookmarkCounts ?? 0}
           </label>
         </Form>
-      </header>
-      <div className="px-5 py-3x max-w-screen-xl divide-y">
+      }
+    >
+      <div className="max-w-screen-xl divide-y">
         <div className="px-3 pt-3 pb-8">
           <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
@@ -195,6 +204,6 @@ export default function EntryDetail() {
         </div>
         <div className="px-3 py-8"></div>
       </div>
-    </section>
+    </Panel>
   );
 }

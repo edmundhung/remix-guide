@@ -43,6 +43,10 @@ export interface Page {
   video?: string;
 }
 
+export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID_CATEGORY';
+
+export type MessageType = 'success' | 'error' | 'warning' | 'info';
+
 export interface Metadata
   extends Pick<
     Entry,

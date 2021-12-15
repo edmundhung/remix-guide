@@ -1,8 +1,16 @@
 import { Authenticator } from 'remix-auth/build/authenticator';
 import { GitHubStrategy } from 'remix-auth/build/strategies/github';
 import { createCookieSessionStorage, redirect } from 'remix';
-import type { Category, Env, Entry, User, UserProfile } from './types';
-import { Metadata } from '~/types';
+import type {
+  Category,
+  Env,
+  Entry,
+  User,
+  MessageType,
+  Metadata,
+  UserProfile,
+  SubmissionStatus,
+} from './types';
 
 export type Context = ReturnType<typeof createContext>;
 
@@ -83,6 +91,33 @@ export function createAuth(request: Request, env: Env, ctx: ExecutionContext) {
     },
     async isAuthenticated(): Promise<UserProfile | null> {
       return await authenticator.isAuthenticated(request);
+    },
+    async getFlashMessage(): Promise<[string | null, Record<string, string>]> {
+      const session = await sessionStorage.getSession(
+        request.headers.get('Cookie')
+      );
+      const message = session.get('message') ?? null;
+      const setCookieHeader = !message
+        ? {}
+        : {
+            'Set-Cookie': await sessionStorage.commitSession(session),
+          };
+
+      return [message, setCookieHeader];
+    },
+    async commitWithFlashMessage(
+      message: string,
+      type: MessageType = 'info'
+    ): Promise<Record<string, string>> {
+      const session = await sessionStorage.getSession(
+        request.headers.get('Cookie')
+      );
+
+      session.flash('message', `${type}: ${message}`);
+
+      return {
+        'Set-Cookie': await sessionStorage.commitSession(session),
+      };
     },
   };
 }
@@ -185,17 +220,21 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     async getUser(userId: string) {
       return await getUser(userId);
     },
-    async submit(url: string, category: string, userId: string) {
+    async submit(
+      url: string,
+      category: string,
+      userId: string
+    ): Promise<{ id: string; status: SubmissionStatus }> {
       const response = await entriesStore.fetch('http://entries/submit', {
         method: 'POST',
         body: JSON.stringify({ url, category, userId }),
       });
 
-      const { id, message } = await response.json();
+      const { id, status } = await response.json();
 
       return {
         id,
-        message,
+        status,
       };
     },
     async refresh(entryId: string): Promise<void> {

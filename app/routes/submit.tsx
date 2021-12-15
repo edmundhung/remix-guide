@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import type { ActionFunction } from 'remix';
-import { Form, redirect, json, useActionData } from 'remix';
+import { Form, redirect, json, useLoaderData } from 'remix';
 import CategoryIcon from '~/components/CategoryIcon';
 import Panel from '~/components/Panel';
 import { categories } from '~/meta';
@@ -66,36 +66,93 @@ export let action: ActionFunction = async ({ request, context }) => {
   const url = formData.get('url');
   const category = formData.get('category');
 
-  if (!isValidURL(url) || !isValidCategory(category)) {
-    return json({ message: 'Invalid data provided' }, { status: 422 });
+  if (!isValidCategory(category)) {
+    return redirect('/submit', {
+      headers: await auth.commitWithFlashMessage(
+        'Invalid category provided',
+        'warning'
+      ),
+    });
+  }
+
+  if (!isValidURL(url)) {
+    return redirect('/submit', {
+      headers: await auth.commitWithFlashMessage(
+        'Invalid url provided',
+        'warning'
+      ),
+    });
   }
 
   try {
-    const { id, message } = await store.submit(url, category, profile.id);
+    const { id, status } = await store.submit(url, category, profile.id);
 
-    if (!id) {
-      return json({ message }, { status: 422 });
+    let setCookieHeader = {};
+
+    switch (status) {
+      case 'PUBLISHED':
+        setCookieHeader = await auth.commitWithFlashMessage(
+          'The submitted resource is now published',
+          'success'
+        );
+        break;
+      case 'RESUBMITTED':
+        setCookieHeader = await auth.commitWithFlashMessage(
+          'A resource with the same url is found',
+          'info'
+        );
+        break;
+      case 'INVALID_CATEGORY':
+        setCookieHeader = await auth.commitWithFlashMessage(
+          'The provided URL does not match the choosen category; Pleae refine your selection and submit again',
+          'error'
+        );
+        break;
     }
 
-    return redirect(`/resources/${id}`);
+    if (!id) {
+      return redirect('/submit', {
+        headers: setCookieHeader,
+      });
+    }
+
+    return redirect(`/resources/${id}`, {
+      headers: setCookieHeader,
+    });
   } catch (error) {
     console.log('Error while submitting new url; Received', error);
-    return json(
-      { message: 'Something wrong with the URL; Please try again later' },
-      { status: 500 }
-    );
+    return redirect('/submit', {
+      headers: await auth.commitWithFlashMessage(
+        'Something wrong with the URL; Please try again later',
+        'error'
+      ),
+    });
   }
+};
+
+export let loader: LoaderFunction = async ({ context }) => {
+  const { auth } = context as Context;
+  const [message, setCookieHeader] = await auth.getFlashMessage();
+
+  return json(
+    {
+      message,
+    },
+    {
+      headers: setCookieHeader,
+    }
+  );
 };
 
 export default function Submit() {
   const [selected, setSelected] = useState<string | null>(null);
-  const error = useActionData();
+  const { message } = useLoaderData();
   const handleSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelected(e.currentTarget.value);
   };
 
   return (
-    <Panel title="Submission">
+    <Panel title="Submission" message={message}>
       <section className="px-3 pt-8">
         <Form className="lg:max-w-3xl" method="post" reloadDocument>
           <h3 className="">Please select a cateogry</h3>
@@ -132,7 +189,7 @@ export default function Submit() {
                 <div className="flex-1">
                   <input
                     name="url"
-                    type="url"
+                    type="text"
                     className="w-full h-8 px-4 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
                     placeholder={getPlaceholder(selected) ?? 'URL'}
                     autoFocus
@@ -145,9 +202,6 @@ export default function Submit() {
                   Submit
                 </button>
               </div>
-              {!error ? null : (
-                <div className="mt-1 px-4 py-2 text-xs">{error.message}</div>
-              )}
             </div>
           )}
         </Form>
