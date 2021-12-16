@@ -54,17 +54,9 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 export let loader: LoaderFunction = async ({ context, params }) => {
   try {
     const { auth, store } = context as Context;
-    const [entry, user] = await Promise.all([
+    const [entry, profile] = await Promise.all([
       store.query(params.id ?? ''),
-      (async () => {
-        const profile = await auth.isAuthenticated();
-
-        if (!profile) {
-          return null;
-        }
-
-        return await store.getUser(profile.id);
-      })(),
+      auth.isAuthenticated(),
     ]);
 
     if (!entry) {
@@ -78,25 +70,27 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     };
     const [
       [message, setCookieHeader],
+      user,
       builtWithPackage,
       madeByAuthor,
       alsoOnHostname,
     ] = await Promise.all([
       auth.getFlashMessage(),
+      store.getUser(profile.id),
       entry.category === 'packages'
-        ? store.search(user?.profile.id ?? null, {
+        ? store.search(profile?.id ?? null, {
             ...searchOptions,
             integrations: [entry.title],
           })
         : null,
       typeof entry.author !== 'undefined' && entry.author !== null
-        ? store.search(user?.profile.id ?? null, {
+        ? store.search(profile?.id ?? null, {
             ...searchOptions,
             author: entry.author,
           })
         : null,
       ['concepts', 'tutorials', 'others'].includes(entry.category)
-        ? store.search(user?.profile.id ?? null, {
+        ? store.search(profile?.id ?? null, {
             ...searchOptions,
             hostname: new URL(entry.url).hostname,
           })
@@ -106,8 +100,8 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     return json(
       {
         entry,
-        authenticated: user !== null,
-        bookmarked: user?.bookmarked.includes(entry.id),
+        authenticated: profile !== null,
+        bookmarked: user?.bookmarked.includes(entry.id) ?? false,
         message,
         builtWithPackage,
         madeByAuthor,
