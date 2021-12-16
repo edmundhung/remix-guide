@@ -5,6 +5,7 @@ export interface Env {
   GITHUB_CLIENT_ID?: string;
   GITHUB_CLIENT_SECRET?: string;
   GITHUB_CALLBACK_URL?: string;
+  YOUTUBE_API_KEY?: string;
   SESSION_SECERTS?: string;
   CONTENT: KVNamespace;
   ENTRIES_STORE: DurableObjectNamespace;

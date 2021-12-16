@@ -153,6 +153,15 @@ async function getGithubRepositoryPackacgeJSON(repo: string, branch: string) {
   return packageJSON;
 }
 
+async function getYouTubeMetadata(videoId: string, apiKey: string) {
+  const response = await fetch(
+    `https://youtube.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`
+  );
+  const metadata = await response.json();
+
+  return metadata;
+}
+
 async function parseGithubRepository(
   repo: string,
   token: string
@@ -196,6 +205,18 @@ async function parseNpmPackage(
   };
 }
 
+export async function parseYouTubeVideo(videoId: string, apiKey: string) {
+  const metadata = await getYouTubeMetadata(videoId, apiKey);
+  const [video] = metadata.items;
+
+  return {
+    title: video.snippet.title,
+    description: video.snippet.description,
+    image: video.snippet.thumbnails.standard.url,
+    video: `https://www.youtube.com/embed/${videoId}`,
+  };
+}
+
 export async function scrapeUrl(url: string): Promise<Page> {
   const meta = await getMeta(url);
 
@@ -229,7 +250,13 @@ export async function getAdditionalMetadata(
 ): Promise<Page> {
   if (!env.GITHUB_TOKEN) {
     throw new Error(
-      'Error creating page loader; GITHUB_TOKEN is not available'
+      'Error capturing additonal metadata; GITHUB_TOKEN is not available'
+    );
+  }
+
+  if (!env.YOUTUBE_API_KEY) {
+    throw new Error(
+      'Error capturing additonal metadata; YOUTUBE_API_KEY is not available'
     );
   }
 
@@ -264,10 +291,11 @@ export async function getAdditionalMetadata(
     }
     case 'YouTube': {
       const videoId = new URL(page.url).searchParams.get('v');
+      const metadata = await parseYouTubeVideo(videoId, env.YOUTUBE_API_KEY);
 
       return {
         ...page,
-        video: `https://www.youtube.com/embed/${videoId}`,
+        ...metadata,
       };
     }
   }
