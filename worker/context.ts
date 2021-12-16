@@ -134,7 +134,11 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   }
 
   async function getUser(userId: string): Promise<User | null> {
-    return await env.CONTENT.get<User>(`user/${userId}`, 'json');
+    const userStore = getUserStore(userId);
+    const response = await userStore.fetch('http://user/', { method: 'GET' });
+    const { user } = await response.json();
+
+    return user;
   }
 
   function match(

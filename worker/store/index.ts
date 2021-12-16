@@ -320,6 +320,20 @@ export class UserStore {
       let method = request.method.toUpperCase();
 
       switch (url.pathname) {
+        case '/': {
+          if (method !== 'GET') {
+            break;
+          }
+
+          const user: User = {
+            profile: this.profile,
+            viewed: this.viewed,
+            bookmarked: this.bookmarked,
+          };
+          const body = JSON.stringify({ user });
+
+          return new Response(body, { status: 200 });
+        }
         case '/profile': {
           if (method !== 'PUT') {
             break;
@@ -354,7 +368,6 @@ export class UserStore {
           this.viewed = this.viewed.filter((id) => id !== entryId);
           this.viewed.unshift(entryId);
           this.state.storage.put('viewed', this.viewed);
-          this.updateUserCache();
 
           return new Response('OK', { status: 200 });
         }
@@ -378,7 +391,6 @@ export class UserStore {
           }
 
           this.state.storage.put('bookmarked', this.bookmarked);
-          this.updateUserCache();
 
           return new Response('OK', { status: 200 });
         }
@@ -392,19 +404,5 @@ export class UserStore {
 
       return new Response('Internal Server Error', { status: 500 });
     }
-  }
-
-  async updateUserCache() {
-    const user: User = {
-      profile: this.profile,
-      viewed: this.viewed,
-      bookmarked: this.bookmarked,
-    };
-
-    await this.env.CONTENT.put(
-      `user/${user.profile.id}`,
-      JSON.stringify(user),
-      { metadata: user.profile }
-    );
   }
 }
