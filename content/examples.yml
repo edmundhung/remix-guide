@@ -80,3 +80,7 @@ HerrBertling-hamvaxmap:
   url: https://github.com/HerrBertling/hamvaxmap
   version: ^1.0.4
   platforms: [vercel]
+marcomafessollli-remix-graphql-loader-example:
+  url: https://github.com/marcomafessolli/remix-graphql-loader-example
+  version: ^1.0.6
+  
