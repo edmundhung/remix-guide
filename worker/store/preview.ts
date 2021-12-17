@@ -94,6 +94,24 @@ async function getMeta(url: string) {
   });
 
   if (!response.ok) {
+    const { hostname, pathname } = new URL(url);
+
+    /**
+     * Bypassing it manually if the request fails
+     */
+    switch (hostname) {
+      case 'www.youtube.com':
+        return {
+          site: 'YouTube',
+          url,
+        };
+      case 'youtu.be':
+        return {
+          site: 'YouTube',
+          url: `https://www.youtube.com/watch?v=${pathname.slice(1)}`,
+        };
+    }
+
     throw new Error(
       `Fail scraping url - ${url}; Recevied ${response.status} ${response.statusText} response`
     );
