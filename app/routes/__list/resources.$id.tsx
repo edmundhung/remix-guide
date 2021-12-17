@@ -76,7 +76,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
       alsoOnHostname,
     ] = await Promise.all([
       auth.getFlashMessage(),
-      store.getUser(profile.id),
+      profile?.id ? store.getUser(profile.id) : null,
       entry.category === 'packages'
         ? store.search(profile?.id ?? null, {
             ...searchOptions,
