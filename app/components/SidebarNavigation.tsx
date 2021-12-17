@@ -250,7 +250,7 @@ function SidebarNavigation({
   categories,
   platforms,
   integrations,
-  user,
+  profile,
 }: SidebarNavigationProps): ReactElement {
   const submit = useSubmit();
   const location = useLocation();
@@ -403,7 +403,7 @@ function SidebarNavigation({
         </LinkMenu>
       </section>
       <footer className="px-5 py-3 border-t">
-        {user ? (
+        {profile ? (
           <Form action="/logout" method="post" reloadDocument>
             <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-900">
               Logout

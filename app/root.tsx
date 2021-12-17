@@ -1,6 +1,12 @@
-import { LinksFunction, MetaFunction, LoaderFunction, Link } from 'remix';
+import type {
+  LinksFunction,
+  MetaFunction,
+  LoaderFunction,
+  ShouldReloadFunction,
+} from 'remix';
 import {
   Meta,
+  Link,
   Links,
   Scripts,
   useLoaderData,
@@ -31,11 +37,20 @@ export let meta: MetaFunction = () => {
 
 export let loader: LoaderFunction = async ({ context }) => {
   const { auth } = context as Context;
-  const user = await auth.isAuthenticated();
+  const profile = await auth.isAuthenticated();
 
   return json({
-    user,
+    profile,
   });
+};
+
+/**
+ * Not sure if this is a bad idea or not to minimise requests
+ * But the only time this data change is when user login / logout
+ * Which trigger a full page reload at the moment
+ */
+export const unstable_shouldReload: ShouldReloadFunction = () => {
+  return false;
 };
 
 function Document({
@@ -64,7 +79,7 @@ function Document({
 }
 
 export default function App() {
-  const { user } = useLoaderData();
+  const { profile } = useLoaderData();
   const location = useLocation();
   const [isMenuEnabled, closeMenuLink] = useMemo(() => {
     const searchPararms = new URLSearchParams(location.search);
@@ -88,7 +103,7 @@ export default function App() {
           categories={categories}
           platforms={platforms}
           integrations={integrations}
-          user={user}
+          profile={profile}
         />
       </nav>
       {!isMenuEnabled ? null : (
