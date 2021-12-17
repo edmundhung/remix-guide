@@ -84,44 +84,45 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
 }
 
 async function getMeta(url: string) {
-  try {
-    const response = await fetch(url, {
-      headers: {
-        Accept: 'text/html',
-        'User-Agent':
-          'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
-      },
-      redirect: 'follow',
-    });
-    const page = await parseResponse(response, {
-      title: mergeParsers(
-        createAttributeParser('meta[property="og:title"]', 'content'),
-        createAttributeParser('meta[name="twitter:title"]', 'content'),
-        createTextParser('head > title')
-      ),
-      description: mergeParsers(
-        createAttributeParser('meta[property="og:description"]', 'content'),
-        createAttributeParser('meta[name="twitter:description"]', 'content'),
-        createAttributeParser('meta[name="description"]', 'content')
-      ),
-      image: mergeParsers(
-        createAttributeParser('meta[property="og:image"]', 'content'),
-        createAttributeParser('meta[name="twitter:image"]', 'content'),
-        createAttributeParser('meta[name="image"]', 'content')
-      ),
-      site: createAttributeParser('meta[property="og:site_name"]', 'content'),
-      url: mergeParsers(
-        createAttributeParser('link[rel="canonical"]', 'href'),
-        createAttributeParser('meta[property="og:url"]', 'content')
-      ),
-    });
+  const response = await fetch(url, {
+    headers: {
+      Accept: 'text/html',
+      'User-Agent':
+        'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+    },
+    redirect: 'follow',
+  });
 
-    return page;
-  } catch (e) {
-    console.error('Error parsing response from ', url, ';Received ', e);
-
-    return null;
+  if (!response.ok) {
+    throw new Error(
+      `Fail scraping url - ${url}; Recevied ${response.status} ${response.statusText} response`
+    );
   }
+
+  const page = await parseResponse(response, {
+    title: mergeParsers(
+      createAttributeParser('meta[property="og:title"]', 'content'),
+      createAttributeParser('meta[name="twitter:title"]', 'content'),
+      createTextParser('head > title')
+    ),
+    description: mergeParsers(
+      createAttributeParser('meta[property="og:description"]', 'content'),
+      createAttributeParser('meta[name="twitter:description"]', 'content'),
+      createAttributeParser('meta[name="description"]', 'content')
+    ),
+    image: mergeParsers(
+      createAttributeParser('meta[property="og:image"]', 'content'),
+      createAttributeParser('meta[name="twitter:image"]', 'content'),
+      createAttributeParser('meta[name="image"]', 'content')
+    ),
+    site: createAttributeParser('meta[property="og:site_name"]', 'content'),
+    url: mergeParsers(
+      createAttributeParser('link[rel="canonical"]', 'href'),
+      createAttributeParser('meta[property="og:url"]', 'content')
+    ),
+  });
+
+  return page;
 }
 
 async function getPackageInfo(packageName: string) {
