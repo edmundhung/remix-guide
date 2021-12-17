@@ -213,7 +213,7 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
 
     return [isActive, search];
   }, [location, name, value]);
-  const className = `px-3 py-1.5 flex items-center gap-4 capitalize transition-colors rounded-lg ${
+  const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg ${
     isActive
       ? 'shadow-inner bg-gray-800'
       : 'hover:shadow-inner hover:bg-gray-900'
@@ -338,7 +338,7 @@ function SidebarNavigation({
         >
           {categories.map((option) => (
             <MenuItem key={option} to={action} name="category" value={option}>
-              <CategoryIcon category={option} fallback /> {option}
+              <CategoryIcon category={option} fallback /> {capitalize(option)}
             </MenuItem>
           ))}
         </LinkMenu>
@@ -367,9 +367,12 @@ function SidebarNavigation({
             title="Integrations"
             name="integration"
             to={action}
-            value={integration.map(capitalize)}
+            value={integration}
           >
-            {integrations.map((option, index) => (
+            {[
+              ...integrations,
+              ...integration.filter((option) => !integrations.includes(option)),
+            ].map((option, index) => (
               <MenuItem
                 key={option}
                 to={action}

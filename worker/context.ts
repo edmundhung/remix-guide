@@ -141,58 +141,23 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     return user;
   }
 
-  async function updateEntryCache(entry: Entry): Promise<void> {
-    const metadata: Metadata = {
+  function getMetadata(entry: Entry): Metadata {
+    return {
       id: entry.id,
       url: entry.url,
       category: entry.category,
       author: entry.author,
       title: entry.title,
       description: entry.description,
-      integrations: Array.from(
-        Object.keys(entry.dependencies ?? {}).reduce((result, packageName) => {
-          switch (packageName) {
-            case 'cypress':
-            case 'tailwindcss':
-            case 'prisma':
-              result.add(packageName);
-              break;
-            case '@remix-run/architect':
-              result.add('architect');
-              break;
-            case '@azure/functions':
-              result.add('azure');
-              break;
-            case '@remix-run/cloudflare-workers':
-            case '@cloudflare/workers-types':
-            case '@cloudflare/wrangler':
-              result.add('cloudflare');
-              break;
-            case 'express':
-            case '@remix-run/express':
-              result.add('express');
-              break;
-            case 'firebase':
-            case 'firebase-admin':
-              result.add('firebase');
-              break;
-            case '@remix-run/netlify':
-              result.add('netlify');
-              break;
-            case 'vercel':
-            case '@vercel/node':
-            case '@remix-run/vercel':
-              result.add('vercel');
-              break;
-          }
-
-          return result;
-        }, new Set<string>())
-      ),
+      integrations: entry.integrations,
       viewCounts: entry.viewCounts,
       bookmarkCounts: entry.bookmarkCounts,
       createdAt: entry.createdAt,
     };
+  }
+
+  async function updateEntryCache(entry: Entry): Promise<void> {
+    const metadata = getMetadata(entry, []);
 
     await env.CONTENT.put(`entry/${entry.id}`, JSON.stringify(entry), {
       metadata,

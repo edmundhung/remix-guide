@@ -39,7 +39,7 @@ export interface Page {
   category?: Category;
   title?: string;
   description?: string;
-  dependencies?: Record<string, string>;
+  integrations?: string[];
   image?: string;
   video?: string;
 }
@@ -48,21 +48,19 @@ export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID_CATEGORY';
 
 export type MessageType = 'success' | 'error' | 'warning' | 'info';
 
-export interface Metadata
-  extends Pick<
-    Entry,
-    | 'id'
-    | 'url'
-    | 'category'
-    | 'author'
-    | 'title'
-    | 'description'
-    | 'viewCounts'
-    | 'bookmarkCounts'
-    | 'createdAt'
-  > {
-  integrations: string[];
-}
+export type Metadata = Pick<
+  Entry,
+  | 'id'
+  | 'url'
+  | 'category'
+  | 'author'
+  | 'title'
+  | 'description'
+  | 'integrations'
+  | 'viewCounts'
+  | 'bookmarkCounts'
+  | 'createdAt'
+>;
 
 export interface Entry extends Page {
   id: string;
@@ -70,8 +68,6 @@ export interface Entry extends Page {
   bookmarkCounts?: number;
   createdAt: string;
   createdBy: string;
-  updatedAt: string;
-  updatedBy: string;
 }
 
 export interface SearchOptions {

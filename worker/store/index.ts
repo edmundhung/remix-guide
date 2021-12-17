@@ -2,7 +2,6 @@ import { customAlphabet } from 'nanoid';
 import type {
   Entry,
   Env,
-  Metadata,
   UserProfile,
   User,
   Page,
@@ -26,6 +25,7 @@ export class EntriesStore {
   state: DurableObjectState;
   env: Env;
   entryIdByURL: Record<string, string | null>;
+  entryIdByPackageName: Record<string, string | null>;
   scheduledEntryIds: string[];
 
   constructor(state, env) {
@@ -33,8 +33,12 @@ export class EntriesStore {
     this.env = env;
     this.scheduledEntryIds = [];
     this.state.blockConcurrencyWhile(async () => {
-      let stored = await this.state.storage.get('entryIdByURL');
-      this.entryIdByURL = stored || {};
+      let entryIdByURL = await this.state.storage.get('index/URL');
+      let entryIdByPackageName = await this.state.storage.get(
+        'index/PackageName'
+      );
+      this.entryIdByURL = entryIdByURL ?? {};
+      this.entryIdByPackageName = entryIdByPackageName ?? {};
     });
   }
 
@@ -72,8 +76,16 @@ export class EntriesStore {
               this.entryIdByURL[page.url] = id;
             }
 
+            if (entry && entry.category === 'packages') {
+              this.entryIdByPackageName[entry.title] = entry.id;
+              this.state.storage.put(
+                'index/PackageName',
+                this.entryIdByPackageName
+              );
+            }
+
             this.entryIdByURL[url] = id;
-            this.state.storage.put('entryIdByURL', this.entryIdByURL);
+            this.state.storage.put('index/URL', this.entryIdByURL);
           } else {
             status = 'RESUBMITTED';
           }
@@ -212,7 +224,11 @@ export class EntriesStore {
 
     const id = generateId();
     const now = new Date().toISOString();
-    const data = await getAdditionalMetadata(page, this.env);
+    const data = await getAdditionalMetadata(
+      page,
+      Object.keys(this.entryIdByPackageName),
+      this.env
+    );
     const entry = await this.updateEntry({
       ...data,
       id,

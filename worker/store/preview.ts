@@ -127,9 +127,12 @@ async function getMeta(url: string) {
 
 async function getPackageInfo(packageName: string) {
   const response = await fetch(`https://registry.npmjs.org/${packageName}`);
-  const info = await response.json();
 
-  return info;
+  if (!response.ok) {
+    return null;
+  }
+
+  return await response.json();
 }
 
 async function getGithubRepositoryMetadata(repo: string, token: string) {
@@ -140,9 +143,35 @@ async function getGithubRepositoryMetadata(repo: string, token: string) {
       Authorization: `token ${token}`,
     },
   });
-  const metadata = await response.json();
 
-  return metadata;
+  if (!response.ok) {
+    return null;
+  }
+
+  return await response.json();
+}
+
+async function getGithubRepositoryFiles(
+  repo: string,
+  token: string,
+  path = ''
+) {
+  const response = await fetch(
+    `https://api.github.com/repos/${repo}/contents/${path}`,
+    {
+      headers: {
+        Accept: 'application/vnd.github.v3+json',
+        'User-Agent': 'remix-guide',
+        Authorization: `token ${token}`,
+      },
+    }
+  );
+
+  if (!response.ok) {
+    return [];
+  }
+
+  return await response.json();
 }
 
 async function getGithubRepositoryPackacgeJSON(repo: string, branch: string) {
@@ -163,11 +192,79 @@ async function getYouTubeMetadata(videoId: string, apiKey: string) {
   return metadata;
 }
 
+function getIntegrations(
+  files: string[],
+  packages: string[],
+  dependencies: Record<string, string>
+): string[] {
+  let integrations = new Set<string>();
+
+  for (const packageName of Object.keys(dependencies)) {
+    if (packages.includes(packageName)) {
+      integrations.add(packageName);
+    } else {
+      switch (packageName) {
+        case 'cypress':
+        case 'tailwindcss':
+        case 'prisma':
+          integrations.add(packageName);
+          break;
+        case '@remix-run/architect':
+          integrations.add('architect');
+          break;
+        case '@azure/functions':
+          integrations.add('azure');
+          break;
+        case '@remix-run/cloudflare-workers':
+        case '@cloudflare/workers-types':
+        case '@cloudflare/wrangler':
+          integrations.add('cloudflare');
+          break;
+        case 'express':
+        case '@remix-run/express':
+          integrations.add('express');
+          break;
+        case 'firebase':
+        case 'firebase-admin':
+          integrations.add('firebase');
+          break;
+        case '@remix-run/netlify':
+          integrations.add('netlify');
+          break;
+        case 'vercel':
+        case '@vercel/node':
+        case '@remix-run/vercel':
+          integrations.add('vercel');
+          break;
+      }
+    }
+  }
+
+  for (const file of files) {
+    switch (file.name) {
+      case 'wrangler.toml':
+        integrations.add('cloudflare');
+        break;
+    }
+  }
+
+  return Array.from(integrations);
+}
+
 async function parseGithubRepository(
   repo: string,
+  packages: string[],
   token: string
-): Partial<Page> {
-  const metadata = await getGithubRepositoryMetadata(repo, token);
+): Partial<Page> | null {
+  const [metadata, files] = await Promise.all([
+    getGithubRepositoryMetadata(repo, token),
+    getGithubRepositoryFiles(repo, token),
+  ]);
+
+  if (!metadata) {
+    return null;
+  }
+
   const packageJSON = await getGithubRepositoryPackacgeJSON(
     repo,
     metadata['default_branch']
@@ -177,18 +274,24 @@ async function parseGithubRepository(
     title: metadata['full_name'],
     description: metadata['description'],
     author: metadata['owner']?.['login'],
-    dependencies: {
+    integrations: getIntegrations(files, packages, {
       ...packageJSON.dependencies,
       ...packageJSON.devDependencies,
-    },
+    }),
   };
 }
 
 async function parseNpmPackage(
   packageName: string,
+  packages: string[],
   githubToken: string
 ): Partial<Page> {
   const info = await getPackageInfo(packageName);
+
+  if (!info) {
+    return null;
+  }
+
   const repoUrl =
     info['repository']?.type === 'git'
       ? new URL(
@@ -196,7 +299,11 @@ async function parseNpmPackage(
         )
       : null;
   const details = repoUrl
-    ? await parseGithubRepository(repoUrl.pathname.slice(1), githubToken)
+    ? await parseGithubRepository(
+        repoUrl.pathname.slice(1),
+        packages,
+        githubToken
+      )
     : null;
 
   return {
@@ -208,6 +315,11 @@ async function parseNpmPackage(
 
 export async function parseYouTubeVideo(videoId: string, apiKey: string) {
   const metadata = await getYouTubeMetadata(videoId, apiKey);
+
+  if (!metadata) {
+    return null;
+  }
+
   const [video] = metadata.items;
 
   return {
@@ -247,6 +359,7 @@ export function isSupportedSite(page: Page, category: Category): boolean {
 
 export async function getAdditionalMetadata(
   page: Page,
+  packages: string[],
   env: Env
 ): Promise<Page> {
   if (!env.GITHUB_TOKEN) {
@@ -263,7 +376,11 @@ export async function getAdditionalMetadata(
 
   switch (page.site) {
     case 'npm': {
-      const metadata = await parseNpmPackage(page.title, env.GITHUB_TOKEN);
+      const metadata = await parseNpmPackage(
+        page.title,
+        packages,
+        env.GITHUB_TOKEN
+      );
 
       return {
         ...page,
@@ -272,7 +389,11 @@ export async function getAdditionalMetadata(
     }
     case 'GitHub': {
       const [repo] = page.title.replace('GitHub - ', '').split(':');
-      const metadata = await parseGithubRepository(repo, env.GITHUB_TOKEN);
+      const metadata = await parseGithubRepository(
+        repo,
+        packages,
+        env.GITHUB_TOKEN
+      );
 
       return {
         ...page,
