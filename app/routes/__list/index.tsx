@@ -1,11 +1,3 @@
-import type { HeadersFunction } from 'remix';
-
-export let headers: HeadersFunction = ({ parentHeaders }) => {
-  return {
-    'Cache-Control': parentHeaders.get('Cache-Control'),
-  };
-};
-
 export default function Index() {
   return (
     <div className="hidden h-full w-full md:flex flex-col items-center justify-center">
