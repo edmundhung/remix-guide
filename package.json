@@ -15,7 +15,7 @@
     "dev:remix": "remix watch",
     "dev:style": "tailwindcss -o ./app/styles/tailwind.css --watch",
     "dev": "concurrently \"npm:dev:*\"",
-    "postinstall": "remix setup cloudflare-workers && patch-package",
+    "postinstall": "remix setup cloudflare-workers",
     "prebuild": "npm run cleanup",
     "test:cypress": "cypress run",
     "test": "start-server-and-test http-get://localhost:8787 test:cypress",
@@ -31,7 +31,7 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "remix": "^1.0.6",
-    "remix-auth": "^2.5.0-0"
+    "remix-auth": "^2.5.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.2.0",
@@ -54,7 +54,6 @@
     "husky": "^7.0.4",
     "lint-staged": "^12.1.2",
     "miniflare": "^2.0.0-rc.2",
-    "patch-package": "^6.4.7",
     "postcss": "^8.4.5",
     "prettier": "2.4.1",
     "rimraf": "^3.0.2",
