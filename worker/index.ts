@@ -9,9 +9,6 @@ export { EntriesStore, UserStore } from './store';
 const handleFetch = createFetchHandler({
   build,
   manifest,
-  getCache() {
-    return caches.open(process.env.VERSION);
-  },
   getLoadContext(request, env, ctx) {
     return createContext(request, env, ctx);
   },
