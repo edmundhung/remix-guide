@@ -1,5 +1,4 @@
 import type {
-  HeadersFunction,
   LoaderFunction,
   ActionFunction,
   ShouldReloadFunction,
@@ -21,22 +20,20 @@ function getScreenshotURL(url: string): string {
   )}`;
 }
 
-export let headers: HeadersFunction = ({ loaderHeaders }) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control'),
-  };
-};
-
 export let action: ActionFunction = async ({ context, params, request }) => {
   const { auth, store } = context as Context;
   const profile = await auth.isAuthenticated();
+  const formData = await request.formData();
+  const type = formData.get('type');
+
+  if (type === 'view') {
+    await store.view(profile?.id ?? null, params.id ?? '');
+    return new Response('OK', { status: 200 });
+  }
 
   if (!profile) {
     return new Response('Unauthorized', { status: 401 });
   }
-
-  const formData = await request.formData();
-  const type = formData.get('type');
 
   switch (type) {
     case 'bookmark':
@@ -45,76 +42,68 @@ export let action: ActionFunction = async ({ context, params, request }) => {
     case 'unbookmark':
       await store.unbookmark(profile.id, params.id ?? '');
       return redirect(request.headers.get('referrer') ?? request.url);
-    case 'view':
-      await store.view(profile.id, params.id ?? '');
-      return new Response('OK', { status: 200 });
   }
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  try {
-    const { auth, store } = context as Context;
-    const [entry, profile] = await Promise.all([
-      store.query(params.id ?? ''),
-      auth.isAuthenticated(),
-    ]);
+  const { auth, store } = context as Context;
+  const [entry, profile] = await Promise.all([
+    store.query(params.id ?? ''),
+    auth.isAuthenticated(),
+  ]);
 
-    if (!entry) {
-      throw notFound();
-    }
+  if (!entry) {
+    throw notFound();
+  }
 
-    const searchOptions: SearchOptions = {
-      sortBy: 'hotness',
-      excludes: [entry.id],
-      limit: 6,
-    };
-    const [
-      [message, setCookieHeader],
-      user,
+  const searchOptions: SearchOptions = {
+    sortBy: 'hotness',
+    excludes: [entry.id],
+    limit: 6,
+  };
+  const [
+    [message, setCookieHeader],
+    user,
+    builtWithPackage,
+    madeByAuthor,
+    alsoOnHostname,
+  ] = await Promise.all([
+    auth.getFlashMessage(),
+    profile?.id ? store.getUser(profile.id) : null,
+    entry.category === 'packages'
+      ? store.search(profile?.id ?? null, {
+          ...searchOptions,
+          integrations: [entry.title],
+        })
+      : null,
+    typeof entry.author !== 'undefined' && entry.author !== null
+      ? store.search(profile?.id ?? null, {
+          ...searchOptions,
+          author: entry.author,
+        })
+      : null,
+    ['concepts', 'tutorials', 'others'].includes(entry.category)
+      ? store.search(profile?.id ?? null, {
+          ...searchOptions,
+          hostname: new URL(entry.url).hostname,
+        })
+      : null,
+  ]);
+
+  return json(
+    {
+      entry,
+      authenticated: profile !== null,
+      bookmarked: user?.bookmarked.includes(entry.id) ?? false,
+      message,
       builtWithPackage,
       madeByAuthor,
       alsoOnHostname,
-    ] = await Promise.all([
-      auth.getFlashMessage(),
-      profile?.id ? store.getUser(profile.id) : null,
-      entry.category === 'packages'
-        ? store.search(profile?.id ?? null, {
-            ...searchOptions,
-            integrations: [entry.title],
-          })
-        : null,
-      typeof entry.author !== 'undefined' && entry.author !== null
-        ? store.search(profile?.id ?? null, {
-            ...searchOptions,
-            author: entry.author,
-          })
-        : null,
-      ['concepts', 'tutorials', 'others'].includes(entry.category)
-        ? store.search(profile?.id ?? null, {
-            ...searchOptions,
-            hostname: new URL(entry.url).hostname,
-          })
-        : null,
-    ]);
-
-    return json(
-      {
-        entry,
-        authenticated: profile !== null,
-        bookmarked: user?.bookmarked.includes(entry.id) ?? false,
-        message,
-        builtWithPackage,
-        madeByAuthor,
-        alsoOnHostname,
-      },
-      {
-        headers: setCookieHeader,
-      }
-    );
-  } catch (e) {
-    console.log(e);
-    throw e;
-  }
+    },
+    {
+      headers: setCookieHeader,
+    }
+  );
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
@@ -144,12 +133,8 @@ export default function EntryDetail() {
   }>();
 
   useEffect(() => {
-    if (!authenticated) {
-      return;
-    }
-
     submit({ type: 'view' }, { method: 'post' });
-  }, [submit, authenticated, entry.id]);
+  }, [submit, entry.id]);
 
   const { hostname } = new URL(entry.url);
 
