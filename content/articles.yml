@@ -105,3 +105,18 @@ sergiodxa-test-remix-loaders-and-actions:
   author: sergiodxa
   date: 2021-11-25
   language: en
+cbenjamin2009-remix-blog-mongo-prisa-vercel:
+  url: https://blog.chrisbenjamin.dev/remix-blog-tutorial
+  author: cbenjamin2009
+  date: 2021-12-02
+  language: en
+cbenjamin2009-remix-blog-firebase-auth:
+  url: https://blog.chrisbenjamin.dev/remix-blog-tutorial-firebase-auth-remix-react-mongodb-storage-prisma-vercel-part-2
+  author: cbenjamin2009
+  date: 2021-12-10
+  language: en
+cbenjamin2009-remix-fetch-reder-tailwind:
+  url: https://blog.chrisbenjamin.dev/remix-simple-fetch-and-render-data-styled-with-tailwindcss-30
+  author: cbenjamin2009
+  date: 2021-12-15
+  language: en
