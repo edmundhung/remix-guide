@@ -51,6 +51,7 @@ export class EntriesStore {
 
           const { url, category, userId } = await request.json();
 
+          let entry: Entry | null = null;
           let status: SubmissionStatus | null = null;
           let id = this.entryIdByURL[url] ?? null;
 
@@ -67,6 +68,7 @@ export class EntriesStore {
 
               id = result.id;
               status = result.status;
+              entry = result.entry;
               this.entryIdByURL[page.url] = id;
             }
 
@@ -76,67 +78,67 @@ export class EntriesStore {
             status = 'RESUBMITTED';
           }
 
-          const body = JSON.stringify({ id, status });
+          const body = JSON.stringify({ id, entry, status });
 
           return new Response(body, { status: 201 });
         }
-        case '/update': {
-          if (method !== 'POST') {
-            break;
-          }
+        // case '/update': {
+        //   if (method !== 'POST') {
+        //     break;
+        //   }
 
-          const entryIds = this.scheduledEntryIds.splice(
-            0,
-            this.scheduledEntryIds.length
-          );
-          const entryById = await this.state.storage.get<Entry>(entryIds);
-          const entries = Array.from(entryById.values());
-          const result = await Promise.allSettled(
-            entries.map(async (entry) => {
-              const page = await this.loadPage(entry.url);
+        //   const entryIds = this.scheduledEntryIds.splice(
+        //     0,
+        //     this.scheduledEntryIds.length
+        //   );
+        //   const entryById = await this.state.storage.get<Entry>(entryIds);
+        //   const entries = Array.from(entryById.values());
+        //   const result = await Promise.allSettled(
+        //     entries.map(async (entry) => {
+        //       const page = await this.loadPage(entry.url);
 
-              await this.updateEntry({
-                ...entry,
-                ...page,
-              });
+        //       await this.updateEntry({
+        //         ...entry,
+        //         ...page,
+        //       });
 
-              return entry.id;
-            })
-          );
+        //       return entry.id;
+        //     })
+        //   );
 
-          const failedEntryIds = result.reduce(
-            (list, r) => {
-              if (r.status === 'rejected') {
-                return list;
-              }
+        //   const failedEntryIds = result.reduce(
+        //     (list, r) => {
+        //       if (r.status === 'rejected') {
+        //         return list;
+        //       }
 
-              return list.filter((id) => id !== r.value);
-            },
-            [...entryIds]
-          );
+        //       return list.filter((id) => id !== r.value);
+        //     },
+        //     [...entryIds]
+        //   );
 
-          if (failedEntryIds.length > 0) {
-            this.scheduledEntryIds.push(...failedEntryIds);
-          }
+        //   if (failedEntryIds.length > 0) {
+        //     this.scheduledEntryIds.push(...failedEntryIds);
+        //   }
 
-          return new Response('OK', { status: 200 });
-        }
-        case '/refresh': {
-          if (method !== 'POST') {
-            break;
-          }
+        //   return new Response('OK', { status: 200 });
+        // }
+        // case '/refresh': {
+        //   if (method !== 'POST') {
+        //     break;
+        //   }
 
-          const { entryId } = await request.json();
-          const entry = await this.getEntry(entryId);
+        //   const { entryId } = await request.json();
+        //   const entry = await this.getEntry(entryId);
 
-          if (!entry) {
-            return new Response('Not Found', { status: 404 });
-          }
+        //   if (!entry) {
+        //     return new Response('Not Found', { status: 404 });
+        //   }
 
-          this.scheduledEntryIds.push(entryId);
+        //   this.scheduledEntryIds.push(entryId);
 
-          return new Response('OK', { status: 202 });
-        }
+        //   return new Response('OK', { status: 202 });
+        // }
         case '/view': {
           if (method !== 'PUT') {
             break;
@@ -171,12 +173,13 @@ export class EntriesStore {
           const bookmarkCounts =
             (entry.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1);
 
-          this.updateEntry({
+          const updated = await this.updateEntry({
             ...entry,
             bookmarkCounts: bookmarkCounts > 0 ? bookmarkCounts : 0,
           });
+          const body = JSON.stringify({ entry: updated });
 
-          return new Response('OK', { status: 200 });
+          return new Response(body, { status: 200 });
         }
       }
 
@@ -194,10 +197,15 @@ export class EntriesStore {
     page: Page,
     category: string,
     userId: string
-  ): Promise<{ id: string | null; status: SubmissionStatus }> {
+  ): Promise<{
+    id: string | null;
+    entry: Entry | null;
+    status: SubmissionStatus;
+  }> {
     if (!isSupportedSite(page, category)) {
       return {
         id: null,
+        entry: null,
         status: 'INVALID_CATEGORY',
       };
     }
@@ -205,19 +213,17 @@ export class EntriesStore {
     const id = generateId();
     const now = new Date().toISOString();
     const data = await getAdditionalMetadata(page, this.env);
-
-    this.updateEntry({
+    const entry = await this.updateEntry({
       ...data,
       id,
       category,
       createdAt: now,
       createdBy: userId,
-      updatedAt: now,
-      updatedBy: userId,
     });
 
     return {
       id,
+      entry,
       status: 'PUBLISHED',
     };
   }
@@ -232,63 +238,10 @@ export class EntriesStore {
     return entry;
   }
 
-  async updateEntry(entry: Entry) {
-    const metadata: Metadata = {
-      id: entry.id,
-      url: entry.url,
-      category: entry.category,
-      author: entry.author,
-      title: entry.title,
-      description: entry.description,
-      integrations: Array.from(
-        Object.keys(entry.dependencies ?? {}).reduce((result, packageName) => {
-          switch (packageName) {
-            case 'cypress':
-            case 'tailwindcss':
-            case 'prisma':
-              result.add(packageName);
-              break;
-            case '@remix-run/architect':
-              result.add('architect');
-              break;
-            case '@azure/functions':
-              result.add('azure');
-              break;
-            case '@remix-run/cloudflare-workers':
-            case '@cloudflare/workers-types':
-            case '@cloudflare/wrangler':
-              result.add('cloudflare');
-              break;
-            case 'express':
-            case '@remix-run/express':
-              result.add('express');
-              break;
-            case 'firebase':
-            case 'firebase-admin':
-              result.add('firebase');
-              break;
-            case '@remix-run/netlify':
-              result.add('netlify');
-              break;
-            case 'vercel':
-            case '@vercel/node':
-            case '@remix-run/vercel':
-              result.add('vercel');
-              break;
-          }
+  async updateEntry(entry: Entry): Promise<Entry> {
+    await this.state.storage.put(entry.id, entry);
 
-          return result;
-        }, new Set<string>())
-      ),
-      viewCounts: entry.viewCounts,
-      bookmarkCounts: entry.bookmarkCounts,
-      createdAt: entry.createdAt,
-    };
-
-    this.state.storage.put(entry.id, entry);
-    this.env.CONTENT.put(`entry/${entry.id}`, JSON.stringify(entry), {
-      metadata,
-    });
+    return entry;
   }
 }
 
