@@ -318,6 +318,15 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         body: JSON.stringify({ userId, entryId }),
       });
 
+      if (response.status === 409) {
+        /**
+         * If the action is conflicting with the current status
+         * It is very likely a tempoary problem with data consistency
+         * There is no need to let the user know as the result fulfills the original intention anyway
+         */
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(
           'Bookmark failed; Entry is not bookmarked on the UserStore'

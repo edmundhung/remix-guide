@@ -168,10 +168,12 @@ export class EntriesStore {
             return new Response('Not Found', { status: 404 });
           }
 
+          const bookmarkCounts =
+            (entry.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1);
+
           this.updateEntry({
             ...entry,
-            bookmarkCounts:
-              (entry.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1),
+            bookmarkCounts: bookmarkCounts > 0 ? bookmarkCounts : 0,
           });
 
           return new Response('OK', { status: 200 });
@@ -348,7 +350,10 @@ export class UserStore {
           }
 
           this.profile = profile;
-          this.state.storage.put('profile', this.profile);
+          this.state.storage.put('profile', profile);
+          this.env.CONTENT.put(`user/${profile.id}`, JSON.stringify(profile), {
+            metadata: profile,
+          });
 
           return new Response('OK', { status: 200 });
         }
@@ -384,10 +389,19 @@ export class UserStore {
             );
           }
 
-          this.bookmarked = this.bookmarked.filter((id) => id !== entryId);
+          const isBookmarked = this.bookmarked.includes(entryId);
+
+          if (
+            (method === 'PUT' && isBookmarked) ||
+            (method === 'DELETE' && !isBookmarked)
+          ) {
+            return new Response('Conflict', { status: 409 });
+          }
 
           if (method === 'PUT') {
             this.bookmarked.unshift(entryId);
+          } else {
+            this.bookmarked = this.bookmarked.filter((id) => id !== entryId);
           }
 
           this.state.storage.put('bookmarked', this.bookmarked);
