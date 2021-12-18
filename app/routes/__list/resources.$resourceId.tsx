@@ -32,7 +32,7 @@ export let action: ActionFunction = async ({ context, params, request }) => {
   const type = formData.get('type');
 
   if (type === 'view') {
-    await store.view(profile?.id ?? null, params.id ?? '');
+    await store.view(profile?.id ?? null, params.resourceId ?? '');
     return new Response('OK', { status: 200 });
   }
 
@@ -42,10 +42,10 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 
   switch (type) {
     case 'bookmark':
-      await store.bookmark(profile.id, params.id ?? '');
+      await store.bookmark(profile.id, params.resourceId ?? '');
       return redirect(request.headers.get('referrer') ?? request.url);
     case 'unbookmark':
-      await store.unbookmark(profile.id, params.id ?? '');
+      await store.unbookmark(profile.id, params.resourceId ?? '');
       return redirect(request.headers.get('referrer') ?? request.url);
   }
 };
@@ -53,7 +53,7 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 export let loader: LoaderFunction = async ({ context, params }) => {
   const { session, store } = context as Context;
   const [resource, profile] = await Promise.all([
-    store.query(params.id ?? ''),
+    store.query(params.resourceId ?? ''),
     session.isAuthenticated(),
   ]);
 

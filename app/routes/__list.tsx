@@ -99,7 +99,7 @@ export default function List() {
                   key={entry.id}
                   entry={entry}
                   search={search}
-                  selected={params.id === entry.id}
+                  selected={params.resourceId === entry.id}
                 />
               ))}
             </div>
