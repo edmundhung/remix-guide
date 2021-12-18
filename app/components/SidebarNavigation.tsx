@@ -170,12 +170,6 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
       isActive = searchParams.getAll(name).includes(value);
 
       switch (name) {
-        case 'list': {
-          if (value !== null) {
-            search = new URLSearchParams({ [name]: value }).toString();
-          }
-          break;
-        }
         case 'category':
         case 'platform': {
           if (!isActive) {
@@ -311,10 +305,10 @@ function SidebarNavigation({
           <MenuItem to="/" name="list" value={null}>
             <SvgIcon className="w-4 h-4" href={homeIcon} /> Home
           </MenuItem>
-          <MenuItem to="/resources" name="list" value="bookmarks">
+          <MenuItem to="/bookmarks" name="list" value="bookmarks">
             <SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
           </MenuItem>
-          <MenuItem to="/resources" name="list" value="history">
+          <MenuItem to="/history" name="list" value="history">
             <SvgIcon className="w-4 h-4" href={historyIcon} /> History
           </MenuItem>
         </LinkMenu>
