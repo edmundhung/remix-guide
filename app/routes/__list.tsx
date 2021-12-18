@@ -11,7 +11,7 @@ import SvgIcon from '~/components/SvgIcon';
 import { capitalize } from '~/helpers';
 import plusIcon from '~/icons/plus.svg';
 import { useResourcesSearch } from '~/search';
-import type { Entry, Context } from '~/types';
+import type { Resource, Context } from '~/types';
 
 export let headers: HeadersFunction = ({ loaderHeaders }) => {
   return {
@@ -62,7 +62,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function List() {
-  let { entries } = useLoaderData<{ entries: Entry[] }>();
+  let { entries } = useLoaderData<{ entries: Resource[] }>();
   const search = useResourcesSearch();
   const params = useParams();
 
@@ -90,7 +90,7 @@ export default function List() {
         >
           {entries.length === 0 ? (
             <div className="text-center py-16 text-gray-500">
-              No entry found at the moment
+              No resources found at the moment
             </div>
           ) : (
             <div>

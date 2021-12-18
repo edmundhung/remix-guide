@@ -6,7 +6,12 @@ import type {
 import { Form, json, redirect, useLoaderData, useFetcher } from 'remix';
 import { ReactElement, useEffect } from 'react';
 import { notFound } from '~/helpers';
-import type { Entry, Context, Metadata, SearchOptions } from '~/types';
+import type {
+  Context,
+  Resource,
+  ResourceMetadata,
+  SearchOptions,
+} from '~/types';
 import Card from '~/components/Card';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
@@ -47,18 +52,18 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 
 export let loader: LoaderFunction = async ({ context, params }) => {
   const { session, store } = context as Context;
-  const [entry, profile] = await Promise.all([
+  const [resource, profile] = await Promise.all([
     store.query(params.id ?? ''),
     session.isAuthenticated(),
   ]);
 
-  if (!entry) {
+  if (!resource) {
     throw notFound();
   }
 
   const searchOptions: SearchOptions = {
     sortBy: 'hotness',
-    excludes: [entry.id],
+    excludes: [resource.id],
     limit: 6,
   };
   const [
@@ -70,31 +75,31 @@ export let loader: LoaderFunction = async ({ context, params }) => {
   ] = await Promise.all([
     session.getFlashMessage(),
     profile?.id ? store.getUser(profile.id) : null,
-    entry.category === 'packages'
+    resource.category === 'packages'
       ? store.search(profile?.id ?? null, {
           ...searchOptions,
-          integrations: [entry.title],
+          integrations: [resource.title],
         })
       : null,
-    typeof entry.author !== 'undefined' && entry.author !== null
+    typeof resource.author !== 'undefined' && resource.author !== null
       ? store.search(profile?.id ?? null, {
           ...searchOptions,
-          author: entry.author,
+          author: resource.author,
         })
       : null,
-    ['concepts', 'tutorials', 'others'].includes(entry.category)
+    ['concepts', 'tutorials', 'others'].includes(resource.category)
       ? store.search(profile?.id ?? null, {
           ...searchOptions,
-          hostname: new URL(entry.url).hostname,
+          hostname: new URL(resource.url).hostname,
         })
       : null,
   ]);
 
   return json(
     {
-      entry,
+      resource,
       authenticated: profile !== null,
-      bookmarked: user?.bookmarked.includes(entry.id) ?? false,
+      bookmarked: user?.bookmarked.includes(resource.id) ?? false,
       message,
       builtWithPackage,
       madeByAuthor,
@@ -116,7 +121,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
 export default function EntryDetail() {
   const { submit } = useFetcher();
   const {
-    entry,
+    resource,
     authenticated,
     bookmarked,
     message,
@@ -124,23 +129,23 @@ export default function EntryDetail() {
     madeByAuthor,
     alsoOnHostname,
   } = useLoaderData<{
-    entry: Entry;
+    resource: Resource;
     authenticated: boolean;
     bookmarked: boolean;
-    builtWithPackage: Metadata[] | null;
-    madeByAuthor: Metadata[] | null;
-    alsoOnHostname: Metadata[] | null;
+    builtWithPackage: ResourceMetadata[] | null;
+    madeByAuthor: ResourceMetadata[] | null;
+    alsoOnHostname: ResourceMetadata[] | null;
   }>();
 
   useEffect(() => {
     submit({ type: 'view' }, { method: 'post' });
-  }, [submit, entry.id]);
+  }, [submit, resource.id]);
 
-  const { hostname } = new URL(entry.url);
+  const { hostname } = new URL(resource.url);
 
   return (
     <Panel
-      title={entry.title}
+      title={resource.title}
       type="details"
       message={message}
       elements={
@@ -164,7 +169,7 @@ export default function EntryDetail() {
             <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
           </button>
           <label className="px-2 w-10 text-right">
-            {entry.bookmarkCounts ?? 0}
+            {resource.bookmarkCounts ?? 0}
           </label>
         </Form>
       }
@@ -174,23 +179,23 @@ export default function EntryDetail() {
           <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
               <div className="text-xs pb-1.5 text-gray-500">
-                {entry.createdAt.substr(0, 10)}
+                {resource.createdAt.substr(0, 10)}
               </div>
               <div>
                 <a
                   className="sticky top-0"
-                  href={entry.url}
+                  href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <h2 className="inline-block text-xl break-words">
-                    {entry.title}
+                    {resource.title}
                   </h2>
                 </a>
               </div>
               <a
                 className="hover:underline text-gray-400"
-                href={entry.url}
+                href={resource.url}
                 target="_blank"
                 rel="noopener noreferrer"
               >
@@ -200,21 +205,21 @@ export default function EntryDetail() {
                 />
                 {hostname}
               </a>
-              {!entry.description ? null : (
+              {!resource.description ? null : (
                 <p className="pt-6 text-gray-500 text-sm">
-                  {entry.description}
+                  {resource.description}
                 </p>
               )}
             </div>
             <div className="lg:max-w-xs w-auto">
-              {entry.video ? (
+              {resource.video ? (
                 <div className="pt-1 w-full lg:w-72">
                   <div className="aspect-w-16 aspect-h-9">
                     <iframe
                       width="720"
                       height="405"
-                      src={entry.video}
-                      title={entry.title}
+                      src={resource.video}
+                      title={resource.title}
                       frameBorder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                       allowFullScreen
@@ -224,13 +229,13 @@ export default function EntryDetail() {
               ) : (
                 <a
                   className="relative"
-                  href={entry.url}
+                  href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
                   <img
                     className="max-h-96 rounded-lg bg-white"
-                    src={entry.image ?? getScreenshotURL(entry.url)}
+                    src={resource.image ?? getScreenshotURL(resource.url)}
                     width="auto"
                     height="auto"
                     alt="cover"
@@ -242,22 +247,22 @@ export default function EntryDetail() {
         </div>
         {builtWithPackage ? (
           <div className="py-8">
-            <h3 className="px-3 pb-4">Built with {entry.title}</h3>
+            <h3 className="px-3 pb-4">Built with {resource.title}</h3>
             <RelatedResources
               entries={builtWithPackage}
               search={new URLSearchParams([
-                ['integration', entry.title],
+                ['integration', resource.title],
               ]).toString()}
             />
           </div>
         ) : null}
         {madeByAuthor ? (
           <div className="py-8">
-            <h3 className="px-3 pb-4">Made by {entry.author}</h3>
+            <h3 className="px-3 pb-4">Made by {resource.author}</h3>
             <RelatedResources
               entries={madeByAuthor}
               search={new URLSearchParams([
-                ['author', entry.author],
+                ['author', resource.author],
               ]).toString()}
             />
           </div>
@@ -277,7 +282,7 @@ export default function EntryDetail() {
 }
 
 interface RelatedResourcesProps {
-  entries: Metadata[];
+  entries: ResourceMetadata[];
   search: string;
 }
 
@@ -288,7 +293,7 @@ function RelatedResources({
   if (entries.length === 0) {
     return (
       <div className="text-center py-8 text-gray-500">
-        No entry found at the moment
+        No resources found at the moment
       </div>
     );
   }

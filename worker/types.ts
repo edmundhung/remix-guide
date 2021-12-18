@@ -48,8 +48,8 @@ export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID_CATEGORY';
 
 export type MessageType = 'success' | 'error' | 'warning' | 'info';
 
-export type Metadata = Pick<
-  Entry,
+export type ResourceMetadata = Pick<
+  Resource,
   | 'id'
   | 'url'
   | 'category'
@@ -62,7 +62,7 @@ export type Metadata = Pick<
   | 'createdAt'
 >;
 
-export interface Entry extends Page {
+export interface Resource extends Page {
   id: string;
   viewCounts?: number;
   bookmarkCounts?: number;

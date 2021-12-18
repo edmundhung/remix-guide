@@ -1,11 +1,11 @@
 import type {
   Env,
-  Entry,
   User,
-  Metadata,
+  Resource,
+  ResourceMetadata,
   SearchOptions,
   SubmissionStatus,
-} from './types';
+} from '../types';
 
 export type Store = ReturnType<typeof createStore>;
 
@@ -28,27 +28,31 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     return user;
   }
 
-  function getMetadata(entry: Entry): Metadata {
+  function getMetadata(resource: Resource): ResourceMetadata {
     return {
-      id: entry.id,
-      url: entry.url,
-      category: entry.category,
-      author: entry.author,
-      title: entry.title,
-      description: entry.description,
-      integrations: entry.integrations,
-      viewCounts: entry.viewCounts,
-      bookmarkCounts: entry.bookmarkCounts,
-      createdAt: entry.createdAt,
+      id: resource.id,
+      url: resource.url,
+      category: resource.category,
+      author: resource.author,
+      title: resource.title,
+      description: resource.description,
+      integrations: resource.integrations,
+      viewCounts: resource.viewCounts,
+      bookmarkCounts: resource.bookmarkCounts,
+      createdAt: resource.createdAt,
     };
   }
 
-  async function updateEntryCache(entry: Entry): Promise<void> {
-    const metadata = getMetadata(entry, []);
+  async function updateResourceCache(resource: Resource): Promise<void> {
+    const metadata = getMetadata(resource, []);
 
-    await env.CONTENT.put(`entry/${entry.id}`, JSON.stringify(entry), {
-      metadata,
-    });
+    await env.CONTENT.put(
+      `resources/${resource.id}`,
+      JSON.stringify(resource),
+      {
+        metadata,
+      }
+    );
   }
 
   function match(
@@ -70,7 +74,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   return {
     async search(userId: string | null, options: SearchOptions) {
       const [list, includes] = await Promise.all([
-        env.CONTENT.list<Metadata>({ prefix: 'entry/' }),
+        env.CONTENT.list<ResourceMetadata>({ prefix: 'resources/' }),
         options.list !== null
           ? (async () => {
               const user = userId ? await getUser(userId) : null;
@@ -164,8 +168,8 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       return entries;
     },
-    async query(entryId: string) {
-      return await env.CONTENT.get<Entry>(`entry/${entryId}`, 'json');
+    async query(resourceId: string) {
+      return await env.CONTENT.get<Resource>(`resources/${resourceId}`, 'json');
     },
     async getUser(userId: string) {
       return await getUser(userId);
@@ -175,15 +179,15 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       category: string,
       userId: string
     ): Promise<{ id: string; status: SubmissionStatus }> {
-      const response = await resourcesStore.fetch('http://entries/submit', {
+      const response = await resourcesStore.fetch('http://resources/submit', {
         method: 'POST',
         body: JSON.stringify({ url, category, userId }),
       });
 
-      const { id, entry, status } = await response.json();
+      const { id, resource, status } = await response.json();
 
-      if (entry) {
-        await updateEntryCache(entry);
+      if (resource) {
+        await updateResourceCache(resource);
       }
 
       return {
@@ -191,45 +195,45 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         status,
       };
     },
-    async refresh(entryId: string): Promise<void> {
-      const response = await resourcesStore.fetch('http://entries/refresh', {
+    async refresh(resourceId: string): Promise<void> {
+      const response = await resourcesStore.fetch('http://resources/refresh', {
         method: 'POST',
-        body: JSON.stringify({ entryId }),
+        body: JSON.stringify({ resourceId }),
       });
 
       if (!response.ok) {
         throw new Error(
-          'View failed; Entry is not marked as viewed on the UserStore'
+          'View failed; Resource is not marked as viewed on the UserStore'
         );
       }
     },
-    async view(userId: string | null, entryId: string): Promise<void> {
+    async view(userId: string | null, resourceId: string): Promise<void> {
       if (userId) {
         const userStore = getUserStore(userId);
         const response = await userStore.fetch('http://user/view', {
           method: 'PUT',
-          body: JSON.stringify({ userId, entryId }),
+          body: JSON.stringify({ userId, resourceId }),
         });
 
         if (!response.ok) {
           throw new Error(
-            'View failed; Entry is not marked as viewed on the UserStore'
+            'View failed; Resource is not marked as viewed on the UserStore'
           );
         }
       }
 
       ctx.waitUntil(
-        resourcesStore.fetch('http://entries/view', {
+        resourcesStore.fetch('http://resources/view', {
           method: 'PUT',
-          body: JSON.stringify({ entryId }),
+          body: JSON.stringify({ resourceId }),
         })
       );
     },
-    async bookmark(userId: string, entryId: string): Promise<void> {
+    async bookmark(userId: string, resourceId: string): Promise<void> {
       const userStore = getUserStore(userId);
       const response = await userStore.fetch('http://user/bookmark', {
         method: 'PUT',
-        body: JSON.stringify({ userId, entryId }),
+        body: JSON.stringify({ userId, resourceId }),
       });
 
       if (response.status === 409) {
@@ -243,50 +247,50 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       if (!response.ok) {
         throw new Error(
-          'Bookmark failed; Entry is not bookmarked on the UserStore'
+          'Bookmark failed; Resource is not bookmarked on the UserStore'
         );
       }
 
       ctx.waitUntil(
         (async () => {
           const response = await resourcesStore.fetch(
-            'http://entries/bookmark',
+            'http://resources/bookmark',
             {
               method: 'PUT',
-              body: JSON.stringify({ entryId }),
+              body: JSON.stringify({ resourceId }),
             }
           );
-          const { entry } = await response.json();
+          const { resource } = await response.json();
 
-          await updateEntryCache(entry);
+          await updateResourceCache(resource);
         })()
       );
     },
-    async unbookmark(userId: string, entryId: string): Promise<void> {
+    async unbookmark(userId: string, resourceId: string): Promise<void> {
       const userStore = getUserStore(userId);
       const response = await userStore.fetch('http://user/bookmark', {
         method: 'DELETE',
-        body: JSON.stringify({ userId, entryId }),
+        body: JSON.stringify({ userId, resourceId }),
       });
 
       if (!response.ok) {
         throw new Error(
-          'Unbookmark failed; Entry is not unbookmarked on the UserStore'
+          'Unbookmark failed; Resource is not unbookmarked on the UserStore'
         );
       }
 
       ctx.waitUntil(
         (async () => {
           const response = await resourcesStore.fetch(
-            'http://entries/bookmark',
+            'http://resources/bookmark',
             {
               method: 'DELETE',
-              body: JSON.stringify({ entryId }),
+              body: JSON.stringify({ resourceId }),
             }
           );
-          const { entry } = await response.json();
+          const { resource } = await response.json();
 
-          await updateEntryCache(entry);
+          await updateResourceCache(resource);
         })()
       );
     },

@@ -70,7 +70,7 @@ export class UserStore {
             break;
           }
 
-          const { userId, entryId } = await request.json();
+          const { userId, resourceId } = await request.json();
 
           if (this.profile.id !== userId) {
             throw new Error(
@@ -78,8 +78,8 @@ export class UserStore {
             );
           }
 
-          this.viewed = this.viewed.filter((id) => id !== entryId);
-          this.viewed.unshift(entryId);
+          this.viewed = this.viewed.filter((id) => id !== resourceId);
+          this.viewed.unshift(resourceId);
           this.state.storage.put('viewed', this.viewed);
 
           return new Response('OK', { status: 200 });
@@ -89,7 +89,7 @@ export class UserStore {
             break;
           }
 
-          const { userId, entryId } = await request.json();
+          const { userId, resourceId } = await request.json();
 
           if (this.profile.id !== userId) {
             throw new Error(
@@ -97,7 +97,7 @@ export class UserStore {
             );
           }
 
-          const isBookmarked = this.bookmarked.includes(entryId);
+          const isBookmarked = this.bookmarked.includes(resourceId);
 
           if (
             (method === 'PUT' && isBookmarked) ||
@@ -107,9 +107,9 @@ export class UserStore {
           }
 
           if (method === 'PUT') {
-            this.bookmarked.unshift(entryId);
+            this.bookmarked.unshift(resourceId);
           } else {
-            this.bookmarked = this.bookmarked.filter((id) => id !== entryId);
+            this.bookmarked = this.bookmarked.filter((id) => id !== resourceId);
           }
 
           this.state.storage.put('bookmarked', this.bookmarked);

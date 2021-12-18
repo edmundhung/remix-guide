@@ -1,9 +1,9 @@
 import { Link } from 'remix';
 import type { ReactElement } from 'react';
-import type { Metadata } from '~/types';
+import type { ResourceMetadata } from '~/types';
 
 interface CardProps {
-  entry: Metadata;
+  entry: ResourceMetadata;
   search: string;
   selected?: boolean;
 }

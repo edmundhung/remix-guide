@@ -1,6 +1,6 @@
 import { customAlphabet } from 'nanoid';
 import { scrapeUrl, isSupportedSite, getAdditionalMetadata } from '../preview';
-import type { Entry, Env, Page, SubmissionStatus } from '../types';
+import type { Resource, Env, Page, SubmissionStatus } from '../types';
 
 /**
  * ID Generator based on nanoid
@@ -17,21 +17,19 @@ const generateId = customAlphabet(
 export class ResourcesStore {
   state: DurableObjectState;
   env: Env;
-  entryIdByURL: Record<string, string | null>;
-  entryIdByPackageName: Record<string, string | null>;
-  scheduledEntryIds: string[];
+  resourceIdByURL: Record<string, string | null>;
+  resourceIdByPackageName: Record<string, string | null>;
 
   constructor(state, env) {
     this.state = state;
     this.env = env;
-    this.scheduledEntryIds = [];
     this.state.blockConcurrencyWhile(async () => {
-      let entryIdByURL = await this.state.storage.get('index/URL');
-      let entryIdByPackageName = await this.state.storage.get(
+      let resourceIdByURL = await this.state.storage.get('index/URL');
+      let resourceIdByPackageName = await this.state.storage.get(
         'index/PackageName'
       );
-      this.entryIdByURL = entryIdByURL ?? {};
-      this.entryIdByPackageName = entryIdByPackageName ?? {};
+      this.resourceIdByURL = resourceIdByURL ?? {};
+      this.resourceIdByPackageName = resourceIdByPackageName ?? {};
     });
   }
 
@@ -48,117 +46,60 @@ export class ResourcesStore {
 
           const { url, category, userId } = await request.json();
 
-          let entry: Entry | null = null;
+          let resource: Resource | null = null;
           let status: SubmissionStatus | null = null;
-          let id = this.entryIdByURL[url] ?? null;
+          let id = this.resourceIdByURL[url] ?? null;
 
           if (!id) {
             const page = await scrapeUrl(url);
 
             if (url !== page.url) {
-              id = this.entryIdByURL[page.url] ?? null;
+              id = this.resourceIdByURL[page.url] ?? null;
               status = 'RESUBMITTED';
             }
 
             if (!id) {
-              const result = await this.createEntry(page, category, userId);
+              const result = await this.createResource(page, category, userId);
 
               id = result.id;
               status = result.status;
-              entry = result.entry;
-              this.entryIdByURL[page.url] = id;
+              resource = result.resource;
+              this.resourceIdByURL[page.url] = id;
             }
 
-            if (entry && entry.category === 'packages') {
-              this.entryIdByPackageName[entry.title] = entry.id;
+            if (resource && resource.category === 'packages') {
+              this.resourceIdByPackageName[resource.title] = resource.id;
               this.state.storage.put(
                 'index/PackageName',
-                this.entryIdByPackageName
+                this.resourceIdByPackageName
               );
             }
 
-            this.entryIdByURL[url] = id;
-            this.state.storage.put('index/URL', this.entryIdByURL);
+            this.resourceIdByURL[url] = id;
+            this.state.storage.put('index/URL', this.resourceIdByURL);
           } else {
             status = 'RESUBMITTED';
           }
 
-          const body = JSON.stringify({ id, entry, status });
+          const body = JSON.stringify({ id, resource, status });
 
           return new Response(body, { status: 201 });
         }
-        // case '/update': {
-        //   if (method !== 'POST') {
-        //     break;
-        //   }
-
-        //   const entryIds = this.scheduledEntryIds.splice(
-        //     0,
-        //     this.scheduledEntryIds.length
-        //   );
-        //   const entryById = await this.state.storage.get<Entry>(entryIds);
-        //   const entries = Array.from(entryById.values());
-        //   const result = await Promise.allSettled(
-        //     entries.map(async (entry) => {
-        //       const page = await this.loadPage(entry.url);
-
-        //       await this.updateEntry({
-        //         ...entry,
-        //         ...page,
-        //       });
-
-        //       return entry.id;
-        //     })
-        //   );
-
-        //   const failedEntryIds = result.reduce(
-        //     (list, r) => {
-        //       if (r.status === 'rejected') {
-        //         return list;
-        //       }
-
-        //       return list.filter((id) => id !== r.value);
-        //     },
-        //     [...entryIds]
-        //   );
-
-        //   if (failedEntryIds.length > 0) {
-        //     this.scheduledEntryIds.push(...failedEntryIds);
-        //   }
-
-        //   return new Response('OK', { status: 200 });
-        // }
-        // case '/refresh': {
-        //   if (method !== 'POST') {
-        //     break;
-        //   }
-
-        //   const { entryId } = await request.json();
-        //   const entry = await this.getEntry(entryId);
-
-        //   if (!entry) {
-        //     return new Response('Not Found', { status: 404 });
-        //   }
-
-        //   this.scheduledEntryIds.push(entryId);
-
-        //   return new Response('OK', { status: 202 });
-        // }
         case '/view': {
           if (method !== 'PUT') {
             break;
           }
 
-          const { entryId } = await request.json();
-          const entry = await this.getEntry(entryId);
+          const { resourceId } = await request.json();
+          const resource = await this.getResource(resourceId);
 
-          if (!entry) {
+          if (!resource) {
             return new Response('Not Found', { status: 404 });
           }
 
-          this.updateEntry({
-            ...entry,
-            viewCounts: (entry.viewCounts ?? 0) + 1,
+          this.updateResource({
+            ...resource,
+            viewCounts: (resource.viewCounts ?? 0) + 1,
           });
 
           return new Response('OK', { status: 200 });
@@ -168,21 +109,21 @@ export class ResourcesStore {
             break;
           }
 
-          const { entryId } = await request.json();
-          const entry = await this.getEntry(entryId);
+          const { resourceId } = await request.json();
+          const resource = await this.getResource(resourceId);
 
-          if (!entry) {
+          if (!resource) {
             return new Response('Not Found', { status: 404 });
           }
 
           const bookmarkCounts =
-            (entry.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1);
+            (resource.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1);
 
-          const updated = await this.updateEntry({
-            ...entry,
+          const updated = await this.updateResource({
+            ...resource,
             bookmarkCounts: bookmarkCounts > 0 ? bookmarkCounts : 0,
           });
-          const body = JSON.stringify({ entry: updated });
+          const body = JSON.stringify({ resource: updated });
 
           return new Response(body, { status: 200 });
         }
@@ -198,19 +139,19 @@ export class ResourcesStore {
     }
   }
 
-  async createEntry(
+  async createResource(
     page: Page,
     category: string,
     userId: string
   ): Promise<{
     id: string | null;
-    entry: Entry | null;
+    resource: Resource | null;
     status: SubmissionStatus;
   }> {
     if (!isSupportedSite(page, category)) {
       return {
         id: null,
-        entry: null,
+        resource: null,
         status: 'INVALID_CATEGORY',
       };
     }
@@ -219,10 +160,10 @@ export class ResourcesStore {
     const now = new Date().toISOString();
     const data = await getAdditionalMetadata(
       page,
-      Object.keys(this.entryIdByPackageName),
+      Object.keys(this.resourceIdByPackageName),
       this.env
     );
-    const entry = await this.updateEntry({
+    const resource = await this.updateResource({
       ...data,
       id,
       category,
@@ -232,24 +173,24 @@ export class ResourcesStore {
 
     return {
       id,
-      entry,
+      resource,
       status: 'PUBLISHED',
     };
   }
 
-  async getEntry(entryId: string) {
-    const entry = await this.state.storage.get<Entry>(entryId);
+  async getResource(resourceId: string) {
+    const resource = await this.state.storage.get<Resource>(resourceId);
 
-    if (!entry) {
+    if (!resource) {
       return null;
     }
 
-    return entry;
+    return resource;
   }
 
-  async updateEntry(entry: Entry): Promise<Entry> {
-    await this.state.storage.put(entry.id, entry);
+  async updateResource(resource: Resource): Promise<Resource> {
+    await this.state.storage.put(resource.id, resource);
 
-    return entry;
+    return resource;
   }
 }
