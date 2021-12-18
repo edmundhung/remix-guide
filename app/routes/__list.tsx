@@ -26,8 +26,8 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ request, context }) => {
-  const { auth, store } = context as Context;
-  const profile = await auth.isAuthenticated();
+  const { session, store } = context as Context;
+  const profile = await session.isAuthenticated();
   const url = new URL(request.url);
   const keyword = url.searchParams.get('q') ?? '';
   const list = url.searchParams.get('list');

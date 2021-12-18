@@ -36,8 +36,8 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-  const { auth } = context as Context;
-  const profile = await auth.isAuthenticated();
+  const { session } = context as Context;
+  const profile = await session.isAuthenticated();
 
   return json({
     profile,

@@ -21,8 +21,8 @@ function getScreenshotURL(url: string): string {
 }
 
 export let action: ActionFunction = async ({ context, params, request }) => {
-  const { auth, store } = context as Context;
-  const profile = await auth.isAuthenticated();
+  const { session, store } = context as Context;
+  const profile = await session.isAuthenticated();
   const formData = await request.formData();
   const type = formData.get('type');
 
@@ -46,10 +46,10 @@ export let action: ActionFunction = async ({ context, params, request }) => {
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-  const { auth, store } = context as Context;
+  const { session, store } = context as Context;
   const [entry, profile] = await Promise.all([
     store.query(params.id ?? ''),
-    auth.isAuthenticated(),
+    session.isAuthenticated(),
   ]);
 
   if (!entry) {
@@ -68,7 +68,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     madeByAuthor,
     alsoOnHostname,
   ] = await Promise.all([
-    auth.getFlashMessage(),
+    session.getFlashMessage(),
     profile?.id ? store.getUser(profile.id) : null,
     entry.category === 'packages'
       ? store.search(profile?.id ?? null, {

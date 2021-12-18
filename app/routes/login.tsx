@@ -6,5 +6,5 @@ export let loader: LoaderFunction = async ({ context }) => {
 };
 
 export let action: ActionFunction = async ({ context }) => {
-  return await context.auth.login();
+  return await context.session.login();
 };

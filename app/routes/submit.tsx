@@ -55,8 +55,8 @@ function getPlaceholder(category: Category): string | null {
 }
 
 export let action: ActionFunction = async ({ request, context }) => {
-  const { auth, store } = context as Context;
-  const profile = await auth.isAuthenticated();
+  const { session, store } = context as Context;
+  const profile = await session.isAuthenticated();
 
   if (!profile) {
     return new Response('Unauthorized', { status: 401 });
@@ -68,7 +68,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 
   if (!isValidCategory(category)) {
     return redirect('/submit', {
-      headers: await auth.commitWithFlashMessage(
+      headers: await session.commitWithFlashMessage(
         'Invalid category provided',
         'warning'
       ),
@@ -77,7 +77,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 
   if (!isValidURL(url)) {
     return redirect('/submit', {
-      headers: await auth.commitWithFlashMessage(
+      headers: await session.commitWithFlashMessage(
         'Invalid url provided',
         'warning'
       ),
@@ -91,19 +91,19 @@ export let action: ActionFunction = async ({ request, context }) => {
 
     switch (status) {
       case 'PUBLISHED':
-        setCookieHeader = await auth.commitWithFlashMessage(
+        setCookieHeader = await session.commitWithFlashMessage(
           'The submitted resource is now published',
           'success'
         );
         break;
       case 'RESUBMITTED':
-        setCookieHeader = await auth.commitWithFlashMessage(
+        setCookieHeader = await session.commitWithFlashMessage(
           'A resource with the same url is found',
           'info'
         );
         break;
       case 'INVALID_CATEGORY':
-        setCookieHeader = await auth.commitWithFlashMessage(
+        setCookieHeader = await session.commitWithFlashMessage(
           'The provided URL does not match the choosen category; Pleae refine your selection and submit again',
           'error'
         );
@@ -122,7 +122,7 @@ export let action: ActionFunction = async ({ request, context }) => {
   } catch (error) {
     console.log('Error while submitting new url; Received', error);
     return redirect('/submit', {
-      headers: await auth.commitWithFlashMessage(
+      headers: await session.commitWithFlashMessage(
         'Something wrong with the URL; Please try again later',
         'error'
       ),
@@ -131,8 +131,8 @@ export let action: ActionFunction = async ({ request, context }) => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-  const { auth } = context as Context;
-  const [message, setCookieHeader] = await auth.getFlashMessage();
+  const { session } = context as Context;
+  const [message, setCookieHeader] = await session.getFlashMessage();
 
   return json(
     {
