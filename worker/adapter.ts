@@ -4,6 +4,7 @@ import {
   MethodNotAllowedError,
   NotFoundError,
 } from '@cloudflare/kv-asset-handler';
+import '@remix-run/cloudflare-workers';
 import type {
   AppLoadContext,
   ServerBuild,
