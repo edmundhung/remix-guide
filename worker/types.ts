@@ -8,7 +8,7 @@ export interface Env {
   YOUTUBE_API_KEY?: string;
   SESSION_SECERTS?: string;
   CONTENT: KVNamespace;
-  ENTRIES_STORE: DurableObjectNamespace;
+  RESOURCES_STORE: DurableObjectNamespace;
   USER_STORE: DurableObjectNamespace;
 }
 

@@ -10,8 +10,8 @@ import type {
 export type Store = ReturnType<typeof createStore>;
 
 export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
-  const id = env.ENTRIES_STORE.idFromName('');
-  const entriesStore = env.ENTRIES_STORE.get(id);
+  const id = env.RESOURCES_STORE.idFromName('');
+  const resourcesStore = env.RESOURCES_STORE.get(id);
 
   function getUserStore(userId: string) {
     const id = env.USER_STORE.idFromName(userId);
@@ -175,7 +175,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       category: string,
       userId: string
     ): Promise<{ id: string; status: SubmissionStatus }> {
-      const response = await entriesStore.fetch('http://entries/submit', {
+      const response = await resourcesStore.fetch('http://entries/submit', {
         method: 'POST',
         body: JSON.stringify({ url, category, userId }),
       });
@@ -192,7 +192,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       };
     },
     async refresh(entryId: string): Promise<void> {
-      const response = await entriesStore.fetch('http://entries/refresh', {
+      const response = await resourcesStore.fetch('http://entries/refresh', {
         method: 'POST',
         body: JSON.stringify({ entryId }),
       });
@@ -219,7 +219,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       }
 
       ctx.waitUntil(
-        entriesStore.fetch('http://entries/view', {
+        resourcesStore.fetch('http://entries/view', {
           method: 'PUT',
           body: JSON.stringify({ entryId }),
         })
@@ -249,10 +249,13 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       ctx.waitUntil(
         (async () => {
-          const response = await entriesStore.fetch('http://entries/bookmark', {
-            method: 'PUT',
-            body: JSON.stringify({ entryId }),
-          });
+          const response = await resourcesStore.fetch(
+            'http://entries/bookmark',
+            {
+              method: 'PUT',
+              body: JSON.stringify({ entryId }),
+            }
+          );
           const { entry } = await response.json();
 
           await updateEntryCache(entry);
@@ -274,10 +277,13 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       ctx.waitUntil(
         (async () => {
-          const response = await entriesStore.fetch('http://entries/bookmark', {
-            method: 'DELETE',
-            body: JSON.stringify({ entryId }),
-          });
+          const response = await resourcesStore.fetch(
+            'http://entries/bookmark',
+            {
+              method: 'DELETE',
+              body: JSON.stringify({ entryId }),
+            }
+          );
           const { entry } = await response.json();
 
           await updateEntryCache(entry);

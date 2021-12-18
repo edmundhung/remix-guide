@@ -4,7 +4,7 @@ import { createFetchHandler } from './adapter';
 import { createContext } from './context';
 
 // Setup Durable Objects
-export { EntriesStore, UserStore } from './store';
+export { ResourcesStore, UserStore } from './store';
 
 const handleFetch = createFetchHandler({
   build,

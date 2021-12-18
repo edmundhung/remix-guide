@@ -1,5 +1,5 @@
 import { decode } from 'html-entities';
-import type { Category, Env, Page } from '../types';
+import type { Category, Env, Page } from './types';
 
 interface Parser {
   setup(htmlRewriter: HTMLRewriter): HTMLRewriter;

@@ -17,7 +17,7 @@ entry-point = "."
 
 [durable_objects]
 bindings = [
-  { name = "ENTRIES_STORE", class_name = "EntriesStore" },
+  { name = "RESOURCES_STORE", class_name = "ResourcesStore" },
   { name = "USER_STORE", class_name = "UserStore" },
 ]
 
