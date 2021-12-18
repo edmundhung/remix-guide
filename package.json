@@ -24,19 +24,19 @@
   },
   "dependencies": {
     "@cloudflare/kv-asset-handler": "^0.2.0",
-    "@remix-run/cloudflare-workers": "^1.0.6",
-    "@remix-run/react": "^1.0.6",
+    "@remix-run/cloudflare-workers": "^1.1.1",
+    "@remix-run/react": "^1.1.1",
     "html-entities": "^2.3.2",
     "nanoid": "^3.1.30",
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
-    "remix": "^1.0.6",
+    "remix": "^1.1.1",
     "remix-auth": "^2.5.1"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^3.2.0",
     "@cloudflare/wrangler": "^1.19.5",
-    "@remix-run/dev": "^1.0.6",
+    "@remix-run/dev": "^1.1.1",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.3.0",
     "@tailwindcss/typography": "^0.5.0",
