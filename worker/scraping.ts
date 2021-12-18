@@ -83,7 +83,7 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
   );
 }
 
-async function getMeta(url: string) {
+async function scrapeHTML(url: string): Promise<Page> {
   const response = await fetch(url, {
     headers: {
       Accept: 'text/html',
@@ -140,7 +140,10 @@ async function getMeta(url: string) {
     ),
   });
 
-  return page;
+  return {
+    ...page,
+    url: page.url ?? url,
+  };
 }
 
 async function getPackageInfo(packageName: string) {
@@ -224,43 +227,46 @@ function getIntegrations(
   let integrations = new Set<string>();
 
   for (const packageName of Object.keys(dependencies)) {
-    if (packages.includes(packageName)) {
+    if (packageName === 'remix' || packageName.startsWith('@remix-run/')) {
+      integrations.add('remix');
+    }
+
+    if (
+      packages
+        .concat(['cypress', 'tailwindcss', 'prisma', 'express'])
+        .includes(packageName)
+    ) {
       integrations.add(packageName);
-    } else {
-      switch (packageName) {
-        case 'cypress':
-        case 'tailwindcss':
-        case 'prisma':
-          integrations.add(packageName);
-          break;
-        case '@remix-run/architect':
-          integrations.add('architect');
-          break;
-        case '@azure/functions':
-          integrations.add('azure');
-          break;
-        case '@remix-run/cloudflare-workers':
-        case '@cloudflare/workers-types':
-        case '@cloudflare/wrangler':
-          integrations.add('cloudflare');
-          break;
-        case 'express':
-        case '@remix-run/express':
-          integrations.add('express');
-          break;
-        case 'firebase':
-        case 'firebase-admin':
-          integrations.add('firebase');
-          break;
-        case '@remix-run/netlify':
-          integrations.add('netlify');
-          break;
-        case 'vercel':
-        case '@vercel/node':
-        case '@remix-run/vercel':
-          integrations.add('vercel');
-          break;
-      }
+    }
+
+    switch (packageName) {
+      case '@remix-run/architect':
+        integrations.add('architect');
+        break;
+      case '@azure/functions':
+        integrations.add('azure');
+        break;
+      case '@remix-run/cloudflare-workers':
+      case '@remix-run/cloudflare-pages':
+      case '@cloudflare/workers-types':
+      case '@cloudflare/wrangler':
+        integrations.add('cloudflare');
+        break;
+      case '@remix-run/express':
+        integrations.add('express');
+        break;
+      case 'firebase':
+      case 'firebase-admin':
+        integrations.add('firebase');
+        break;
+      case '@remix-run/netlify':
+        integrations.add('netlify');
+        break;
+      case 'vercel':
+      case '@vercel/node':
+      case '@remix-run/vercel':
+        integrations.add('vercel');
+        break;
     }
   }
 
@@ -336,7 +342,7 @@ async function parseNpmPackage(
   };
 }
 
-export async function parseYouTubeVideo(videoId: string, apiKey: string) {
+async function parseYouTubeVideo(videoId: string, apiKey: string) {
   const metadata = await getYouTubeMetadata(videoId, apiKey);
 
   if (!metadata) {
@@ -353,34 +359,23 @@ export async function parseYouTubeVideo(videoId: string, apiKey: string) {
   };
 }
 
-export async function scrapeUrl(url: string): Promise<Page> {
-  const meta = await getMeta(url);
-
-  return {
-    ...meta,
-    url: meta.url ?? url,
-  };
-}
-
-export function isSupportedSite(page: Page, category: Category): boolean {
-  let supportedSites: string[] | null = null;
-
+function isValidResource(page: Page, category: Category): boolean {
   switch (category) {
+    case 'tutorials':
+      return (
+        !['npm', 'GitHub'].includes(page.site) &&
+        (page.title?.includes('remix') || page.description?.includes('remix'))
+      );
     case 'packages':
-      supportedSites = ['npm'];
-      break;
-    case 'templates':
-      supportedSites = ['GitHub', 'Gist'];
-      break;
+      return page.site === 'npm' && page.title?.includes('remix');
     case 'examples':
-      supportedSites = ['GitHub'];
-      break;
+      return page.site === 'GitHub' && page.integrations?.includes('remix');
+    case 'others':
+      return true;
   }
-
-  return supportedSites === null || supportedSites.includes(page.site);
 }
 
-export async function getAdditionalMetadata(
+async function getAdditionalMetadata(
   page: Page,
   packages: string[],
   env: Env
@@ -404,8 +399,6 @@ export async function getAdditionalMetadata(
         packages,
         env.GITHUB_TOKEN
       );
-
-      console.log('metadata', metadata);
 
       return {
         ...page,
@@ -449,3 +442,5 @@ export async function getAdditionalMetadata(
 
   return page;
 }
+
+export { scrapeHTML, getAdditionalMetadata, isValidResource };

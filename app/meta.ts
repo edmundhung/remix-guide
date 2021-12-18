@@ -1,8 +1,8 @@
-export const categories = [
-  'concepts',
+import { Category } from '~/types';
+
+export const categories: Category[] = [
   'tutorials',
   'packages',
-  'templates',
   'examples',
   'others',
 ];

@@ -1,5 +1,9 @@
 import { customAlphabet } from 'nanoid';
-import { scrapeUrl, isSupportedSite, getAdditionalMetadata } from '../preview';
+import {
+  scrapeHTML,
+  isValidResource,
+  getAdditionalMetadata,
+} from '../scraping';
 import type { Resource, Env, Page, SubmissionStatus } from '../types';
 
 /**
@@ -51,7 +55,7 @@ export class ResourcesStore {
           let id = this.resourceIdByURL[url] ?? null;
 
           if (!id) {
-            const page = await scrapeUrl(url);
+            const page = await scrapeHTML(url);
 
             if (url !== page.url) {
               id = this.resourceIdByURL[page.url] ?? null;
@@ -148,14 +152,6 @@ export class ResourcesStore {
     resource: Resource | null;
     status: SubmissionStatus;
   }> {
-    if (!isSupportedSite(page, category)) {
-      return {
-        id: null,
-        resource: null,
-        status: 'INVALID_CATEGORY',
-      };
-    }
-
     const id = generateId();
     const now = new Date().toISOString();
     const data = await getAdditionalMetadata(
@@ -163,6 +159,15 @@ export class ResourcesStore {
       Object.keys(this.resourceIdByPackageName),
       this.env
     );
+
+    if (!isValidResource(data, category)) {
+      return {
+        id: null,
+        resource: null,
+        status: 'INVALID',
+      };
+    }
+
     const resource = await this.updateResource({
       ...data,
       id,

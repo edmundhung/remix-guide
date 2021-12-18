@@ -24,13 +24,7 @@ export interface User {
   bookmarked: string[];
 }
 
-export type Category =
-  | 'concepts'
-  | 'tutorials'
-  | 'packages'
-  | 'templates'
-  | 'examples'
-  | 'others';
+export type Category = 'tutorials' | 'packages' | 'examples' | 'others';
 
 export interface Page {
   url: string;
@@ -44,7 +38,7 @@ export interface Page {
   video?: string;
 }
 
-export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID_CATEGORY';
+export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID';
 
 export type MessageType = 'success' | 'error' | 'warning' | 'info';
 

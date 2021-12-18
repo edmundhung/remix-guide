@@ -20,16 +20,12 @@ function isValidCategory(category: string): boolean {
 
 function getDescription(category: Category): string | null {
   switch (category) {
-    case 'concepts':
-      return 'Ideas about Remix, about Frontend, about Web';
     case 'tutorials':
-      return 'An article, a video, or a course teaching about Remix or web fundamental';
+      return 'Article, video or course teaching about Remix';
     case 'packages':
-      return 'A published NPM package. Private registry is not supported';
-    case 'templates':
-      return 'A template built on top of Remix. It can be a GitHub repo or a gist';
+      return 'Package designed specifically for Remix and is published on NPM';
     case 'examples':
-      return 'An example app built with Remix. Only Github repo is accepted at the moment';
+      return 'App built with Remix and is hosted on GitHub repository';
     case 'others':
       return 'Anything else not covered above';
   }
@@ -39,14 +35,10 @@ function getDescription(category: Category): string | null {
 
 function getPlaceholder(category: Category): string | null {
   switch (category) {
-    case 'concepts':
-      return 'e.g. https://kentcdodds.com/blog/why-i-love-remix';
     case 'tutorials':
-      return 'e.g. https://www.youtube.com/watch?v=3XkU_DXcgl0';
+      return 'e.g. https://kentcdodds.com/blog/super-simple-start-to-remix';
     case 'packages':
       return 'e.g. https://www.npmjs.com/package/remix';
-    case 'templates':
-      return 'e.g. https://github.com/edmundhung/remix-worker-template';
     case 'examples':
       return 'e.g. https://github.com/edmundhung/remix-guide';
   }
@@ -59,7 +51,12 @@ export let action: ActionFunction = async ({ request, context }) => {
   const profile = await session.isAuthenticated();
 
   if (!profile) {
-    return new Response('Unauthorized', { status: 401 });
+    return redirect('/submit', {
+      headers: await session.commitWithFlashMessage(
+        'Please login first before submitting new resources',
+        'warning'
+      ),
+    });
   }
 
   const formData = await request.formData();
@@ -102,9 +99,9 @@ export let action: ActionFunction = async ({ request, context }) => {
           'info'
         );
         break;
-      case 'INVALID_CATEGORY':
+      case 'INVALID':
         setCookieHeader = await session.commitWithFlashMessage(
-          'The provided URL does not match the choosen category; Pleae refine your selection and submit again',
+          'The provided URL does not looks like related to Remix',
           'error'
         );
         break;
