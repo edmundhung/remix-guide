@@ -196,18 +196,24 @@ async function getGithubRepositoryPackacgeJSON(repo: string, branch: string) {
   const response = await fetch(
     `https://raw.githubusercontent.com/${repo}/${branch}/package.json`
   );
-  const packageJSON = await response.json();
 
-  return packageJSON;
+  if (!response.ok) {
+    return null;
+  }
+
+  return await response.json();
 }
 
 async function getYouTubeMetadata(videoId: string, apiKey: string) {
   const response = await fetch(
     `https://youtube.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`
   );
-  const metadata = await response.json();
 
-  return metadata;
+  if (!response.ok) {
+    return null;
+  }
+
+  return await response.json();
 }
 
 function getIntegrations(
@@ -283,18 +289,17 @@ async function parseGithubRepository(
     return null;
   }
 
-  const packageJSON = await getGithubRepositoryPackacgeJSON(
-    repo,
-    metadata['default_branch']
-  );
+  const packageJSON = files.find((file) => file.name === 'package.json')
+    ? await getGithubRepositoryPackacgeJSON(repo, metadata['default_branch'])
+    : null;
 
   return {
     title: metadata['full_name'],
     description: metadata['description'],
     author: metadata['owner']?.['login'],
     integrations: getIntegrations(files, packages, {
-      ...packageJSON.dependencies,
-      ...packageJSON.devDependencies,
+      ...packageJSON?.dependencies,
+      ...packageJSON?.devDependencies,
     }),
   };
 }
@@ -399,6 +404,8 @@ export async function getAdditionalMetadata(
         packages,
         env.GITHUB_TOKEN
       );
+
+      console.log('metadata', metadata);
 
       return {
         ...page,
