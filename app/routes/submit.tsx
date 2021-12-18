@@ -152,7 +152,7 @@ export default function Submit() {
   };
 
   return (
-    <Panel title="Submission" message={message}>
+    <Panel title="Submit a new Resource" message={message}>
       <section className="px-3 pt-2">
         <Form className="lg:max-w-3xl" method="post" reloadDocument>
           <h3 className="">Please select a cateogry</h3>
@@ -169,7 +169,7 @@ export default function Submit() {
                   checked={category === selected}
                 />
                 <label
-                  className="cursor-pointer flex flex-col md:flex-row md:items-center gap-4 border peer-checked:border-white p-4"
+                  className="cursor-pointer flex flex-col md:flex-row md:items-center gap-4 border peer-checked:border-white p-4 rounded-lg"
                   htmlFor={category}
                 >
                   <div className="flex items-center gap-4">
