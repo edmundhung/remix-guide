@@ -103,7 +103,7 @@ export class ResourcesStore {
 
           this.updateResource({
             ...resource,
-            viewCounts: (resource.viewCounts ?? 0) + 1,
+            viewCounts: resource.viewCounts + 1,
           });
 
           return new Response('OK', { status: 200 });
@@ -113,23 +113,37 @@ export class ResourcesStore {
             break;
           }
 
-          const { resourceId } = await request.json();
-          const resource = await this.getResource(resourceId);
+          const { userId, resourceId } = await request.json();
+
+          let resource = await this.getResource(resourceId);
 
           if (!resource) {
             return new Response('Not Found', { status: 404 });
           }
 
-          const bookmarkCounts =
-            (resource.bookmarkCounts ?? 0) + (method === 'PUT' ? 1 : -1);
+          let bookmarked = resource.bookmarked ?? [];
 
-          const updated = await this.updateResource({
-            ...resource,
-            bookmarkCounts: bookmarkCounts > 0 ? bookmarkCounts : 0,
-          });
-          const body = JSON.stringify({ resource: updated });
+          switch (method) {
+            case 'PUT':
+              if (!bookmarked.includes(userId)) {
+                bookmarked = bookmarked.concat(userId);
+              }
+              break;
+            case 'DELETE':
+              if (bookmarked.includes(userId)) {
+                bookmarked = bookmarked.filter((id) => id !== userId);
+              }
+              break;
+          }
 
-          return new Response(body, { status: 200 });
+          if (bookmarked !== resource.bookmarked) {
+            resource = await this.updateResource({
+              ...resource,
+              bookmarked: bookmarked.concat(userId),
+            });
+          }
+
+          return new Response(JSON.stringify({ resource }), { status: 200 });
         }
       }
 
@@ -172,6 +186,8 @@ export class ResourcesStore {
       ...data,
       id,
       category,
+      bookmarked: [],
+      viewCounts: 0,
       createdAt: now,
       createdBy: userId,
     });

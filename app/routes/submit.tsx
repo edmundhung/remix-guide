@@ -101,7 +101,7 @@ export let action: ActionFunction = async ({ request, context }) => {
         break;
       case 'INVALID':
         setCookieHeader = await session.commitWithFlashMessage(
-          'The provided URL does not looks like related to Remix',
+          'The provided data looks invalid; Please make sure a proper category is selected',
           'error'
         );
         break;
@@ -151,7 +151,7 @@ export default function Submit() {
   return (
     <Panel title="Submit a new Resource" message={message}>
       <section className="px-3 pt-2">
-        <Form className="lg:max-w-3xl" method="post" reloadDocument>
+        <Form className="lg:max-w-3xl" method="post">
           <h3 className="">Please select a cateogry</h3>
           <div>
             {categories.map((category) => (

@@ -95,11 +95,24 @@ export let loader: LoaderFunction = async ({ context, params }) => {
       : null,
   ]);
 
+  const isUserBookmarked = user?.bookmarked.includes(resource.id) ?? false;
+  const isResourceBookmarked = user
+    ? resource.bookmarked.includes(user.profile.id)
+    : false;
+
   return json(
     {
-      resource,
       authenticated: profile !== null,
-      bookmarked: user?.bookmarked.includes(resource.id) ?? false,
+      bookmarked: isUserBookmarked,
+      resource:
+        isUserBookmarked === isResourceBookmarked
+          ? resource
+          : {
+              ...resource,
+              bookmarked: isUserBookmarked
+                ? resource.bookmarked.concat(user?.profile.id)
+                : resource.bookmarked.filter((id) => id !== user?.profile.id),
+            },
       message,
       builtWithPackage,
       madeByAuthor,
@@ -169,7 +182,7 @@ export default function EntryDetail() {
             <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
           </button>
           <label className="px-2 w-10 text-right">
-            {resource.bookmarkCounts ?? 0}
+            {resource.bookmarked.length}
           </label>
         </Form>
       }

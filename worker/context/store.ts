@@ -38,7 +38,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       description: resource.description,
       integrations: resource.integrations,
       viewCounts: resource.viewCounts,
-      bookmarkCounts: resource.bookmarkCounts,
+      bookmarkCounts: resource.bookmarked.length,
       createdAt: resource.createdAt,
     };
   }
@@ -257,7 +257,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
             'http://resources/bookmark',
             {
               method: 'PUT',
-              body: JSON.stringify({ resourceId }),
+              body: JSON.stringify({ userId, resourceId }),
             }
           );
           const { resource } = await response.json();
@@ -285,7 +285,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
             'http://resources/bookmark',
             {
               method: 'DELETE',
-              body: JSON.stringify({ resourceId }),
+              body: JSON.stringify({ userId, resourceId }),
             }
           );
           const { resource } = await response.json();

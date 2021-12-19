@@ -42,24 +42,26 @@ export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID';
 
 export type MessageType = 'success' | 'error' | 'warning' | 'info';
 
-export type ResourceMetadata = Pick<
-  Resource,
-  | 'id'
-  | 'url'
-  | 'category'
-  | 'author'
-  | 'title'
-  | 'description'
-  | 'integrations'
-  | 'viewCounts'
-  | 'bookmarkCounts'
-  | 'createdAt'
->;
+export interface ResourceMetadata
+  extends Pick<
+    Resource,
+    | 'id'
+    | 'url'
+    | 'category'
+    | 'author'
+    | 'title'
+    | 'description'
+    | 'integrations'
+    | 'viewCounts'
+    | 'createdAt'
+  > {
+  bookmarkCounts?: number;
+}
 
 export interface Resource extends Page {
   id: string;
-  viewCounts?: number;
-  bookmarkCounts?: number;
+  viewCounts: number;
+  bookmarked: string[];
   createdAt: string;
   createdBy: string;
 }
