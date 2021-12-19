@@ -62,9 +62,10 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function List() {
-  let { entries } = useLoaderData<{ entries: Resource[] }>();
+  const { entries } = useLoaderData<{ entries: Resource[] }>();
   const search = useResourcesSearch();
   const params = useParams();
+  const list = new URLSearchParams(search).get('list');
 
   return (
     <div className="h-full flex">
@@ -74,18 +75,19 @@ export default function List() {
         }`}
       >
         <Panel
-          title={`${
-            capitalize(new URLSearchParams(search).get('list')) ??
-            'Latest resources'
-          } ${entries.length > 0 ? `(${entries.length})` : ''}`.trim()}
+          title={`${capitalize(list) ?? 'Latest Resources'} ${
+            entries.length > 0 ? `(${entries.length})` : ''
+          }`.trim()}
           type="list"
           elements={
-            <Link
-              className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-              to="/submit"
-            >
-              <SvgIcon className="w-3 h-3" href={plusIcon} />
-            </Link>
+            list === null ? (
+              <Link
+                className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+                to="/submit"
+              >
+                <SvgIcon className="w-3 h-3" href={plusIcon} />
+              </Link>
+            ) : null
           }
         >
           {entries.length === 0 ? (
