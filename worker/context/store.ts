@@ -160,7 +160,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
             match(options.author ? [options.author] : [], item.author) &&
             match(options.category ? [options.category] : [], item.category) &&
             match(
-              options.hostname ? [options.hostname] : [],
+              options.site ? [options.site] : [],
               new URL(item.url).hostname
             ) &&
             match(

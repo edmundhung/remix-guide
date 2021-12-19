@@ -9,7 +9,7 @@ export function getResourcesSearchParams(search: string): URLSearchParams {
     'platform',
     'integration',
     'author',
-    'hostname',
+    'site',
   ];
 
   for (const key of searchParams.keys()) {
@@ -30,9 +30,13 @@ export function getSearchOptions(search: string): SearchOptions {
     keyword: searchParams.get('q'),
     list: searchParams.get('list'),
     author: searchParams.get('author'),
-    hostname: searchParams.get('hostname'),
+    site: searchParams.get('site'),
     category: searchParams.get('category'),
     platform: searchParams.get('platform'),
     integrations: searchParams.getAll('integration'),
   };
+}
+
+export function getSite(url: string): string {
+  return new URL(url).hostname;
 }

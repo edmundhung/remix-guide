@@ -17,6 +17,7 @@ import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
 import Panel from '~/components/Panel';
+import { getSite } from '~/search';
 
 function getScreenshotURL(url: string): string {
   return `https://cdn.statically.io/screenshot/${url.replace(
@@ -71,7 +72,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     user,
     builtWithPackage,
     madeByAuthor,
-    alsoOnHostname,
+    alsoOnSite,
   ] = await Promise.all([
     session.getFlashMessage(),
     profile?.id ? store.getUser(profile.id) : null,
@@ -90,7 +91,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     ['concepts', 'tutorials', 'others'].includes(resource.category)
       ? store.search(profile?.id ?? null, {
           ...searchOptions,
-          hostname: new URL(resource.url).hostname,
+          site: getSite(resource.url),
         })
       : null,
   ]);
@@ -116,7 +117,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
       message,
       builtWithPackage,
       madeByAuthor,
-      alsoOnHostname,
+      alsoOnSite,
     },
     {
       headers: setCookieHeader,
@@ -140,21 +141,21 @@ export default function EntryDetail() {
     message,
     builtWithPackage,
     madeByAuthor,
-    alsoOnHostname,
+    alsoOnSite,
   } = useLoaderData<{
     resource: Resource;
     authenticated: boolean;
     bookmarked: boolean;
     builtWithPackage: ResourceMetadata[] | null;
     madeByAuthor: ResourceMetadata[] | null;
-    alsoOnHostname: ResourceMetadata[] | null;
+    alsoOnSite: ResourceMetadata[] | null;
   }>();
 
   useEffect(() => {
     submit({ type: 'view' }, { method: 'post' });
   }, [submit, resource.id]);
 
-  const { hostname } = new URL(resource.url);
+  const site = getSite(resource.url);
 
   return (
     <Panel
@@ -216,7 +217,7 @@ export default function EntryDetail() {
                   className="inline-block w-3 h-3 mr-2"
                   href={linkIcon}
                 />
-                {hostname}
+                {site}
               </a>
               {!resource.description ? null : (
                 <p className="pt-6 text-gray-500 text-sm">
@@ -280,12 +281,12 @@ export default function EntryDetail() {
             />
           </div>
         ) : null}
-        {alsoOnHostname ? (
+        {alsoOnSite ? (
           <div className="py-8">
-            <h3 className="px-3 pb-4">Also on {hostname}</h3>
+            <h3 className="px-3 pb-4">Also on {site}</h3>
             <RelatedResources
-              entries={alsoOnHostname}
-              search={new URLSearchParams([['hostname', hostname]]).toString()}
+              entries={alsoOnSite}
+              search={new URLSearchParams([['site', site]]).toString()}
             />
           </div>
         ) : null}

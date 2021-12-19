@@ -302,9 +302,7 @@ function SidebarNavigation({
                 ? [['platform', searchOptions.platform]]
                 : [],
               searchOptions.author ? [['author', searchOptions.author]] : [],
-              searchOptions.hostname
-                ? [['hostname', searchOptions.hostname]]
-                : [],
+              searchOptions.site ? [['site', searchOptions.site]] : [],
               (searchOptions.integrations ?? []).map((value) => [
                 'integration',
                 value,
@@ -340,12 +338,12 @@ function SidebarNavigation({
             value={searchOptions.author}
           />
         ) : null}
-        {searchOptions.hostname ? (
+        {searchOptions.site ? (
           <LinkMenu
-            title="Hostname"
-            name="hostname"
+            title="Site"
+            name="site"
             to={action}
-            value={searchOptions.hostname}
+            value={searchOptions.site}
           />
         ) : null}
         <LinkMenu

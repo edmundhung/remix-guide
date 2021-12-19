@@ -1,6 +1,7 @@
 import { Link } from 'remix';
 import type { ReactElement } from 'react';
 import type { ResourceMetadata } from '~/types';
+import { getSite } from '~/search';
 
 interface CardProps {
   entry: ResourceMetadata;
@@ -25,7 +26,7 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
         <section className="px-3 py-2.5 text-sm">
           <div className="text-xs pb-1.5 text-gray-500 flex flex-row justify-between">
             <span>{entry.createdAt.substr(0, 10)}</span>
-            <span>{new URL(entry.url).hostname}</span>
+            <span>{getSite(entry.url)}</span>
           </div>
           <h2 className="break-words line-clamp-2">{entry.title}</h2>
           {!entry.description ? null : (

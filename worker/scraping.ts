@@ -102,12 +102,12 @@ async function scrapeHTML(url: string): Promise<Page> {
     switch (hostname) {
       case 'www.youtube.com':
         return {
-          site: 'YouTube',
+          siteName: 'YouTube',
           url,
         };
       case 'youtu.be':
         return {
-          site: 'YouTube',
+          siteName: 'YouTube',
           url: `https://www.youtube.com/watch?v=${pathname.slice(1)}`,
         };
     }
@@ -133,7 +133,7 @@ async function scrapeHTML(url: string): Promise<Page> {
       createAttributeParser('meta[name="twitter:image"]', 'content'),
       createAttributeParser('meta[name="image"]', 'content')
     ),
-    site: createAttributeParser('meta[property="og:site_name"]', 'content'),
+    siteName: createAttributeParser('meta[property="og:site_name"]', 'content'),
     url: mergeParsers(
       createAttributeParser('link[rel="canonical"]', 'href'),
       createAttributeParser('meta[property="og:url"]', 'content')
@@ -363,15 +363,17 @@ function isValidResource(page: Page, category: Category): boolean {
   switch (category) {
     case 'tutorials':
       return (
-        !['npm', 'GitHub'].includes(page.site) &&
+        !['npm', 'GitHub'].includes(page.siteName) &&
         (page.title?.toLowerCase().includes('remix') ||
           page.description?.toLowerCase().includes('remix'))
       );
     case 'packages':
-      return page.site === 'npm' && page.title?.toLowerCase().includes('remix');
+      return (
+        page.siteName === 'npm' && page.title?.toLowerCase().includes('remix')
+      );
     case 'examples':
       return (
-        page.site === 'GitHub' &&
+        page.siteName === 'GitHub' &&
         page.integrations
           ?.map((option) => option.toLowerCase())
           .includes('remix')
@@ -398,7 +400,7 @@ async function getAdditionalMetadata(
     );
   }
 
-  switch (page.site) {
+  switch (page.siteName) {
     case 'npm': {
       const metadata = await parseNpmPackage(
         page.title,

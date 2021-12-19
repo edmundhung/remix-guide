@@ -28,7 +28,7 @@ export type Category = 'tutorials' | 'packages' | 'examples' | 'others';
 
 export interface Page {
   url: string;
-  site?: string;
+  siteName?: string;
   author?: string;
   category?: Category;
   title?: string;
@@ -70,7 +70,7 @@ export interface SearchOptions {
   keyword?: string | null;
   list?: 'bookmarks' | 'history' | null;
   author?: string | null;
-  hostname?: string | null;
+  site?: string | null;
   category?: Category | null;
   platform?: string | null;
   integrations?: string[] | null;
