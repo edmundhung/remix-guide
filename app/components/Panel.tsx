@@ -1,6 +1,7 @@
-import { ReactElement, ReactNode, useEffect, useState } from 'react';
-import { Link } from 'remix';
-import { useResourcesSearch } from '~/search';
+import type { ReactElement, ReactNode } from 'react';
+import type { MessageType } from '~/types';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useLocation } from 'remix';
 import SvgIcon from '~/components/SvgIcon';
 import menuIcon from '~/icons/menu.svg';
 import backIcon from '~/icons/back.svg';
@@ -9,7 +10,7 @@ import checkCircleIcon from '~/icons/check-circle.svg';
 import timesCircleIcon from '~/icons/times-circle.svg';
 import exclamationCircleIcon from '~/icons/exclamation-circle.svg';
 import infoCircleIcon from '~/icons/info-circle.svg';
-import { MessageType } from '~/types';
+import { getResourcesSearchParams } from '~/search';
 
 function formatMessage(message: string): ReactElement {
   const [type, content] = message.split(':');
@@ -53,7 +54,11 @@ function Panel({
   message,
   children,
 }: PanelProps): ReactElement {
-  const search = useResourcesSearch();
+  const location = useLocation();
+  const search = useMemo(
+    () => getResourcesSearchParams(location.search).toString(),
+    [location.search]
+  );
   const [dimissed, setDismissed] = useState(false);
 
   useEffect(() => {

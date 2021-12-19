@@ -1,23 +1,20 @@
-import type {
-  HeadersFunction,
-  MetaFunction,
-  LoaderFunction,
-  ShouldReloadFunction,
+import type { MetaFunction, LoaderFunction, ShouldReloadFunction } from 'remix';
+import { useMemo } from 'react';
+import {
+  Link,
+  Outlet,
+  useLoaderData,
+  useLocation,
+  useParams,
+  json,
 } from 'remix';
-import { Link, Outlet, useLoaderData, useParams, json } from 'remix';
 import Card from '~/components/Card';
 import Panel from '~/components/Panel';
 import SvgIcon from '~/components/SvgIcon';
 import { capitalize } from '~/helpers';
 import plusIcon from '~/icons/plus.svg';
-import { useResourcesSearch } from '~/search';
+import { getResourcesSearchParams, getSearchOptions } from '~/search';
 import type { Resource, Context } from '~/types';
-
-export let headers: HeadersFunction = ({ loaderHeaders }) => {
-  return {
-    'Cache-Control': loaderHeaders.get('Cache-Control'),
-  };
-};
 
 export let meta: MetaFunction = () => {
   return {
@@ -29,22 +26,8 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const { session, store } = context as Context;
   const profile = await session.isAuthenticated();
   const url = new URL(request.url);
-  const keyword = url.searchParams.get('q') ?? '';
-  const list = url.searchParams.get('list');
-  const category = url.searchParams.get('category');
-  const platform = url.searchParams.get('platform');
-  const author = url.searchParams.get('author');
-  const hostname = url.searchParams.get('hostname');
-  const integrations = url.searchParams.getAll('integration');
-
-  const entries = await store.search(profile?.id ?? null, {
-    keyword,
-    list,
-    author,
-    hostname,
-    categories: category ? [category] : [],
-    integrations: integrations.concat(platform ? [platform] : []),
-  });
+  const searchOptions = getSearchOptions(url.search);
+  const entries = await store.search(profile?.id ?? null, searchOptions);
 
   return json({
     entries,
@@ -63,9 +46,13 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 
 export default function List() {
   const { entries } = useLoaderData<{ entries: Resource[] }>();
-  const search = useResourcesSearch();
+  const location = useLocation();
+  const searchParams = useMemo(
+    () => getResourcesSearchParams(location.search),
+    [location.search]
+  );
   const params = useParams();
-  const list = new URLSearchParams(search).get('list');
+  const list = searchParams.get('list');
 
   return (
     <div className="h-full flex">
@@ -100,7 +87,7 @@ export default function List() {
                 <Card
                   key={entry.id}
                   entry={entry}
-                  search={search}
+                  search={searchParams.toString()}
                   selected={params.resourceId === entry.id}
                 />
               ))}

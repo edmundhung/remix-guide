@@ -16,6 +16,7 @@ import squareIcon from '~/icons/square.svg';
 import timesIcon from '~/icons/times.svg';
 import mapPinIcon from '~/icons/map-pin.svg';
 import type { UserProfile } from '~/types';
+import { getResourcesSearchParams, getSearchOptions } from '~/search';
 
 interface SearchInputProps {
   name: string;
@@ -85,7 +86,7 @@ function LinkMenu({
 }: MenuProps): ReactElement {
   const location = useLocation();
   const search = useMemo(() => {
-    const searchParams = new URLSearchParams(location.search);
+    const searchParams = getResourcesSearchParams(location.search);
 
     searchParams.delete(name);
 
@@ -165,11 +166,16 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
     let isActive = false;
 
     if (name) {
-      let searchParams = new URLSearchParams(location.search);
+      const searchParams = getResourcesSearchParams(location.search);
 
       isActive = searchParams.getAll(name).includes(value);
 
       switch (name) {
+        case 'list':
+          if (value !== null) {
+            search = new URLSearchParams({ [name]: value }).toString();
+          }
+          break;
         case 'category':
         case 'platform': {
           if (!isActive) {
@@ -248,14 +254,10 @@ function SidebarNavigation({
 }: SidebarNavigationProps): ReactElement {
   const submit = useSubmit();
   const location = useLocation();
-  const searchParams = new URLSearchParams(location.search);
-  const keyword = searchParams.get('q');
-  const list = searchParams.get('list');
-  const author = searchParams.get('author');
-  const hostname = searchParams.get('hostname');
-  const category = searchParams.get('category');
-  const platform = searchParams.get('platform') ?? '';
-  const integration = searchParams.getAll('integration') ?? [];
+  const searchOptions = useMemo(
+    () => getSearchOptions(location.search),
+    [location.search]
+  );
   const transition = useTransition();
   const handleSubmit = useMemo(() => throttle(submit, 200), [submit]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -264,11 +266,13 @@ function SidebarNavigation({
     if (
       transition.state === 'loading' &&
       transition.type === 'normalLoad' &&
-      !transition.location.pathname.startsWith('/resources')
+      (!transition.location.pathname.startsWith('/resources') ||
+        searchOptions.list !==
+          new URLSearchParams(transition.location.search).get('list'))
     ) {
       formRef.current.reset();
     }
-  }, [transition]);
+  }, [searchOptions.list, transition]);
 
   function handleChange(event) {
     handleSubmit(event.currentTarget);
@@ -287,17 +291,33 @@ function SidebarNavigation({
           ref={formRef}
           onChange={handleChange}
         >
-          <SearchInput name="q" value={keyword} />
-          {list ? <input type="hidden" name="list" value={list} /> : null}
-          {category ? (
-            <input type="hidden" name="category" value={category} />
-          ) : null}
-          {platform ? (
-            <input type="hidden" name="platform" value={platform} />
-          ) : null}
-          {integration.map((value) => (
-            <input key={value} type="hidden" name="integration" value={value} />
-          ))}
+          <SearchInput name="q" value={searchOptions.keyword ?? ''} />
+          {[]
+            .concat(
+              searchOptions.list ? [['list', searchOptions.list]] : [],
+              searchOptions.category
+                ? [['category', searchOptions.category]]
+                : [],
+              searchOptions.platform
+                ? [['platform', searchOptions.platform]]
+                : [],
+              searchOptions.author ? [['author', searchOptions.author]] : [],
+              searchOptions.hostname
+                ? [['hostname', searchOptions.hostname]]
+                : [],
+              (searchOptions.integrations ?? []).map((value) => [
+                'integration',
+                value,
+              ])
+            )
+            .map(([name, value]) => (
+              <input
+                key={`${name}-${value}`}
+                type="hidden"
+                name={name}
+                value={value}
+              />
+            ))}
         </Form>
       </header>
       <section className="flex-1 px-5 divide-y overflow-y-auto">
@@ -305,29 +325,34 @@ function SidebarNavigation({
           <MenuItem to="/" name="list" value={null}>
             <SvgIcon className="w-4 h-4" href={homeIcon} /> Home
           </MenuItem>
-          <MenuItem to="/bookmarks" name="list" value="bookmarks">
+          <MenuItem to="/resources" name="list" value="bookmarks">
             <SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
           </MenuItem>
-          <MenuItem to="/history" name="list" value="history">
+          <MenuItem to="/resources" name="list" value="history">
             <SvgIcon className="w-4 h-4" href={historyIcon} /> History
           </MenuItem>
         </LinkMenu>
-        {author ? (
-          <LinkMenu title="Author" name="author" to={action} value={author} />
+        {searchOptions.author ? (
+          <LinkMenu
+            title="Author"
+            name="author"
+            to={action}
+            value={searchOptions.author}
+          />
         ) : null}
-        {hostname ? (
+        {searchOptions.hostname ? (
           <LinkMenu
             title="Hostname"
             name="hostname"
             to={action}
-            value={hostname}
+            value={searchOptions.hostname}
           />
         ) : null}
         <LinkMenu
           title="Category"
           name="category"
           to={action}
-          value={capitalize(category)}
+          value={capitalize(searchOptions.category)}
           defaultOpen
         >
           {categories.map((option) => (
@@ -341,7 +366,7 @@ function SidebarNavigation({
             title="Platform"
             name="platform"
             to={action}
-            value={capitalize(platform)}
+            value={capitalize(searchOptions.platform) ?? ''}
           >
             {platforms.map((option, index) => (
               <MenuItem key={option} to={action} name="platform" value={option}>
@@ -361,11 +386,13 @@ function SidebarNavigation({
             title="Integrations"
             name="integration"
             to={action}
-            value={integration}
+            value={searchOptions.integrations}
           >
             {[
               ...integrations,
-              ...integration.filter((option) => !integrations.includes(option)),
+              ...searchOptions.integrations.filter(
+                (option) => !integrations.includes(option)
+              ),
             ].map((option, index) => (
               <MenuItem
                 key={option}

@@ -67,11 +67,12 @@ export interface Resource extends Page {
 }
 
 export interface SearchOptions {
-  keyword?: string;
+  keyword?: string | null;
   list?: 'bookmarks' | 'history' | null;
   author?: string | null;
   hostname?: string | null;
-  categories?: Category[] | null;
+  category?: Category | null;
+  platform?: string | null;
   integrations?: string[] | null;
   excludes?: string[] | null;
   limit?: number;

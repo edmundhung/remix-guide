@@ -158,12 +158,15 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
               true
             ) &&
             match(options.author ? [options.author] : [], item.author) &&
-            match(options.categories ?? [], item.category) &&
+            match(options.category ? [options.category] : [], item.category) &&
             match(
               options.hostname ? [options.hostname] : [],
               new URL(item.url).hostname
             ) &&
-            match(options.integrations ?? [], item.integrations ?? []);
+            match(
+              [].concat(options.platform ?? [], options.integrations ?? []),
+              item.integrations ?? []
+            );
 
           if (!isMatching) {
             return [];

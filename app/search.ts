@@ -1,30 +1,38 @@
-import { useMemo } from 'react';
-import { useLocation } from 'remix';
+import { SearchOptions } from '~/types';
 
-export function useResourcesSearch(): string {
-  const location = useLocation();
-  const search = useMemo(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const supported = [
-      'list',
-      'q',
-      'category',
-      'platform',
-      'integration',
-      'author',
-      'hostname',
-    ];
+export function getResourcesSearchParams(search: string): URLSearchParams {
+  const searchParams = new URLSearchParams(search);
+  const supported = [
+    'list',
+    'q',
+    'category',
+    'platform',
+    'integration',
+    'author',
+    'hostname',
+  ];
 
-    for (const key of searchParams.keys()) {
-      if (supported.includes(key)) {
-        continue;
-      }
-
-      searchParams.delete(key);
+  for (const key of searchParams.keys()) {
+    if (supported.includes(key)) {
+      continue;
     }
 
-    return searchParams.toString();
-  }, [location.search]);
+    searchParams.delete(key);
+  }
 
-  return search;
+  return searchParams;
+}
+
+export function getSearchOptions(search: string): SearchOptions {
+  const searchParams = getResourcesSearchParams(search);
+
+  return {
+    keyword: searchParams.get('q'),
+    list: searchParams.get('list'),
+    author: searchParams.get('author'),
+    hostname: searchParams.get('hostname'),
+    category: searchParams.get('category'),
+    platform: searchParams.get('platform'),
+    integrations: searchParams.getAll('integration'),
+  };
 }
