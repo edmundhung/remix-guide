@@ -12,6 +12,7 @@ export type Store = ReturnType<typeof createStore>;
 export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   const id = env.RESOURCES_STORE.idFromName('');
   const resourcesStore = env.RESOURCES_STORE.get(id);
+  const cache = caches.default as Cache;
 
   function getUserStore(userId: string) {
     const id = env.USER_STORE.idFromName(userId);
@@ -21,11 +22,54 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   }
 
   async function getUser(userId: string): Promise<User | null> {
-    const userStore = getUserStore(userId);
-    const response = await userStore.fetch('http://user/', { method: 'GET' });
-    const { user } = await response.json();
+    let user = await matchUserCache(userId);
+
+    if (!user) {
+      const userStore = getUserStore(userId);
+      const response = await userStore.fetch('http://user/', { method: 'GET' });
+      const result = await response.json();
+
+      user = result.user;
+
+      ctx.waitUntil(updateUserCache(userId, user));
+    }
 
     return user;
+  }
+
+  function createCacheRequest(key: string): Request {
+    return new Request(`http://remix.guide/__cache/${key}`, {
+      method: 'GET',
+    });
+  }
+
+  async function matchUserCache(userId: string): Promise<User | null> {
+    const cacheRequest = createCacheRequest(`users/${userId}`);
+    const response = await cache.match(cacheRequest);
+
+    if (!response || !response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  }
+
+  async function updateUserCache(userId: string, user: User): Promise<void> {
+    const cacheRequest = createCacheRequest(`users/${userId}`);
+    const cacheResponse = new Response(JSON.stringify(user), {
+      status: 200,
+      headers: {
+        'Cache-Control': 'public, max-age=10800',
+      },
+    });
+
+    await cache.put(cacheRequest, cacheResponse);
+  }
+
+  async function removeUserCache(userId: string): Pormise<void> {
+    const cacheRequest = createCacheRequest(`users/${userId}`);
+
+    await cache.delete(cacheRequest);
   }
 
   function getMetadata(resource: Resource): ResourceMetadata {
@@ -222,6 +266,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         }
       }
 
+      ctx.waitUntil(removeUserCache(userId));
       ctx.waitUntil(
         resourcesStore.fetch('http://resources/view', {
           method: 'PUT',
@@ -251,6 +296,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         );
       }
 
+      ctx.waitUntil(removeUserCache(userId));
       ctx.waitUntil(
         (async () => {
           const response = await resourcesStore.fetch(
@@ -279,6 +325,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         );
       }
 
+      ctx.waitUntil(removeUserCache(userId));
       ctx.waitUntil(
         (async () => {
           const response = await resourcesStore.fetch(
