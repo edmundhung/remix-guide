@@ -364,12 +364,18 @@ function isValidResource(page: Page, category: Category): boolean {
     case 'tutorials':
       return (
         !['npm', 'GitHub'].includes(page.site) &&
-        (page.title?.includes('remix') || page.description?.includes('remix'))
+        (page.title?.toLowerCase().includes('remix') ||
+          page.description?.toLowerCase().includes('remix'))
       );
     case 'packages':
-      return page.site === 'npm' && page.title?.includes('remix');
+      return page.site === 'npm' && page.title?.toLowerCase().includes('remix');
     case 'examples':
-      return page.site === 'GitHub' && page.integrations?.includes('remix');
+      return (
+        page.site === 'GitHub' &&
+        page.integrations
+          ?.map((option) => option.toLowerCase())
+          .includes('remix')
+      );
     case 'others':
       return true;
   }
