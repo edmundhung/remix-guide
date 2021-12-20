@@ -31,7 +31,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
       user = result.user;
 
-      ctx.waitUntil(updateUserCache(userId, user));
+      ctx.waitUntil(updateUserCache(user));
     }
 
     return user;
@@ -54,8 +54,8 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     return await response.json();
   }
 
-  async function updateUserCache(userId: string, user: User): Promise<void> {
-    const cacheRequest = createCacheRequest(`users/${userId}`);
+  async function updateUserCache(user: User): Promise<void> {
+    const cacheRequest = createCacheRequest(`users/${user.profile.id}`);
     const cacheResponse = new Response(JSON.stringify(user), {
       status: 200,
       headers: {
@@ -85,6 +85,12 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       bookmarkCounts: resource.bookmarked.length,
       createdAt: resource.createdAt,
     };
+  }
+
+  async function matchResourceCache(
+    resourceId: string
+  ): Promise<Resource | null> {
+    return await env.CONTENT.get<Resource>(`resources/${resourceId}`, 'json');
   }
 
   async function updateResourceCache(resource: Resource): Promise<void> {
@@ -216,7 +222,26 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       return entries;
     },
     async query(resourceId: string) {
-      return await env.CONTENT.get<Resource>(`resources/${resourceId}`, 'json');
+      let resource = await matchResourceCache(resourceId);
+
+      if (!resource) {
+        const response = await resourcesStore.fetch(
+          `http://resources/details?resourceId=${resourceId}`,
+          { method: 'GET' }
+        );
+
+        if (!response.ok) {
+          throw new Error('Fail getting the resources from the ResourcesStore');
+        }
+
+        const result = await response.json();
+
+        resource = result.resource;
+
+        ctx.waitUntil(updateResourceCache(resource));
+      }
+
+      return resource;
     },
     async getUser(userId: string) {
       return await getUser(userId);
@@ -238,7 +263,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       const { id, resource, status } = await response.json();
 
       if (resource) {
-        await updateResourceCache(resource);
+        ctx.waitUntil(updateResourceCache(resource));
       }
 
       return {

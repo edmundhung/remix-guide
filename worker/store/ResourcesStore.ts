@@ -89,6 +89,20 @@ export class ResourcesStore {
 
           return new Response(body, { status: 201 });
         }
+        case '/details': {
+          if (method !== 'GET') {
+            break;
+          }
+
+          const resourceId = url.searchParams.get('resourceId');
+          const resource = await this.getResource(resourceId);
+
+          if (!resource) {
+            return new Response('Not Found', { status: 404 });
+          }
+
+          return new Response(JSON.stringify({ resource }), { status: 200 });
+        }
         case '/view': {
           if (method !== 'PUT') {
             break;
