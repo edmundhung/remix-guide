@@ -83,4 +83,7 @@ HerrBertling-hamvaxmap:
 marcomafessollli-remix-graphql-loader-example:
   url: https://github.com/marcomafessolli/remix-graphql-loader-example
   version: ^1.0.6
-  
+cbenjamin2009-remix-firebase-auth-example:
+  url: https://github.com/cbenjamin2009/remix-blog-firebase-auth
+  version: ^1.0.0
+  platforms: [vercel]
