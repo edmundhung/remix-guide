@@ -89,7 +89,7 @@ function Panel({
         <div className="flex-1 leading-8 line-clamp-1">{title}</div>
         {elements}
       </header>
-      <div className="flex-1 px-5 py-3">{children}</div>
+      <div className="flex-1 px-5 py-2">{children}</div>
       {!message || dimissed ? null : (
         <footer className="sticky bottom-0 flex items-center gap-4 bg-gray-700 px-5 py-3 text-sm">
           <div className="flex items-center flex-1 py-1 gap-4">

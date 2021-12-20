@@ -137,10 +137,7 @@ export class ResourcesStore {
           }
 
           if (bookmarked !== resource.bookmarked) {
-            resource = await this.updateResource({
-              ...resource,
-              bookmarked: bookmarked.concat(userId),
-            });
+            resource = await this.updateResource({ ...resource, bookmarked });
           }
 
           return new Response(JSON.stringify({ resource }), { status: 200 });

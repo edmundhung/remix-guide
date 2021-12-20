@@ -1,7 +1,8 @@
-import type {
+import {
   LoaderFunction,
   ActionFunction,
   ShouldReloadFunction,
+  useTransition,
 } from 'remix';
 import { Form, Link, json, redirect, useLoaderData, useFetcher } from 'remix';
 import { ReactElement, useEffect } from 'react';
@@ -130,6 +131,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
 };
 
 export default function EntryDetail() {
+  const transition = useTransition();
   const { submit } = useFetcher();
   const {
     resource,
@@ -175,7 +177,7 @@ export default function EntryDetail() {
                 ? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
                 : ''
             }`}
-            disabled={!authenticated}
+            disabled={!authenticated || transition.submission}
           >
             <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
           </button>
@@ -187,7 +189,7 @@ export default function EntryDetail() {
     >
       <div className="max-w-screen-xl divide-y">
         <div className="px-3 pt-3 pb-8">
-          <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
+          <div className="flex flex-col-reverse lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
               <div className="flex items-center justify-between text-xs pb-1.5 text-gray-500">
                 <span className="capitalize">{resource.category}</span>
@@ -233,7 +235,7 @@ export default function EntryDetail() {
                 </div>
               )}
               {!resource.description ? null : (
-                <p className="pt-6 text-gray-400 text-sm">
+                <p className="pt-6 text-gray-400 text-sm break-words">
                   {resource.description}
                 </p>
               )}
