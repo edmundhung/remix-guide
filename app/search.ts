@@ -1,4 +1,5 @@
 import { SearchOptions } from '~/types';
+import { platforms } from './meta';
 
 export function getResourcesSearchParams(search: string): URLSearchParams {
   const searchParams = new URLSearchParams(search);
@@ -39,4 +40,16 @@ export function getSearchOptions(search: string): SearchOptions {
 
 export function getSite(url: string): string {
   return new URL(url).hostname;
+}
+
+export function createIntegrationSearch(value: string): string {
+  const searchParams = new URLSearchParams();
+
+  if (platforms.includes(value)) {
+    searchParams.set('platform', value);
+  } else {
+    searchParams.set('integration', value);
+  }
+
+  return searchParams.toString();
 }

@@ -18,7 +18,7 @@ import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
 import Panel from '~/components/Panel';
-import { getSite } from '~/search';
+import { getSite, createIntegrationSearch } from '~/search';
 
 function getScreenshotURL(url: string): string {
   return `https://cdn.statically.io/screenshot/${url.replace(
@@ -224,10 +224,8 @@ export default function EntryDetail() {
                   {resource.integrations?.map((integration) => (
                     <Link
                       key={integration}
-                      className="text-xs bg-gray-700 rounded-md px-2"
-                      to={`/resources?${new URLSearchParams({
-                        integration,
-                      }).toString()}`}
+                      className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
+                      to={`/resources?${createIntegrationSearch(integration)}`}
                     >
                       {integration}
                     </Link>
