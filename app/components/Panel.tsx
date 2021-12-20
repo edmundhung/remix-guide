@@ -72,7 +72,6 @@ function Panel({
           <Link
             className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={`?${search === '' ? 'menu' : `${search}&menu`}`}
-            prefetch="intent"
           >
             <SvgIcon className="w-3 h-3" href={menuIcon} />
           </Link>
@@ -80,7 +79,6 @@ function Panel({
           <Link
             className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={search === '' ? '/' : `/resources?${search}`}
-            prefetch="intent"
             replace
           >
             <SvgIcon className="w-3 h-3" href={backIcon} />

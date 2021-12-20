@@ -259,7 +259,7 @@ function SidebarNavigation({
     [location.search]
   );
   const transition = useTransition();
-  const handleSubmit = useMemo(() => throttle(submit, 200), [submit]);
+  const handleSubmit = useMemo(() => throttle(submit, 400), [submit]);
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {

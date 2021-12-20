@@ -38,10 +38,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
   url,
   prevUrl,
 }) => {
-  return (
-    !prevUrl.pathname.startsWith('/resources') ||
-    url.searchParams.toString() !== prevUrl.searchParams.toString()
-  );
+  return url.searchParams.toString() !== prevUrl.searchParams.toString();
 };
 
 export default function List() {
