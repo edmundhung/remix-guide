@@ -276,6 +276,19 @@ function getIntegrations(
       case 'wrangler.toml':
         integrations.add('cloudflare');
         break;
+      case 'fly.toml':
+        integrations.add('fly');
+        break;
+      case 'netlify.toml':
+        integrations.add('netlify');
+        break;
+      case 'vercel.json':
+        integrations.add('vercel');
+        break;
+      case 'firebase.json':
+      case '.firebaserc':
+        integrations.add('firebase');
+        break;
     }
   }
 
