@@ -1,4 +1,5 @@
 import { decode } from 'html-entities';
+import { integrations, platforms } from '~/meta';
 import type { Category, Env, Page } from './types';
 
 interface Parser {
@@ -388,6 +389,25 @@ function isValidResource(page: Page, category: Category): boolean {
   }
 }
 
+function getIntegrationsFromPage(page: Page, packages: string[]): string[] {
+  const result = new Set<string>();
+  const tokens = []
+    .concat(page.title ?? [], page.description ?? [])
+    .join(' ')
+    .toLowerCase()
+    .match(/[a-z-0-9]+/gi);
+
+  if (tokens) {
+    for (const keyword of [...packages, ...integrations, ...platforms]) {
+      if (tokens.includes(keyword)) {
+        result.add(keyword);
+      }
+    }
+  }
+
+  return Array.from(result);
+}
+
 async function getAdditionalMetadata(
   page: Page,
   packages: string[],
@@ -405,55 +425,48 @@ async function getAdditionalMetadata(
     );
   }
 
+  let metadata: Partial<Page> | null = null;
+
   switch (page.siteName) {
     case 'npm': {
-      const metadata = await parseNpmPackage(
-        page.title,
-        packages,
-        env.GITHUB_TOKEN
-      );
-
-      return {
-        ...page,
-        ...metadata,
-      };
+      metadata = await parseNpmPackage(page.title, packages, env.GITHUB_TOKEN);
+      break;
     }
     case 'GitHub': {
       const [repo] = page.title.replace('GitHub - ', '').split(':');
-      const metadata = await parseGithubRepository(
-        repo,
-        packages,
-        env.GITHUB_TOKEN
-      );
 
-      return {
-        ...page,
-        ...metadata,
-      };
+      metadata = await parseGithubRepository(repo, packages, env.GITHUB_TOKEN);
+      break;
     }
     case 'Gist': {
       const [author] = page.url
         .replace('https://gist.github.com/', '')
         .split('/');
 
-      return {
-        ...page,
+      metadata = {
         author,
         description: '',
       };
+      break;
     }
     case 'YouTube': {
       const videoId = new URL(page.url).searchParams.get('v');
-      const metadata = await parseYouTubeVideo(videoId, env.YOUTUBE_API_KEY);
 
-      return {
-        ...page,
-        ...metadata,
-      };
+      metadata = await parseYouTubeVideo(videoId, env.YOUTUBE_API_KEY);
+      break;
     }
   }
 
-  return page;
+  const result = {
+    ...page,
+    ...metadata,
+  };
+
+  if (!result.integrations) {
+    result.integrations = getIntegrationsFromPage(result, packages);
+  }
+
+  return result;
 }
 
 export { scrapeHTML, getAdditionalMetadata, isValidResource };
