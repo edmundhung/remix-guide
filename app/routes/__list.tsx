@@ -58,7 +58,7 @@ export default function List() {
     <div className="h-full flex">
       <div
         className={`md:border-r w-full md:w-72 lg:w-80 xl:w-96 ${
-          params.id ? 'hidden md:block' : ''
+          params.resourceId ? 'hidden md:block' : ''
         }`}
       >
         <Panel
