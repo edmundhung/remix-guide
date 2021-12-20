@@ -350,11 +350,16 @@ async function parseYouTubeVideo(videoId: string, apiKey: string) {
   }
 
   const [video] = metadata.items;
+  const { thumbnails } = video.snippet;
 
   return {
     title: video.snippet.title,
     description: video.snippet.description,
-    image: video.snippet.thumbnails.standard.url,
+    image:
+      thumbnails.standard?.url ??
+      thumbnails.high?.url ??
+      thumbnails.medium?.url ??
+      null,
     video: `https://www.youtube.com/embed/${videoId}`,
   };
 }

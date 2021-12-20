@@ -79,7 +79,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
       category: resource.category,
       author: resource.author,
       title: resource.title,
-      description: resource.description,
+      description: resource.description?.slice(0, 80),
       integrations: resource.integrations,
       viewCounts: resource.viewCounts,
       bookmarkCounts: resource.bookmarked.length,
@@ -230,6 +230,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         method: 'POST',
         body: JSON.stringify({ url, category, userId }),
       });
+
+      if (!response.ok) {
+        throw new Error('Fail submitting the resource');
+      }
 
       const { id, resource, status } = await response.json();
 
