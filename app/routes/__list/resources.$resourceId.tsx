@@ -3,7 +3,7 @@ import type {
   ActionFunction,
   ShouldReloadFunction,
 } from 'remix';
-import { Form, json, redirect, useLoaderData, useFetcher } from 'remix';
+import { Form, Link, json, redirect, useLoaderData, useFetcher } from 'remix';
 import { ReactElement, useEffect } from 'react';
 import { notFound } from '~/helpers';
 import type {
@@ -126,10 +126,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
-  return (
-    typeof submission === 'undefined' ||
-    submission.formData.get('type') !== 'view'
-  );
+  return ['bookmark', 'unbookmark'].includes(submission?.formData.get('type'));
 };
 
 export default function EntryDetail() {
@@ -192,8 +189,9 @@ export default function EntryDetail() {
         <div className="px-3 pt-3 pb-8">
           <div className="flex flex-col lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
-              <div className="text-xs pb-1.5 text-gray-500">
-                {resource.createdAt.substr(0, 10)}
+              <div className="flex items-center justify-between text-xs pb-1.5 text-gray-500">
+                <span className="capitalize">{resource.category}</span>
+                <span>{resource.createdAt.substr(0, 10)}</span>
               </div>
               <div>
                 <a
@@ -219,8 +217,23 @@ export default function EntryDetail() {
                 />
                 {site}
               </a>
+              {!resource.integrations ? null : (
+                <div className="pt-4 flex flex-wrap gap-2">
+                  {resource.integrations?.map((integration) => (
+                    <Link
+                      key={integration}
+                      className="text-xs bg-gray-700 rounded-md px-2"
+                      to={`/resources?${new URLSearchParams({
+                        integration,
+                      }).toString()}`}
+                    >
+                      {integration}
+                    </Link>
+                  ))}
+                </div>
+              )}
               {!resource.description ? null : (
-                <p className="pt-6 text-gray-500 text-sm">
+                <p className="pt-6 text-gray-400 text-sm">
                   {resource.description}
                 </p>
               )}
@@ -264,9 +277,9 @@ export default function EntryDetail() {
             <h3 className="px-3 pb-4">Built with {resource.title}</h3>
             <RelatedResources
               entries={builtWithPackage}
-              search={new URLSearchParams([
-                ['integration', resource.title],
-              ]).toString()}
+              search={new URLSearchParams({
+                integration: resource.title,
+              }).toString()}
             />
           </div>
         ) : null}
@@ -275,9 +288,9 @@ export default function EntryDetail() {
             <h3 className="px-3 pb-4">Made by {resource.author}</h3>
             <RelatedResources
               entries={madeByAuthor}
-              search={new URLSearchParams([
-                ['author', resource.author],
-              ]).toString()}
+              search={new URLSearchParams({
+                author: resource.author,
+              }).toString()}
             />
           </div>
         ) : null}
@@ -286,7 +299,7 @@ export default function EntryDetail() {
             <h3 className="px-3 pb-4">Also on {site}</h3>
             <RelatedResources
               entries={alsoOnSite}
-              search={new URLSearchParams([['site', site]]).toString()}
+              search={new URLSearchParams({ site }).toString()}
             />
           </div>
         ) : null}

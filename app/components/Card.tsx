@@ -2,6 +2,7 @@ import { Link } from 'remix';
 import type { ReactElement } from 'react';
 import type { ResourceMetadata } from '~/types';
 import { getSite } from '~/search';
+import CategoryIcon from './CategoryIcon';
 
 interface CardProps {
   entry: ResourceMetadata;
@@ -25,14 +26,15 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
       >
         <section className="px-3 py-2.5 text-sm">
           <div className="text-xs pb-1.5 text-gray-500 flex flex-row justify-between">
+            <span>
+              <span className="capitalize">{entry.category}</span> /{' '}
+              {getSite(entry.url)}
+            </span>
             <span>{entry.createdAt.substr(0, 10)}</span>
-            <span>{getSite(entry.url)}</span>
           </div>
           <h2 className="break-words line-clamp-2">{entry.title}</h2>
           {!entry.description ? null : (
-            <p className="pt-1 text-gray-400 line-clamp-2">
-              {entry.description}
-            </p>
+            <p className="text-gray-400 line-clamp-1">{entry.description}</p>
           )}
         </section>
       </Link>
