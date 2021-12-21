@@ -21,55 +21,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     return store;
   }
 
-  async function getUser(userId: string): Promise<User | null> {
-    let user = await matchUserCache(userId);
-
-    if (!user) {
-      const userStore = getUserStore(userId);
-      const response = await userStore.fetch('http://user/', { method: 'GET' });
-      const result = await response.json();
-
-      user = result.user;
-
-      ctx.waitUntil(updateUserCache(user));
-    }
-
-    return user;
-  }
-
   function createCacheRequest(key: string): Request {
     return new Request(`http://remix.guide/__cache/${key}`, {
       method: 'GET',
     });
-  }
-
-  async function matchUserCache(userId: string): Promise<User | null> {
-    const cacheRequest = createCacheRequest(`users/${userId}`);
-    const response = await cache.match(cacheRequest);
-
-    if (!response || !response.ok) {
-      return null;
-    }
-
-    return await response.json();
-  }
-
-  async function updateUserCache(user: User): Promise<void> {
-    const cacheRequest = createCacheRequest(`users/${user.profile.id}`);
-    const cacheResponse = new Response(JSON.stringify(user), {
-      status: 200,
-      headers: {
-        'Cache-Control': 'public, max-age=10800',
-      },
-    });
-
-    await cache.put(cacheRequest, cacheResponse);
-  }
-
-  async function removeUserCache(userId: string): Pormise<void> {
-    const cacheRequest = createCacheRequest(`users/${userId}`);
-
-    await cache.delete(cacheRequest);
   }
 
   function getMetadata(resource: Resource): ResourceMetadata {
@@ -90,7 +45,20 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   async function matchResourceCache(
     resourceId: string
   ): Promise<Resource | null> {
-    return await env.CONTENT.get<Resource>(`resources/${resourceId}`, 'json');
+    let resource = matchCache<Resource>(`resources/${resourceId}`);
+
+    if (!resource) {
+      resource = await env.CONTENT.get<Resource>(
+        `resources/${resourceId}`,
+        'json'
+      );
+
+      if (resource) {
+        ctx.waitUntil(updateCache(`resources/${resourceId}`, resource, 300));
+      }
+    }
+
+    return resource;
   }
 
   async function updateResourceCache(resource: Resource): Promise<void> {
@@ -103,6 +71,71 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         metadata,
       }
     );
+  }
+
+  async function matchCache<T>(key: string): T | null {
+    const cacheRequest = createCacheRequest(key);
+    const response = await cache.match(cacheRequest);
+
+    if (!response || !response.ok) {
+      return null;
+    }
+
+    return await response.json();
+  }
+
+  async function updateCache<T>(
+    key: string,
+    data: T,
+    maxAge: number
+  ): Promise<void> {
+    const cacheRequest = createCacheRequest(key);
+    const cacheResponse = new Response(JSON.stringify(data), {
+      status: 200,
+      headers: {
+        'Cache-Control': `public, max-age=${maxAge}`,
+      },
+    });
+
+    await cache.put(cacheRequest, cacheResponse);
+  }
+
+  async function removeCache(key: string): Pormise<void> {
+    const cacheRequest = createCacheRequest(key);
+
+    await cache.delete(cacheRequest);
+  }
+
+  async function getUser(userId: string): Promise<User | null> {
+    let user = await matchCache<User>(`users/${userId}`);
+
+    if (!user) {
+      const userStore = getUserStore(userId);
+      const response = await userStore.fetch('http://user/', { method: 'GET' });
+      const result = await response.json();
+
+      user = result.user;
+
+      ctx.waitUntil(updateCache(`users/${userId}`, user, 10800));
+    }
+
+    return user;
+  }
+
+  async function listResources(): Promise<ResourceMetadata[]> {
+    let list = await matchCache<ResourceMetadata[]>('resources');
+
+    if (!list) {
+      const result = await env.CONTENT.list<ResourceMetadata>({
+        prefix: 'resources/',
+      });
+
+      list = result.keys.flatMap((key) => key.metadata ?? []);
+
+      ctx.waitUntil(updateCache('resources', list, 300));
+    }
+
+    return list;
   }
 
   function match(
@@ -125,7 +158,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     async search(userId: string | null, options: SearchOptions) {
       try {
         const [list, includes] = await Promise.all([
-          env.CONTENT.list<ResourceMetadata>({ prefix: 'resources/' }),
+          listResources(),
           options.list !== null
             ? (async () => {
                 const user = userId ? await getUser(userId) : null;
@@ -142,20 +175,18 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
             : null,
         ]);
 
-        const entries = list.keys
-          .flatMap((key) => {
-            const item = key.metadata;
-
-            if (!item) {
-              return [];
+        const entries = list
+          .filter((metadata) => {
+            if (!metadata) {
+              return false;
             }
 
-            if (includes && !includes.includes(item.id)) {
-              return [];
+            if (includes && !includes.includes(metadata.id)) {
+              return false;
             }
 
-            if (options.excludes && options.excludes.includes(item.id)) {
-              return [];
+            if (options.excludes && options.excludes.includes(metadata.id)) {
+              return false;
             }
 
             const isMatching =
@@ -163,28 +194,24 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
                 options?.keyword
                   ? options.keyword.toLowerCase().split(' ')
                   : [],
-                `${item.title} ${item.description}`.toLowerCase(),
+                `${metadata.title} ${metadata.description}`.toLowerCase(),
                 true
               ) &&
-              match(options.author ? [options.author] : [], item.author) &&
+              match(options.author ? [options.author] : [], metadata.author) &&
               match(
                 options.category ? [options.category] : [],
-                item.category
+                metadata.category
               ) &&
               match(
                 options.site ? [options.site] : [],
-                new URL(item.url).hostname
+                new URL(metadata.url).hostname
               ) &&
               match(
                 [].concat(options.platform ?? [], options.integrations ?? []),
-                item.integrations ?? []
+                metadata.integrations ?? []
               );
 
-            if (!isMatching) {
-              return [];
-            }
-
-            return item;
+            return isMatching;
           })
           .sort((prev, next) => {
             switch (options.sortBy) {
@@ -291,6 +318,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         const { id, resource, status } = await response.json();
 
         if (resource) {
+          ctx.waitUntil(removeCache('resources'));
           ctx.waitUntil(updateResourceCache(resource));
         }
 
@@ -339,7 +367,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
           }
         }
 
-        ctx.waitUntil(removeUserCache(userId));
+        ctx.waitUntil(removeCache(`users/${userId}`));
         ctx.waitUntil(
           resourcesStore.fetch('http://resources/view', {
             method: 'PUT',
@@ -374,7 +402,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
           );
         }
 
-        ctx.waitUntil(removeUserCache(userId));
+        ctx.waitUntil(removeCache(`users/${userId}`));
         ctx.waitUntil(
           (async () => {
             const response = await resourcesStore.fetch(
@@ -408,7 +436,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
           );
         }
 
-        ctx.waitUntil(removeUserCache(userId));
+        ctx.waitUntil(removeCache(`users/${userId}`));
         ctx.waitUntil(
           (async () => {
             const response = await resourcesStore.fetch(
