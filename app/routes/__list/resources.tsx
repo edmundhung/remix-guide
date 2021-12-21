@@ -1,4 +1,5 @@
 import type { MetaFunction } from 'remix';
+import Banner from '~/components/Banner';
 import { capitalize, formatMeta } from '~/helpers';
 
 export let meta: MetaFunction = ({ location }) => {
@@ -15,5 +16,5 @@ export let meta: MetaFunction = ({ location }) => {
 };
 
 export default function Resources() {
-  return null;
+  return <Banner />;
 }

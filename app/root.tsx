@@ -24,7 +24,10 @@ import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
 export let links: LinksFunction = () => {
-  return [{ rel: 'stylesheet', href: stylesUrl }];
+  return [
+    { rel: 'stylesheet', href: stylesUrl },
+    { rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+  ];
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
