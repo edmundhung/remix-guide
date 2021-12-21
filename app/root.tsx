@@ -27,14 +27,6 @@ export let links: LinksFunction = () => {
   return [{ rel: 'stylesheet', href: stylesUrl }];
 };
 
-export let meta: MetaFunction = () => {
-  return {
-    title: 'Remix Guide',
-    description: 'An interactive list of awesome stuffs about Remix',
-    viewport: 'width=device-width, initial-scale=1',
-  };
-};
-
 export let loader: LoaderFunction = async ({ context }) => {
   const { session } = context as Context;
   const profile = await session.isAuthenticated();

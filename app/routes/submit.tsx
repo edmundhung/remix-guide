@@ -5,6 +5,15 @@ import CategoryIcon from '~/components/CategoryIcon';
 import Panel from '~/components/Panel';
 import { categories } from '~/meta';
 import { Context, Category } from '~/types';
+import type { MetaFunction } from 'remix';
+import { formatMeta } from '~/helpers';
+
+export let meta: MetaFunction = () => {
+  return formatMeta({
+    title: 'Submit a new Resource',
+    'og:url': 'https://remix.guide/submit',
+  });
+};
 
 function isValidURL(text: string): boolean {
   try {

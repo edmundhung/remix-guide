@@ -2,11 +2,19 @@ import {
   LoaderFunction,
   ActionFunction,
   ShouldReloadFunction,
-  useTransition,
+  MetaFunction,
 } from 'remix';
-import { Form, Link, json, redirect, useLoaderData, useFetcher } from 'remix';
+import {
+  Form,
+  Link,
+  json,
+  redirect,
+  useLoaderData,
+  useTransition,
+  useFetcher,
+} from 'remix';
 import { ReactElement, useEffect } from 'react';
-import { notFound } from '~/helpers';
+import { capitalize, formatMeta, notFound } from '~/helpers';
 import type {
   Context,
   Resource,
@@ -26,6 +34,14 @@ function getScreenshotURL(url: string): string {
     ''
   )}`;
 }
+
+export let meta: MetaFunction = ({ data }) => {
+  return formatMeta({
+    title: `${capitalize(data?.resource.category)} - ${data?.resource.title}`,
+    description: data?.resource.description,
+    'og:url': `https://remix.guide/resources/${data?.resource.id}`,
+  });
+};
 
 export let action: ActionFunction = async ({ context, params, request }) => {
   const { session, store } = context as Context;
