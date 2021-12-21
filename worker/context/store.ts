@@ -6,104 +6,19 @@ import type {
   SearchOptions,
   SubmissionStatus,
 } from '../types';
+import { matchCache, updateCache, removeCache } from '../cache';
 
 export type Store = ReturnType<typeof createStore>;
 
 export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
   const id = env.RESOURCES_STORE.idFromName('');
   const resourcesStore = env.RESOURCES_STORE.get(id);
-  const cache = caches.default as Cache;
 
   function getUserStore(userId: string) {
     const id = env.USER_STORE.idFromName(userId);
     const store = env.USER_STORE.get(id);
 
     return store;
-  }
-
-  function createCacheRequest(key: string): Request {
-    return new Request(`http://remix.guide/__cache/${key}`, {
-      method: 'GET',
-    });
-  }
-
-  function getMetadata(resource: Resource): ResourceMetadata {
-    return {
-      id: resource.id,
-      url: resource.url,
-      category: resource.category,
-      author: resource.author,
-      title: resource.title,
-      description: resource.description?.slice(0, 80),
-      integrations: resource.integrations,
-      viewCounts: resource.viewCounts,
-      bookmarkCounts: resource.bookmarked.length,
-      createdAt: resource.createdAt,
-    };
-  }
-
-  async function matchResourceCache(
-    resourceId: string
-  ): Promise<Resource | null> {
-    let resource = matchCache<Resource>(`resources/${resourceId}`);
-
-    if (!resource) {
-      resource = await env.CONTENT.get<Resource>(
-        `resources/${resourceId}`,
-        'json'
-      );
-
-      if (resource) {
-        ctx.waitUntil(updateCache(`resources/${resourceId}`, resource, 300));
-      }
-    }
-
-    return resource;
-  }
-
-  async function updateResourceCache(resource: Resource): Promise<void> {
-    const metadata = getMetadata(resource, []);
-
-    await env.CONTENT.put(
-      `resources/${resource.id}`,
-      JSON.stringify(resource),
-      {
-        metadata,
-      }
-    );
-  }
-
-  async function matchCache<T>(key: string): T | null {
-    const cacheRequest = createCacheRequest(key);
-    const response = await cache.match(cacheRequest);
-
-    if (!response || !response.ok) {
-      return null;
-    }
-
-    return await response.json();
-  }
-
-  async function updateCache<T>(
-    key: string,
-    data: T,
-    maxAge: number
-  ): Promise<void> {
-    const cacheRequest = createCacheRequest(key);
-    const cacheResponse = new Response(JSON.stringify(data), {
-      status: 200,
-      headers: {
-        'Cache-Control': `public, max-age=${maxAge}`,
-      },
-    });
-
-    await cache.put(cacheRequest, cacheResponse);
-  }
-
-  async function removeCache(key: string): Pormise<void> {
-    const cacheRequest = createCacheRequest(key);
-
-    await cache.delete(cacheRequest);
   }
 
   async function getUser(userId: string): Promise<User | null> {
@@ -265,25 +180,28 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     },
     async query(resourceId: string) {
       try {
-        let resource = await matchResourceCache(resourceId);
+        let resource = await matchCache<Resource>(`resources/${resourceId}`);
 
         if (!resource) {
-          const response = await resourcesStore.fetch(
-            `http://resources/details?resourceId=${resourceId}`,
-            { method: 'GET' }
+          resource = await env.CONTENT.get<Resource>(
+            `resources/${resourceId}`,
+            'json'
           );
 
-          if (!response.ok) {
-            throw new Error(
-              'Fail getting the resources from the ResourcesStore'
+          if (!resource) {
+            const response = await resourcesStore.fetch(
+              `http://resources/details?resourceId=${resourceId}`,
+              { method: 'GET' }
             );
+
+            resource = response.ok ? await response.json() : null;
           }
 
-          const result = await response.json();
-
-          resource = result.resource;
-
-          ctx.waitUntil(updateResourceCache(resource));
+          if (resource) {
+            ctx.waitUntil(
+              updateCache(`resources/${resourceId}`, resource, 300)
+            );
+          }
         }
 
         return resource;
@@ -315,11 +233,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
           throw new Error('Fail submitting the resource');
         }
 
-        const { id, resource, status } = await response.json();
+        const { id, status } = await response.json();
 
-        if (resource) {
+        if (status === 'PUBLISHED') {
           ctx.waitUntil(removeCache('resources'));
-          ctx.waitUntil(updateResourceCache(resource));
         }
 
         return {
@@ -404,18 +321,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
         ctx.waitUntil(removeCache(`users/${userId}`));
         ctx.waitUntil(
-          (async () => {
-            const response = await resourcesStore.fetch(
-              'http://resources/bookmark',
-              {
-                method: 'PUT',
-                body: JSON.stringify({ userId, resourceId }),
-              }
-            );
-            const { resource } = await response.json();
-
-            await updateResourceCache(resource);
-          })()
+          resourcesStore.fetch('http://resources/bookmark', {
+            method: 'PUT',
+            body: JSON.stringify({ userId, resourceId }),
+          })
         );
       } catch (e) {
         env.LOGGER?.error(e);
@@ -438,18 +347,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
         ctx.waitUntil(removeCache(`users/${userId}`));
         ctx.waitUntil(
-          (async () => {
-            const response = await resourcesStore.fetch(
-              'http://resources/bookmark',
-              {
-                method: 'DELETE',
-                body: JSON.stringify({ userId, resourceId }),
-              }
-            );
-            const { resource } = await response.json();
-
-            await updateResourceCache(resource);
-          })()
+          resourcesStore.fetch('http://resources/bookmark', {
+            method: 'DELETE',
+            body: JSON.stringify({ userId, resourceId }),
+          })
         );
       } catch (e) {
         env.LOGGER?.error(e);

@@ -58,7 +58,6 @@ export class ResourcesStore {
 
           const { url, category, userId } = await request.json();
 
-          let resource: Resource | null = null;
           let status: SubmissionStatus | null = null;
           let id = this.resourceIdByURL[url] ?? null;
 
@@ -75,16 +74,7 @@ export class ResourcesStore {
 
               id = result.id;
               status = result.status;
-              resource = result.resource;
               this.resourceIdByURL[page.url] = id;
-            }
-
-            if (resource && resource.category === 'packages') {
-              this.resourceIdByPackageName[resource.title] = resource.id;
-              this.state.storage.put(
-                'index/PackageName',
-                this.resourceIdByPackageName
-              );
             }
 
             this.resourceIdByURL[url] = id;
@@ -110,7 +100,9 @@ export class ResourcesStore {
             return new Response('Not Found', { status: 404 });
           }
 
-          response = new Response(JSON.stringify({ resource }), {
+          this.updateResourceCache(resource);
+
+          response = new Response(JSON.stringify(resource), {
             status: 200,
           });
           break;
@@ -164,12 +156,10 @@ export class ResourcesStore {
           }
 
           if (bookmarked !== resource.bookmarked) {
-            resource = await this.updateResource({ ...resource, bookmarked });
+            this.updateResource({ ...resource, bookmarked });
           }
 
-          response = new Response(JSON.stringify({ resource }), {
-            status: 200,
-          });
+          response = new Response('OK', { status: 200 });
           break;
         }
       }
@@ -216,7 +206,7 @@ export class ResourcesStore {
       };
     }
 
-    const resource = await this.updateResource({
+    await this.updateResource({
       ...data,
       id,
       category,
@@ -226,9 +216,13 @@ export class ResourcesStore {
       createdBy: userId,
     });
 
+    if (category === 'packages') {
+      this.resourceIdByPackageName[data.title] = id;
+      this.state.storage.put('index/PackageName', this.resourceIdByPackageName);
+    }
+
     return {
       id,
-      resource,
       status: 'PUBLISHED',
     };
   }
@@ -245,7 +239,31 @@ export class ResourcesStore {
 
   async updateResource(resource: Resource): Promise<Resource> {
     await this.state.storage.put(resource.id, resource);
+    await this.updateResourceCache(resource);
 
     return resource;
+  }
+
+  async updateResourceCache(resource: Resource): Promise<void> {
+    const metadata: ResourceMetadata = {
+      id: resource.id,
+      url: resource.url,
+      category: resource.category,
+      author: resource.author,
+      title: resource.title,
+      description: resource.description?.slice(0, 80),
+      integrations: resource.integrations,
+      viewCounts: resource.viewCounts,
+      bookmarkCounts: resource.bookmarked.length,
+      createdAt: resource.createdAt,
+    };
+
+    await this.env.CONTENT.put(
+      `resources/${resource.id}`,
+      JSON.stringify(resource),
+      {
+        metadata,
+      }
+    );
   }
 }
