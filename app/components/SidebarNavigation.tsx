@@ -31,7 +31,6 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
         type="text"
         name={name}
         defaultValue={value ?? ''}
-        autoFocus
         placeholder="Search"
         maxLength={24}
       />
@@ -364,7 +363,7 @@ function SidebarNavigation({
             title="Platform"
             name="platform"
             to={action}
-            value={capitalize(searchOptions.platform) ?? ''}
+            value={searchOptions.platform ?? ''}
           >
             {platforms.map((option, index) => (
               <MenuItem key={option} to={action} name="platform" value={option}>

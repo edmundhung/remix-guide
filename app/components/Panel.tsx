@@ -67,7 +67,7 @@ function Panel({
 
   return (
     <section className="flex flex-col w-full h-full max-h-screen overflow-y-auto">
-      <header className="sticky top-0 backdrop-blur flex items-center gap-2 z-20 px-8 py-4 text-sm">
+      <header className="sticky top-0 bg-black border-b md:border-none flex items-center gap-2 z-20 px-8 py-4 text-sm">
         {type !== 'details' ? (
           <Link
             className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
