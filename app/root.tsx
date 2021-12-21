@@ -128,7 +128,7 @@ export function CatchBoundary() {
     case 404:
       return (
         <Document title={`${caught.status} ${caught.statusText}`}>
-          <div className="min-h-screen py-4 flex flex-col justify-center items-center">
+          <div className="min-h-screen py-4 flex flex-1 flex-col justify-center items-center">
             <h1>
               {caught.status} {caught.statusText}
             </h1>
@@ -148,7 +148,7 @@ export function ErrorBoundary({ error }: { error: Error }) {
 
   return (
     <Document title="Uh-oh!">
-      <div className="min-h-screen py-4 flex flex-col justify-center items-center">
+      <div className="min-h-screen py-4 flex flex-1 flex-col justify-center items-center">
         <h1>Sorry, something went wrong...</h1>
       </div>
     </Document>
