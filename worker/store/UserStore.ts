@@ -1,3 +1,4 @@
+import { createLogger } from '../logging';
 import type { Env, UserProfile, User } from '../types';
 
 /**
@@ -25,6 +26,13 @@ export class UserStore {
   }
 
   async fetch(request: Request) {
+    const logger = createLogger(request, {
+      ...this.env,
+      LOGGER_NAME: 'store:UserStore',
+    });
+
+    let response: Response;
+
     try {
       let url = new URL(request.url);
       let method = request.method.toUpperCase();
@@ -42,7 +50,8 @@ export class UserStore {
           };
           const body = JSON.stringify({ user });
 
-          return new Response(body, { status: 200 });
+          response = new Response(body, { status: 200 });
+          break;
         }
         case '/profile': {
           if (method !== 'PUT') {
@@ -63,7 +72,8 @@ export class UserStore {
             metadata: profile,
           });
 
-          return new Response('OK', { status: 200 });
+          response = new Response('OK', { status: 200 });
+          break;
         }
         case '/view': {
           if (method !== 'PUT') {
@@ -82,7 +92,8 @@ export class UserStore {
           this.viewed.unshift(resourceId);
           this.state.storage.put('viewed', this.viewed);
 
-          return new Response('OK', { status: 200 });
+          response = new Response('OK', { status: 200 });
+          break;
         }
         case '/bookmark': {
           if (method !== 'PUT' && method !== 'DELETE') {
@@ -114,17 +125,25 @@ export class UserStore {
 
           this.state.storage.put('bookmarked', this.bookmarked);
 
-          return new Response('OK', { status: 200 });
+          response = new Response('OK', { status: 200 });
+          break;
         }
       }
 
-      return new Response('Not found', { status: 404 });
+      if (!response) {
+        response = new Response('Not found', { status: 404 });
+      }
     } catch (e) {
-      console.log(
+      logger.error(e);
+      logger.log(
         `UserStore failed while handling a fetch call - ${request.url}; Received message: ${e.message}`
       );
 
-      return new Response('Internal Server Error', { status: 500 });
+      response = new Response('Internal Server Error', { status: 500 });
+    } finally {
+      logger.report(response);
     }
+
+    return response;
   }
 }

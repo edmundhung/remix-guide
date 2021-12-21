@@ -123,255 +123,310 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
   return {
     async search(userId: string | null, options: SearchOptions) {
-      const [list, includes] = await Promise.all([
-        env.CONTENT.list<ResourceMetadata>({ prefix: 'resources/' }),
-        options.list !== null
-          ? (async () => {
-              const user = userId ? await getUser(userId) : null;
+      try {
+        const [list, includes] = await Promise.all([
+          env.CONTENT.list<ResourceMetadata>({ prefix: 'resources/' }),
+          options.list !== null
+            ? (async () => {
+                const user = userId ? await getUser(userId) : null;
 
-              switch (options.list) {
-                case 'bookmarks':
-                  return user?.bookmarked ?? [];
-                case 'history':
-                  return user?.viewed ?? [];
-                default:
-                  return null;
-              }
-            })()
-          : null,
-      ]);
+                switch (options.list) {
+                  case 'bookmarks':
+                    return user?.bookmarked ?? [];
+                  case 'history':
+                    return user?.viewed ?? [];
+                  default:
+                    return null;
+                }
+              })()
+            : null,
+        ]);
 
-      const entries = list.keys
-        .flatMap((key) => {
-          const item = key.metadata;
+        const entries = list.keys
+          .flatMap((key) => {
+            const item = key.metadata;
 
-          if (!item) {
-            return [];
-          }
+            if (!item) {
+              return [];
+            }
 
-          if (includes && !includes.includes(item.id)) {
-            return [];
-          }
+            if (includes && !includes.includes(item.id)) {
+              return [];
+            }
 
-          if (options.excludes && options.excludes.includes(item.id)) {
-            return [];
-          }
+            if (options.excludes && options.excludes.includes(item.id)) {
+              return [];
+            }
 
-          const isMatching =
-            match(
-              options?.keyword ? options.keyword.toLowerCase().split(' ') : [],
-              `${item.title} ${item.description}`.toLowerCase(),
-              true
-            ) &&
-            match(options.author ? [options.author] : [], item.author) &&
-            match(options.category ? [options.category] : [], item.category) &&
-            match(
-              options.site ? [options.site] : [],
-              new URL(item.url).hostname
-            ) &&
-            match(
-              [].concat(options.platform ?? [], options.integrations ?? []),
-              item.integrations ?? []
-            );
+            const isMatching =
+              match(
+                options?.keyword
+                  ? options.keyword.toLowerCase().split(' ')
+                  : [],
+                `${item.title} ${item.description}`.toLowerCase(),
+                true
+              ) &&
+              match(options.author ? [options.author] : [], item.author) &&
+              match(
+                options.category ? [options.category] : [],
+                item.category
+              ) &&
+              match(
+                options.site ? [options.site] : [],
+                new URL(item.url).hostname
+              ) &&
+              match(
+                [].concat(options.platform ?? [], options.integrations ?? []),
+                item.integrations ?? []
+              );
 
-          if (!isMatching) {
-            return [];
-          }
+            if (!isMatching) {
+              return [];
+            }
 
-          return item;
-        })
-        .sort((prev, next) => {
-          switch (options.sortBy) {
-            case 'hotness': {
-              let diff;
+            return item;
+          })
+          .sort((prev, next) => {
+            switch (options.sortBy) {
+              case 'hotness': {
+                let diff;
 
-              for (const key of ['bookmarkCounts', 'viewCounts', 'createdAt']) {
-                switch (key) {
-                  case 'createdAt':
-                    diff = new Date(next.createdAt) - new Date(prev.createdAt);
+                for (const key of [
+                  'bookmarkCounts',
+                  'viewCounts',
+                  'createdAt',
+                ]) {
+                  switch (key) {
+                    case 'createdAt':
+                      diff =
+                        new Date(next.createdAt) - new Date(prev.createdAt);
+                      break;
+                    case 'bookmarkCounts':
+                      diff = next.bookmarkCounts - prev.bookmarkCounts;
+                      break;
+                    case 'viewCounts':
+                      diff = next.viewCounts - prev.viewCounts;
+                      break;
+                  }
+
+                  if (diff !== 0) {
                     break;
-                  case 'bookmarkCounts':
-                    diff = next.bookmarkCounts - prev.bookmarkCounts;
-                    break;
-                  case 'viewCounts':
-                    diff = next.viewCounts - prev.viewCounts;
-                    break;
+                  }
                 }
 
-                if (diff !== 0) {
-                  break;
+                return diff;
+              }
+              default: {
+                if (includes) {
+                  return includes.indexOf(prev.id) - includes.indexOf(next.id);
+                } else {
+                  return new Date(next.createdAt) - new Date(prev.createdAt);
                 }
               }
-
-              return diff;
             }
-            default: {
-              if (includes) {
-                return includes.indexOf(prev.id) - includes.indexOf(next.id);
-              } else {
-                return new Date(next.createdAt) - new Date(prev.createdAt);
-              }
-            }
-          }
-        });
+          });
 
-      if (options.limit) {
-        return entries.slice(0, options.limit);
-      }
-
-      return entries;
-    },
-    async query(resourceId: string) {
-      let resource = await matchResourceCache(resourceId);
-
-      if (!resource) {
-        const response = await resourcesStore.fetch(
-          `http://resources/details?resourceId=${resourceId}`,
-          { method: 'GET' }
-        );
-
-        if (!response.ok) {
-          throw new Error('Fail getting the resources from the ResourcesStore');
+        if (options.limit) {
+          return entries.slice(0, options.limit);
         }
 
-        const result = await response.json();
-
-        resource = result.resource;
-
-        ctx.waitUntil(updateResourceCache(resource));
+        return entries;
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
       }
+    },
+    async query(resourceId: string) {
+      try {
+        let resource = await matchResourceCache(resourceId);
 
-      return resource;
+        if (!resource) {
+          const response = await resourcesStore.fetch(
+            `http://resources/details?resourceId=${resourceId}`,
+            { method: 'GET' }
+          );
+
+          if (!response.ok) {
+            throw new Error(
+              'Fail getting the resources from the ResourcesStore'
+            );
+          }
+
+          const result = await response.json();
+
+          resource = result.resource;
+
+          ctx.waitUntil(updateResourceCache(resource));
+        }
+
+        return resource;
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
+      }
     },
     async getUser(userId: string) {
-      return await getUser(userId);
+      try {
+        return await getUser(userId);
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
+      }
     },
     async submit(
       url: string,
       category: string,
       userId: string
     ): Promise<{ id: string; status: SubmissionStatus }> {
-      const response = await resourcesStore.fetch('http://resources/submit', {
-        method: 'POST',
-        body: JSON.stringify({ url, category, userId }),
-      });
+      try {
+        const response = await resourcesStore.fetch('http://resources/submit', {
+          method: 'POST',
+          body: JSON.stringify({ url, category, userId }),
+        });
 
-      if (!response.ok) {
-        throw new Error('Fail submitting the resource');
+        if (!response.ok) {
+          throw new Error('Fail submitting the resource');
+        }
+
+        const { id, resource, status } = await response.json();
+
+        if (resource) {
+          ctx.waitUntil(updateResourceCache(resource));
+        }
+
+        return {
+          id,
+          status,
+        };
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
       }
-
-      const { id, resource, status } = await response.json();
-
-      if (resource) {
-        ctx.waitUntil(updateResourceCache(resource));
-      }
-
-      return {
-        id,
-        status,
-      };
     },
     async refresh(resourceId: string): Promise<void> {
-      const response = await resourcesStore.fetch('http://resources/refresh', {
-        method: 'POST',
-        body: JSON.stringify({ resourceId }),
-      });
-
-      if (!response.ok) {
-        throw new Error(
-          'View failed; Resource is not marked as viewed on the UserStore'
+      try {
+        const response = await resourcesStore.fetch(
+          'http://resources/refresh',
+          {
+            method: 'POST',
+            body: JSON.stringify({ resourceId }),
+          }
         );
-      }
-    },
-    async view(userId: string | null, resourceId: string): Promise<void> {
-      if (userId) {
-        const userStore = getUserStore(userId);
-        const response = await userStore.fetch('http://user/view', {
-          method: 'PUT',
-          body: JSON.stringify({ userId, resourceId }),
-        });
 
         if (!response.ok) {
           throw new Error(
             'View failed; Resource is not marked as viewed on the UserStore'
           );
         }
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
       }
+    },
+    async view(userId: string | null, resourceId: string): Promise<void> {
+      try {
+        if (userId) {
+          const userStore = getUserStore(userId);
+          const response = await userStore.fetch('http://user/view', {
+            method: 'PUT',
+            body: JSON.stringify({ userId, resourceId }),
+          });
 
-      ctx.waitUntil(removeUserCache(userId));
-      ctx.waitUntil(
-        resourcesStore.fetch('http://resources/view', {
-          method: 'PUT',
-          body: JSON.stringify({ resourceId }),
-        })
-      );
+          if (!response.ok) {
+            throw new Error(
+              'View failed; Resource is not marked as viewed on the UserStore'
+            );
+          }
+        }
+
+        ctx.waitUntil(removeUserCache(userId));
+        ctx.waitUntil(
+          resourcesStore.fetch('http://resources/view', {
+            method: 'PUT',
+            body: JSON.stringify({ resourceId }),
+          })
+        );
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
+      }
     },
     async bookmark(userId: string, resourceId: string): Promise<void> {
-      const userStore = getUserStore(userId);
-      const response = await userStore.fetch('http://user/bookmark', {
-        method: 'PUT',
-        body: JSON.stringify({ userId, resourceId }),
-      });
+      try {
+        const userStore = getUserStore(userId);
+        const response = await userStore.fetch('http://user/bookmark', {
+          method: 'PUT',
+          body: JSON.stringify({ userId, resourceId }),
+        });
 
-      if (response.status === 409) {
-        /**
-         * If the action is conflicting with the current status
-         * It is very likely a tempoary problem with data consistency
-         * There is no need to let the user know as the result fulfills the original intention anyway
-         */
-        return;
-      }
+        if (response.status === 409) {
+          /**
+           * If the action is conflicting with the current status
+           * It is very likely a tempoary problem with data consistency
+           * There is no need to let the user know as the result fulfills the original intention anyway
+           */
+          return;
+        }
 
-      if (!response.ok) {
-        throw new Error(
-          'Bookmark failed; Resource is not bookmarked on the UserStore'
-        );
-      }
-
-      ctx.waitUntil(removeUserCache(userId));
-      ctx.waitUntil(
-        (async () => {
-          const response = await resourcesStore.fetch(
-            'http://resources/bookmark',
-            {
-              method: 'PUT',
-              body: JSON.stringify({ userId, resourceId }),
-            }
+        if (!response.ok) {
+          throw new Error(
+            'Bookmark failed; Resource is not bookmarked on the UserStore'
           );
-          const { resource } = await response.json();
+        }
 
-          await updateResourceCache(resource);
-        })()
-      );
+        ctx.waitUntil(removeUserCache(userId));
+        ctx.waitUntil(
+          (async () => {
+            const response = await resourcesStore.fetch(
+              'http://resources/bookmark',
+              {
+                method: 'PUT',
+                body: JSON.stringify({ userId, resourceId }),
+              }
+            );
+            const { resource } = await response.json();
+
+            await updateResourceCache(resource);
+          })()
+        );
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
+      }
     },
     async unbookmark(userId: string, resourceId: string): Promise<void> {
-      const userStore = getUserStore(userId);
-      const response = await userStore.fetch('http://user/bookmark', {
-        method: 'DELETE',
-        body: JSON.stringify({ userId, resourceId }),
-      });
+      try {
+        const userStore = getUserStore(userId);
+        const response = await userStore.fetch('http://user/bookmark', {
+          method: 'DELETE',
+          body: JSON.stringify({ userId, resourceId }),
+        });
 
-      if (!response.ok) {
-        throw new Error(
-          'Unbookmark failed; Resource is not unbookmarked on the UserStore'
-        );
-      }
-
-      ctx.waitUntil(removeUserCache(userId));
-      ctx.waitUntil(
-        (async () => {
-          const response = await resourcesStore.fetch(
-            'http://resources/bookmark',
-            {
-              method: 'DELETE',
-              body: JSON.stringify({ userId, resourceId }),
-            }
+        if (!response.ok) {
+          throw new Error(
+            'Unbookmark failed; Resource is not unbookmarked on the UserStore'
           );
-          const { resource } = await response.json();
+        }
 
-          await updateResourceCache(resource);
-        })()
-      );
+        ctx.waitUntil(removeUserCache(userId));
+        ctx.waitUntil(
+          (async () => {
+            const response = await resourcesStore.fetch(
+              'http://resources/bookmark',
+              {
+                method: 'DELETE',
+                body: JSON.stringify({ userId, resourceId }),
+              }
+            );
+            const { resource } = await response.json();
+
+            await updateResourceCache(resource);
+          })()
+        );
+      } catch (e) {
+        env.LOGGER?.error(e);
+        throw e;
+      }
     },
   };
 }

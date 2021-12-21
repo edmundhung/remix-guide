@@ -1,3 +1,4 @@
+import type { Tracker } from 'workers-logger';
 export type { Context } from './context';
 
 export interface Env {
@@ -7,6 +8,10 @@ export interface Env {
   GITHUB_CALLBACK_URL?: string;
   YOUTUBE_API_KEY?: string;
   SESSION_SECERTS?: string;
+  SENTRY_DSN?: string;
+  DEBUG?: string;
+  LOGGER_NAME?: string;
+  LOGGER?: Tracker;
   CONTENT: KVNamespace;
   RESOURCES_STORE: DurableObjectNamespace;
   USER_STORE: DurableObjectNamespace;

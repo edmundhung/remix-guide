@@ -1,4 +1,5 @@
 import { customAlphabet } from 'nanoid';
+import { createLogger } from '../logging';
 import {
   scrapeHTML,
   isValidResource,
@@ -38,6 +39,13 @@ export class ResourcesStore {
   }
 
   async fetch(request: Request) {
+    const logger = createLogger(request, {
+      ...this.env,
+      LOGGER_NAME: 'store:ResourcesStore',
+    });
+
+    let response: Response;
+
     try {
       let url = new URL(request.url);
       let method = request.method.toUpperCase();
@@ -87,7 +95,8 @@ export class ResourcesStore {
 
           const body = JSON.stringify({ id, resource, status });
 
-          return new Response(body, { status: 201 });
+          response = new Response(body, { status: 201 });
+          break;
         }
         case '/details': {
           if (method !== 'GET') {
@@ -101,7 +110,10 @@ export class ResourcesStore {
             return new Response('Not Found', { status: 404 });
           }
 
-          return new Response(JSON.stringify({ resource }), { status: 200 });
+          response = new Response(JSON.stringify({ resource }), {
+            status: 200,
+          });
+          break;
         }
         case '/view': {
           if (method !== 'PUT') {
@@ -120,7 +132,8 @@ export class ResourcesStore {
             viewCounts: resource.viewCounts + 1,
           });
 
-          return new Response('OK', { status: 200 });
+          response = new Response('OK', { status: 200 });
+          break;
         }
         case '/bookmark': {
           if (method !== 'PUT' && method !== 'DELETE') {
@@ -154,18 +167,28 @@ export class ResourcesStore {
             resource = await this.updateResource({ ...resource, bookmarked });
           }
 
-          return new Response(JSON.stringify({ resource }), { status: 200 });
+          response = new Response(JSON.stringify({ resource }), {
+            status: 200,
+          });
+          break;
         }
       }
 
-      return new Response('Not found', { status: 404 });
+      if (!response) {
+        response = new Response('Not found', { status: 404 });
+      }
     } catch (e) {
-      console.log(
+      logger.error(e);
+      logger.log(
         `ResourcesStore failed while handling fetch - ${request.url}; Received message: ${e.message}`
       );
 
-      return new Response('Internal Server Error', { status: 500 });
+      response = new Response('Internal Server Error', { status: 500 });
+    } finally {
+      logger.report(response);
     }
+
+    return response;
   }
 
   async createResource(
