@@ -2,7 +2,6 @@ import { Link } from 'remix';
 import type { ReactElement } from 'react';
 import type { ResourceMetadata } from '~/types';
 import { getSite } from '~/search';
-import CategoryIcon from './CategoryIcon';
 
 interface CardProps {
   entry: ResourceMetadata;

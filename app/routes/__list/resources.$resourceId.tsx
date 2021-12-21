@@ -219,7 +219,7 @@ export default function EntryDetail() {
                 />
                 {site}
               </a>
-              {!resource.integrations ? null : (
+              {!resource.integrations?.length > 0 ? null : (
                 <div className="pt-4 flex flex-wrap gap-2">
                   {resource.integrations?.map((integration) => (
                     <Link
@@ -233,7 +233,7 @@ export default function EntryDetail() {
                 </div>
               )}
               {!resource.description ? null : (
-                <p className="pt-6 text-gray-400 text-sm break-words">
+                <p className="pt-6 text-gray-400 text-sm break-words whitespace-pre-line">
                   {resource.description}
                 </p>
               )}
