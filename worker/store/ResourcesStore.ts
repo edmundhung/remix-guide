@@ -83,7 +83,7 @@ export class ResourcesStore {
             status = 'RESUBMITTED';
           }
 
-          const body = JSON.stringify({ id, resource, status });
+          const body = JSON.stringify({ id, status });
 
           response = new Response(body, { status: 201 });
           break;
@@ -187,7 +187,6 @@ export class ResourcesStore {
     userId: string
   ): Promise<{
     id: string | null;
-    resource: Resource | null;
     status: SubmissionStatus;
   }> {
     const id = generateId();
@@ -201,7 +200,6 @@ export class ResourcesStore {
     if (!isValidResource(data, category)) {
       return {
         id: null,
-        resource: null,
         status: 'INVALID',
       };
     }
