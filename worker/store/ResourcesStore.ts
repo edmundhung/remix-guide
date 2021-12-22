@@ -56,13 +56,13 @@ export class ResourcesStore {
             break;
           }
 
-          const { url, category, userId } = await request.json();
+          const { url, category, userAgent, userId } = await request.json();
 
           let status: SubmissionStatus | null = null;
           let id = this.resourceIdByURL[url] ?? null;
 
           if (!id) {
-            const page = await scrapeHTML(url);
+            const page = await scrapeHTML(url, userAgent);
 
             if (url !== page.url) {
               id = this.resourceIdByURL[page.url] ?? null;

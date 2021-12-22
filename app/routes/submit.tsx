@@ -71,6 +71,7 @@ export let action: ActionFunction = async ({ request, context }) => {
   const formData = await request.formData();
   const url = formData.get('url');
   const category = formData.get('category');
+  const userAgent = request.headers.get('User-Agent');
 
   if (!isValidCategory(category)) {
     return redirect('/submit', {
@@ -91,7 +92,12 @@ export let action: ActionFunction = async ({ request, context }) => {
   }
 
   try {
-    const { id, status } = await store.submit(url, category, profile.id);
+    const { id, status } = await store.submit(
+      url,
+      category,
+      userAgent,
+      profile.id
+    );
 
     let setCookieHeader = {};
 

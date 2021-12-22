@@ -221,12 +221,13 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
     async submit(
       url: string,
       category: string,
+      userAgent: string,
       userId: string
     ): Promise<{ id: string; status: SubmissionStatus }> {
       try {
         const response = await resourcesStore.fetch('http://resources/submit', {
           method: 'POST',
-          body: JSON.stringify({ url, category, userId }),
+          body: JSON.stringify({ url, category, userAgent, userId }),
         });
 
         if (!response.ok) {

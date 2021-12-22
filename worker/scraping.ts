@@ -84,12 +84,11 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
   );
 }
 
-async function scrapeHTML(url: string): Promise<Page> {
+async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
   const response = await fetch(url, {
     headers: {
       Accept: 'text/html',
-      'User-Agent':
-        'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)',
+      'User-Agent': userAgent, //'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
     },
     redirect: 'follow',
   });
