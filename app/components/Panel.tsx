@@ -71,7 +71,7 @@ function Panel({
         {type !== 'details' ? (
           <Link
             className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-            to={`?${search === '' ? 'menu' : `${search}&menu`}`}
+            to={`?${search === '' ? 'menu' : `${search}&menu=open`}`}
           >
             <SvgIcon className="w-3 h-3" href={menuIcon} />
           </Link>

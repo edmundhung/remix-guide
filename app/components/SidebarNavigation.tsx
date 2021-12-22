@@ -253,10 +253,12 @@ function SidebarNavigation({
 }: SidebarNavigationProps): ReactElement {
   const submit = useSubmit();
   const location = useLocation();
-  const searchOptions = useMemo(
-    () => getSearchOptions(location.search),
-    [location.search]
-  );
+  const [searchParams, searchOptions] = useMemo(() => {
+    const searchParams = getResourcesSearchParams(location.search);
+    const searchOptions = getSearchOptions(searchParams);
+
+    return [searchParams, searchOptions];
+  }, [location.search]);
   const transition = useTransition();
   const handleSubmit = useMemo(() => throttle(submit, 400), [submit]);
   const formRef = useRef<HTMLFormElement>(null);
@@ -291,30 +293,16 @@ function SidebarNavigation({
           onChange={handleChange}
         >
           <SearchInput name="q" value={searchOptions.keyword ?? ''} />
-          {[]
-            .concat(
-              searchOptions.list ? [['list', searchOptions.list]] : [],
-              searchOptions.category
-                ? [['category', searchOptions.category]]
-                : [],
-              searchOptions.platform
-                ? [['platform', searchOptions.platform]]
-                : [],
-              searchOptions.author ? [['author', searchOptions.author]] : [],
-              searchOptions.site ? [['site', searchOptions.site]] : [],
-              (searchOptions.integrations ?? []).map((value) => [
-                'integration',
-                value,
-              ])
-            )
-            .map(([name, value]) => (
+          {Array.from(searchParams.entries()).map(([name, value]) =>
+            name === 'q' ? null : (
               <input
                 key={`${name}-${value}`}
                 type="hidden"
                 name={name}
                 value={value}
               />
-            ))}
+            )
+          )}
         </Form>
       </header>
       <section className="flex-1 px-5 divide-y overflow-y-auto">

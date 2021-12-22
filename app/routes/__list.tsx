@@ -26,7 +26,8 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const { session, store } = context as Context;
   const profile = await session.isAuthenticated();
   const url = new URL(request.url);
-  const searchOptions = getSearchOptions(url.search);
+  const searchParams = getResourcesSearchParams(url.search);
+  const searchOptions = getSearchOptions(searchParams);
   const entries = await store.search(profile?.id ?? null, searchOptions);
 
   return json({

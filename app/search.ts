@@ -11,6 +11,7 @@ export function getResourcesSearchParams(search: string): URLSearchParams {
     'integration',
     'author',
     'site',
+    'menu', // For mobile
   ];
 
   for (const key of searchParams.keys()) {
@@ -24,9 +25,7 @@ export function getResourcesSearchParams(search: string): URLSearchParams {
   return searchParams;
 }
 
-export function getSearchOptions(search: string): SearchOptions {
-  const searchParams = getResourcesSearchParams(search);
-
+export function getSearchOptions(searchParams: URLSearchParams): SearchOptions {
   return {
     keyword: searchParams.get('q'),
     list: searchParams.get('list'),
