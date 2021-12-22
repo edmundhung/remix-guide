@@ -2,7 +2,7 @@
   "private": true,
   "name": "remix-guide",
   "main": "./worker.js",
-  "description": "An interactive list of awesome stuffs about Remix",
+  "description": "A platform for sharing everything about Remix",
   "license": "MIT",
   "scripts": {
     "cleanup": "rimraf .cache ./dist ./build ./public/build ./app/styles/tailwind.css",

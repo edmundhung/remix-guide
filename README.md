@@ -1,6 +1,6 @@
 # remix-guide
 
-Remix Guide is an interactive list of awesome stuffs about Remix. It is built with [Remix](https://docs.remix.run) and is deployed to [Cloudflare Workers](https://workers.cloudflare.com/). All contents are published to Worker KV and Durable Objects.
+Remix Guide is a platform for sharing everything about Remix. It is built with [Remix](https://docs.remix.run) and is deployed to [Cloudflare Workers](https://workers.cloudflare.com/). All contents are published to Worker KV and Durable Objects.
 
 ## Roadmap
 

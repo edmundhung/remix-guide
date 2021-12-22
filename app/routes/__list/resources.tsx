@@ -8,7 +8,7 @@ export let meta: MetaFunction = ({ location }) => {
 
   return formatMeta({
     title: `${capitalize(list) ?? 'Latest Resources'}`,
-    description: 'An interactive list of awesome stuffs about Remix',
+    description: 'A platform for sharing everything about Remix',
     'og:url': list
       ? `https://remix.guide/resources?list=${list}`
       : 'https://remix.guide/resources',
