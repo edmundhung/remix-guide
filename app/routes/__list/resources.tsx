@@ -1,4 +1,5 @@
 import type { MetaFunction } from 'remix';
+import { useMatches } from 'remix';
 import Banner from '~/components/Banner';
 import { capitalize, formatMeta } from '~/helpers';
 
@@ -16,5 +17,8 @@ export let meta: MetaFunction = ({ location }) => {
 };
 
 export default function Resources() {
-  return <Banner />;
+  const matches = useMatches();
+  const { version } = matches[0]?.data ?? {};
+
+  return <Banner version={version} />;
 }

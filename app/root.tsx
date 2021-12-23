@@ -42,6 +42,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 
   return json({
     profile,
+    version: process.env.VERSION,
   });
 };
 

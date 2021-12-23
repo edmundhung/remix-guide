@@ -1,4 +1,5 @@
 import type { MetaFunction } from 'remix';
+import { useMatches } from 'remix';
 import Banner from '~/components/Banner';
 import { formatMeta } from '~/helpers';
 
@@ -11,5 +12,8 @@ export let meta: MetaFunction = () => {
 };
 
 export default function Index() {
-  return <Banner />;
+  const matches = useMatches();
+  const { version } = matches[0]?.data ?? {};
+
+  return <Banner version={version} />;
 }
