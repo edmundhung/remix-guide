@@ -61,11 +61,13 @@ export let action: ActionFunction = async ({ context, params, request }) => {
   switch (type) {
     case 'bookmark':
       await store.bookmark(profile.id, params.resourceId ?? '');
-      return redirect(request.headers.get('referrer') ?? request.url);
+      break;
     case 'unbookmark':
       await store.unbookmark(profile.id, params.resourceId ?? '');
-      return redirect(request.headers.get('referrer') ?? request.url);
+      break;
   }
+
+  return redirect(request.headers.get('referrer') ?? request.url);
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
@@ -179,13 +181,10 @@ export default function EntryDetail() {
       message={message}
       elements={
         <Form className="flex flex-row items-center" method="post">
-          <input
-            type="hidden"
-            name="type"
-            value={bookmarked ? 'unbookmark' : 'bookmark'}
-          />
           <button
             type="submit"
+            name="type"
+            value={bookmarked ? 'unbookmark' : 'bookmark'}
             className={`flex items-center justify-center w-6 h-6 ${
               bookmarked
                 ? 'rounded-full text-red-500 bg-gray-200'
