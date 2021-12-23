@@ -88,6 +88,33 @@ export class ResourcesStore {
           response = new Response(body, { status: 201 });
           break;
         }
+        case '/refresh': {
+          if (method === 'POST') {
+            const { resourceId, userId, userAgent } = await request.json();
+            const resource = await this.getResource(resourceId);
+
+            if (!resource) {
+              return new Response('Not Found', { status: 404 });
+            }
+
+            const page = await scrapeHTML(resource.url, userAgent);
+            const data = await getAdditionalMetadata(
+              page,
+              Object.keys(this.resourceIdByPackageName),
+              this.env
+            );
+
+            await this.updateResource({
+              ...resource,
+              ...data,
+              updatedAt: new Date().toISOString(),
+              updatedBy: userId,
+            });
+
+            response = new Response('OK', { status: 200 });
+          }
+          break;
+        }
         case '/details': {
           if (method !== 'GET') {
             break;
@@ -212,6 +239,8 @@ export class ResourcesStore {
       viewCounts: 0,
       createdAt: now,
       createdBy: userId,
+      updatedAt: now,
+      updatedBy: userId,
     });
 
     if (category === 'packages') {

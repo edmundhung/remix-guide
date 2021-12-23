@@ -249,21 +249,27 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
         throw e;
       }
     },
-    async refresh(resourceId: string): Promise<void> {
+    async refresh(
+      userId: string,
+      resourceId: string,
+      userAgent: string
+    ): Promise<void> {
       try {
         const response = await resourcesStore.fetch(
           'http://resources/refresh',
           {
             method: 'POST',
-            body: JSON.stringify({ resourceId }),
+            body: JSON.stringify({ resourceId, userId, userAgent }),
           }
         );
 
         if (!response.ok) {
           throw new Error(
-            'View failed; Resource is not marked as viewed on the UserStore'
+            'Refresh failed; Resource is not updated on the ResourcesStore'
           );
         }
+
+        ctx.waitUntil(removeCache(`resources/${resourceId}`));
       } catch (e) {
         env.LOGGER?.error(e);
         throw e;

@@ -69,6 +69,8 @@ export interface Resource extends Page {
   bookmarked: string[];
   createdAt: string;
   createdBy: string;
+  updatedAt: string;
+  updatedBy: string;
 }
 
 export interface SearchOptions {
