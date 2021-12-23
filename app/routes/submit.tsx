@@ -165,7 +165,7 @@ export default function Submit() {
 
   return (
     <Panel title="Submit a new Resource" message={message}>
-      <section className="px-3 pt-2">
+      <section className="px-2.5 pt-2">
         <Form className="lg:max-w-3xl" method="post">
           <h3 className="">Please select a cateogry</h3>
           <div>

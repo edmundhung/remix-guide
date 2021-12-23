@@ -30,6 +30,12 @@ export let links: LinksFunction = () => {
   ];
 };
 
+export let meta: MetaFunction = () => {
+  return {
+    viewport: 'width=device-width, initial-scale=1',
+  };
+};
+
 export let loader: LoaderFunction = async ({ context }) => {
   const { session } = context as Context;
   const profile = await session.isAuthenticated();

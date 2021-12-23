@@ -285,7 +285,7 @@ function SidebarNavigation({
 
   return (
     <div className="h-full max-h-screen min-h-screen flex flex-col text-sm">
-      <header className="px-5 py-4">
+      <header className="px-2.5 xl:px-5 py-4">
         <Form
           method="get"
           action={action}
@@ -305,7 +305,7 @@ function SidebarNavigation({
           )}
         </Form>
       </header>
-      <section className="flex-1 px-5 divide-y overflow-y-auto">
+      <section className="flex-1 px-2.5 xl:px-5 divide-y overflow-y-auto">
         <LinkMenu>
           <MenuItem to="/" name="list" value={null}>
             <SvgIcon className="w-4 h-4" href={homeIcon} /> Home
@@ -408,7 +408,7 @@ function SidebarNavigation({
           </MenuItem>
         </LinkMenu>
       </section>
-      <footer className="px-5 py-3 border-t">
+      <footer className="px-2.5 xl:px-5 py-3 border-t">
         {profile ? (
           <Form action="/logout" method="post" reloadDocument>
             <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-900">

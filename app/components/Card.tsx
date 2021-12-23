@@ -23,9 +23,9 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
         }
         prefetch="intent"
       >
-        <section className="px-3 py-2.5 text-sm">
-          <div className="text-xs pb-1.5 text-gray-500 flex flex-row justify-between">
-            <span>
+        <section className="px-2.5 py-2.5 text-sm">
+          <div className="text-xs pb-1.5 text-gray-500 flex flex-row gap-4">
+            <span className="flex-1 truncate">
               <span className="capitalize">{entry.category}</span> /{' '}
               {getSite(entry.url)}
             </span>
@@ -33,7 +33,9 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
           </div>
           <h2 className="break-words line-clamp-2">{entry.title}</h2>
           {!entry.description ? null : (
-            <p className="text-gray-400 line-clamp-1">{entry.description}</p>
+            <p className="text-gray-400 line-clamp-1 break-all">
+              {entry.description}
+            </p>
           )}
         </section>
       </Link>

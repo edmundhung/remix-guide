@@ -67,27 +67,29 @@ function Panel({
 
   return (
     <section className="flex flex-col w-full h-full max-h-screen overflow-y-auto">
-      <header className="sticky top-0 bg-black border-b md:border-none flex items-center gap-2 z-20 px-8 py-4 text-sm">
-        {type !== 'details' ? (
-          <Link
-            className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-            to={`?${search === '' ? 'menu' : `${search}&menu=open`}`}
-          >
-            <SvgIcon className="w-3 h-3" href={menuIcon} />
-          </Link>
-        ) : (
-          <Link
-            className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-            to={search === '' ? '/' : `/resources?${search}`}
-            replace
-          >
-            <SvgIcon className="w-3 h-3" href={backIcon} />
-          </Link>
-        )}
-        <div className="flex-1 leading-8 line-clamp-1">{title}</div>
-        {elements}
+      <header className="sticky top-0 bg-black border-b md:border-none z-20 px-2.5 xl:px-5 py-4">
+        <div className="flex items-center gap-2 text-sm px-3">
+          {type !== 'details' ? (
+            <Link
+              className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+              to={`?${search === '' ? 'menu' : `${search}&menu=open`}`}
+            >
+              <SvgIcon className="w-3 h-3" href={menuIcon} />
+            </Link>
+          ) : (
+            <Link
+              className="flex md:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+              to={search === '' ? '/' : `/resources?${search}`}
+              replace
+            >
+              <SvgIcon className="w-3 h-3" href={backIcon} />
+            </Link>
+          )}
+          <div className="flex-1 leading-8 line-clamp-1">{title}</div>
+          {elements}
+        </div>
       </header>
-      <div className="flex-1 px-5 py-2">{children}</div>
+      <div className="flex-1 px-2.5 xl:px-5 py-2">{children}</div>
       {!message || dimissed ? null : (
         <footer className="sticky bottom-0 flex items-center gap-4 bg-gray-700 px-5 py-3 text-sm">
           <div className="flex items-center flex-1 py-1 gap-4">

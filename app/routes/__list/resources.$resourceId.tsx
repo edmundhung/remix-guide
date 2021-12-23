@@ -204,7 +204,7 @@ export default function EntryDetail() {
       }
     >
       <div className="max-w-screen-xl divide-y">
-        <div className="px-3 pt-3 pb-8">
+        <div className="px-2.5 pt-3 pb-8">
           <div className="flex flex-col-reverse lg:flex-row justify-between gap-8 2xl:gap-12">
             <div className="pt-0.5 flex-1">
               <div className="flex items-center justify-between text-xs pb-1.5 text-gray-500">
@@ -290,7 +290,7 @@ export default function EntryDetail() {
         </div>
         {builtWithPackage ? (
           <div className="py-8">
-            <h3 className="px-3 pb-4">Built with {resource.title}</h3>
+            <h3 className="px-2.5 pb-4">Built with {resource.title}</h3>
             <RelatedResources
               entries={builtWithPackage}
               search={new URLSearchParams({
@@ -301,7 +301,7 @@ export default function EntryDetail() {
         ) : null}
         {madeByAuthor ? (
           <div className="py-8">
-            <h3 className="px-3 pb-4">Made by {resource.author}</h3>
+            <h3 className="px-2.5 pb-4">Made by {resource.author}</h3>
             <RelatedResources
               entries={madeByAuthor}
               search={new URLSearchParams({
@@ -312,7 +312,7 @@ export default function EntryDetail() {
         ) : null}
         {alsoOnSite ? (
           <div className="py-8">
-            <h3 className="px-3 pb-4">Also on {site}</h3>
+            <h3 className="px-2.5 pb-4">Also on {site}</h3>
             <RelatedResources
               entries={alsoOnSite}
               search={new URLSearchParams({ site }).toString()}
@@ -342,7 +342,7 @@ function RelatedResources({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-2">
+    <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2">
       {entries.map((entry) => (
         <Card key={entry.id} entry={entry} search={search} />
       ))}
