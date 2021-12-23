@@ -20,3 +20,5 @@ export const platforms = [
 ];
 
 export const integrations = ['cypress', 'express', 'prisma', 'tailwindcss'];
+
+export const administrators = ['edmundhung'];

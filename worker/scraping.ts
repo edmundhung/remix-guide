@@ -1,5 +1,5 @@
 import { decode } from 'html-entities';
-import { integrations, platforms } from '~/meta';
+import { integrations, platforms } from '~/config';
 import type { Category, Env, Page } from './types';
 
 interface Parser {

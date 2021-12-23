@@ -1,5 +1,5 @@
 import { SearchOptions } from '~/types';
-import { platforms } from './meta';
+import { platforms } from '~/config';
 
 export function getResourcesSearchParams(search: string): URLSearchParams {
   const searchParams = new URLSearchParams(search);

@@ -19,7 +19,7 @@ import {
 } from 'remix';
 import { useMemo } from 'react';
 import SidebarNavigation from '~/components/SidebarNavigation';
-import { categories, platforms, integrations } from '~/meta';
+import { categories, platforms, integrations } from '~/config';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 

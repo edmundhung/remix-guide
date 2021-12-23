@@ -1,4 +1,4 @@
-import type { MetaFunction, LoaderFunction, ShouldReloadFunction } from 'remix';
+import type { LoaderFunction, ShouldReloadFunction } from 'remix';
 import { useMemo } from 'react';
 import {
   Link,
@@ -15,12 +15,7 @@ import { capitalize } from '~/helpers';
 import plusIcon from '~/icons/plus.svg';
 import { getResourcesSearchParams, getSearchOptions } from '~/search';
 import type { Resource, Context } from '~/types';
-
-export let meta: MetaFunction = () => {
-  return {
-    title: 'Remix Guide - Search',
-  };
-};
+import { administrators } from '~/config';
 
 export let loader: LoaderFunction = async ({ request, context }) => {
   const { session, store } = context as Context;
@@ -31,6 +26,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const entries = await store.search(profile?.id ?? null, searchOptions);
 
   return json({
+    submitEnabled: profile && administrators.includes(profile.name),
     entries,
   });
 };
@@ -43,7 +39,8 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function List() {
-  const { entries } = useLoaderData<{ entries: Resource[] }>();
+  const { entries, submitEnabled } =
+    useLoaderData<{ entries: Resource[]; submitEnabled: boolean }>();
   const location = useLocation();
   const searchParams = useMemo(
     () => getResourcesSearchParams(location.search),
@@ -65,7 +62,7 @@ export default function List() {
           }`.trim()}
           type="list"
           elements={
-            list === null ? (
+            list === null && submitEnabled ? (
               <Link
                 className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
                 to="/submit"

@@ -3,7 +3,7 @@ import type { ActionFunction } from 'remix';
 import { Form, redirect, json, useLoaderData } from 'remix';
 import CategoryIcon from '~/components/CategoryIcon';
 import Panel from '~/components/Panel';
-import { categories } from '~/meta';
+import { administrators, categories } from '~/config';
 import { Context, Category } from '~/types';
 import type { MetaFunction } from 'remix';
 import { formatMeta } from '~/helpers';
@@ -63,6 +63,13 @@ export let action: ActionFunction = async ({ request, context }) => {
     return redirect('/submit', {
       headers: await session.commitWithFlashMessage(
         'Please login first before submitting new resources',
+        'warning'
+      ),
+    });
+  } else if (!administrators.includes(profile.name)) {
+    return redirect('/submit', {
+      headers: await session.commitWithFlashMessage(
+        'Sorry. This feature is not enabled on your account yet.',
         'warning'
       ),
     });

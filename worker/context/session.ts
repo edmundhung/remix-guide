@@ -1,7 +1,7 @@
 import { Authenticator } from 'remix-auth/build/authenticator';
 import { GitHubStrategy } from 'remix-auth/build/strategies/github';
 import { createCookieSessionStorage, redirect } from 'remix';
-import type { Env, MessageType, UserProfile } from './types';
+import type { Env, MessageType, UserProfile } from '../types';
 
 export type Session = ReturnType<typeof createSession>;
 
