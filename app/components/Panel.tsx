@@ -55,10 +55,14 @@ function Panel({
   children,
 }: PanelProps): ReactElement {
   const location = useLocation();
-  const search = useMemo(
-    () => getResourcesSearchParams(location.search).toString(),
-    [location.search]
-  );
+  const [search, searchWithMenuOpened] = useMemo(() => {
+    const searchParams = getResourcesSearchParams(location.search);
+    const search = searchParams.toString();
+
+    searchParams.set('menu', 'open');
+
+    return [search, searchParams.toString()];
+  }, [location.search]);
   const [dimissed, setDismissed] = useState(false);
 
   useEffect(() => {
@@ -72,7 +76,7 @@ function Panel({
           {type !== 'details' ? (
             <Link
               className="flex xl:hidden items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-              to={`?${search === '' ? 'menu' : `${search}&menu=open`}`}
+              to={`?${searchWithMenuOpened}`}
             >
               <SvgIcon className="w-3 h-3" href={menuIcon} />
             </Link>

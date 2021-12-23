@@ -82,22 +82,22 @@ function Document({
 export default function App() {
   const { profile } = useLoaderData();
   const location = useLocation();
-  const [isMenuEnabled, closeMenuLink] = useMemo(() => {
+  const [isMenuOpened, searchWithMenuClosed] = useMemo(() => {
     const searchPararms = new URLSearchParams(location.search);
-    const isMenuShown = searchPararms.has('menu');
+    const hasMenu = searchPararms.has('menu');
 
-    if (isMenuShown) {
+    if (hasMenu) {
       searchPararms.delete('menu');
     }
 
-    return [isMenuShown, searchPararms.toString()];
+    return [hasMenu, searchPararms.toString()];
   }, [location.search]);
 
   return (
     <Document>
       <nav
         className={`${
-          isMenuEnabled ? 'absolute xl:relative bg-black' : 'hidden'
+          isMenuOpened ? 'absolute xl:relative bg-black' : 'hidden'
         } z-40 xl:block w-72 h-full border-r`}
       >
         <SidebarNavigation
@@ -107,10 +107,10 @@ export default function App() {
           profile={profile}
         />
       </nav>
-      {!isMenuEnabled ? null : (
+      {!isMenuOpened ? null : (
         <Link
           className={`xl:hidden backdrop-filter z-30 absolute top-0 left-0 right-0 bottom-0 backdrop-blur-sm`}
-          to={`?${closeMenuLink}`}
+          to={`?${searchWithMenuClosed}`}
           replace
         />
       )}
