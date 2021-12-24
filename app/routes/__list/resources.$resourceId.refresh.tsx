@@ -1,13 +1,13 @@
 import type { LoaderFunction } from 'remix';
 import { redirect } from 'remix';
-import { administrators } from '~/config';
+import { maintainers } from '~/config';
 import type { Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, context, params }) => {
   const { session, store } = context as Context;
   const profile = await session.isAuthenticated();
 
-  if (!profile || !administrators.includes(profile.name)) {
+  if (!profile || !maintainers.includes(profile.name)) {
     return redirect(`/resources/${params.resourceId}`);
   }
 

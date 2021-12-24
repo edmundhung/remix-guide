@@ -15,7 +15,7 @@ import { capitalize } from '~/helpers';
 import plusIcon from '~/icons/plus.svg';
 import { getResourcesSearchParams, getSearchOptions } from '~/search';
 import type { Resource, Context } from '~/types';
-import { administrators } from '~/config';
+import { maintainers } from '~/config';
 
 export let loader: LoaderFunction = async ({ request, context }) => {
   const { session, store } = context as Context;
@@ -26,7 +26,7 @@ export let loader: LoaderFunction = async ({ request, context }) => {
   const entries = await store.search(profile?.id ?? null, searchOptions);
 
   return json({
-    submitEnabled: profile && administrators.includes(profile.name),
+    submitEnabled: profile && maintainers.includes(profile.name),
     entries,
   });
 };
