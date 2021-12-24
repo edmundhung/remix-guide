@@ -9,16 +9,12 @@ function createReporter(
   env: Env,
   ctx?: ExecutionContext
 ): Reporter {
-  if (process.env.NODE_ENV !== 'production') {
+  if (!env.SENTRY_DSN) {
     return (events) => {
       for (const event of events) {
         defaultReporter(event);
       }
     };
-  }
-
-  if (!env.SENTRY_DSN) {
-    throw new Error('Fail creating the logger; Some env variables are missing');
   }
 
   const options = {
