@@ -16,9 +16,26 @@ export function createSession(
     !env.GITHUB_CALLBACK_URL ||
     !env.SESSION_SECERTS
   ) {
-    throw new Error(
-      'Fail creating auth object; Some env variables are missing'
+    env.LOGGER?.warn(
+      'Fail creating the session context; Some env variables are missing'
     );
+    return {
+      login() {
+        return redirect('/');
+      },
+      logout() {
+        return redirect('/');
+      },
+      isAuthenticated() {
+        return null;
+      },
+      getFlashMessage() {
+        return [null, {}];
+      },
+      commitWithFlashMessage() {
+        return {};
+      },
+    };
   }
 
   let sessionStorage = createCookieSessionStorage({
