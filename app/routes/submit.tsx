@@ -3,7 +3,7 @@ import type { ActionFunction } from 'remix';
 import { Form, redirect, json, useLoaderData } from 'remix';
 import CategoryIcon from '~/components/CategoryIcon';
 import Panel from '~/components/Panel';
-import { administrators, categories } from '~/config';
+import { maintainers, categories } from '~/config';
 import { Context, Category } from '~/types';
 import type { MetaFunction } from 'remix';
 import { formatMeta } from '~/helpers';
@@ -66,7 +66,7 @@ export let action: ActionFunction = async ({ request, context }) => {
         'warning'
       ),
     });
-  } else if (!administrators.includes(profile.name)) {
+  } else if (!maintainers.includes(profile.name)) {
     return redirect('/submit', {
       headers: await session.commitWithFlashMessage(
         'Sorry. This feature is not enabled on your account yet.',
