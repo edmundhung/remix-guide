@@ -4,7 +4,7 @@ import {
   MethodNotAllowedError,
   NotFoundError,
 } from '@cloudflare/kv-asset-handler';
-import '@remix-run/cloudflare-workers';
+import '@remix-run/cloudflare-pages'; // Required for installGlobals
 import type {
   AppLoadContext,
   ServerBuild,
