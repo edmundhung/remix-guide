@@ -8,7 +8,7 @@
     "cleanup": "rimraf .cache ./dist ./build ./public/build ./app/styles/tailwind.css",
     "build:remix": "remix build",
     "build:style": "cross-env NODE_ENV=production tailwindcss -o ./app/styles/tailwind.css --minify",
-    "build:worker": "cross-env NODE_ENV=production VERSION=$(git rev-parse HEAD) node ./scripts/build.mjs",
+    "build:worker": "cross-env NODE_ENV=production VERSION=$(git rev-parse --short HEAD) node ./scripts/build.mjs",
     "build": "npm run build:style && npm run build:remix && npm run build:worker",
     "dev:cypress": "cypress open",
     "dev:miniflare": "miniflare --build-command \"node ./scripts/build.mjs\" --watch --kv-persist --do-persist",
