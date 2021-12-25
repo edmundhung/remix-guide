@@ -84,6 +84,16 @@ async function parseResponse<T extends { [keys in string]: Parser }>(
   );
 }
 
+async function isURLReachable(url: string): Promise<boolean> {
+  try {
+    const response = await fetch(url, { method: 'GET' });
+
+    return response.ok;
+  } catch {
+    return false;
+  }
+}
+
 async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
   const response = await fetch(url, {
     headers: {
@@ -142,6 +152,7 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
 
   return {
     ...page,
+    image: page.image && (await isURLReachable(page.image)) ? page.image : null,
     url: page.url ?? url,
   };
 }
