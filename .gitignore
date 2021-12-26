@@ -17,6 +17,3 @@ node_modules
 # Miniflare
 /.mf
 /.env
-
-# Workaholic
-/content.json
