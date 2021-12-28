@@ -115,8 +115,13 @@ cbenjamin2009-remix-blog-firebase-auth:
   author: cbenjamin2009
   date: 2021-12-10
   language: en
-cbenjamin2009-remix-fetch-reder-tailwind:
+cbenjamin2009-remix-fetch-render-tailwind:
   url: https://blog.chrisbenjamin.dev/remix-simple-fetch-and-render-data-styled-with-tailwindcss-30
   author: cbenjamin2009
   date: 2021-12-15
+  language: en
+cbenjamin2009-remix-convert-react-site-to-remix:
+  url: https://blog.chrisbenjamin.dev/convert-react-site-to-remix
+  author: cbenjamin2009
+  date: 2021-12-24
   language: en
