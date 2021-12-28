@@ -21,4 +21,13 @@ export const platforms = [
 
 export const integrations = ['cypress', 'express', 'prisma', 'tailwindcss'];
 
-export const maintainers = ['edmundhung', 'marbiano', 'CanRau'];
+export const maintainers = [
+  'edmundhung',
+  'marbiano',
+  'CanRau',
+  'ryanflorence',
+  'mjackson',
+  'kentcdodds',
+  'jacob-ebey',
+  'mcansh',
+];
