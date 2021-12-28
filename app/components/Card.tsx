@@ -1,47 +1,41 @@
-import { ReactElement } from 'react';
 import { Link } from 'remix';
+import type { ReactElement } from 'react';
+import type { ResourceMetadata } from '~/types';
+import { getSite } from '~/search';
 
 interface CardProps {
-  className?: string;
-  slug: string;
-  category: string;
-  author?: string;
-  title: string;
-  description?: string;
-  views?: number;
+  entry: ResourceMetadata;
+  search: string;
+  selected?: boolean;
 }
 
-function Card({
-  className,
-  slug,
-  author,
-  category,
-  title,
-  description,
-  views,
-}: CardProps): ReactElement {
+function Card({ entry, search, selected }: CardProps): ReactElement {
   return (
-    <article
-      className={`flex flex-col border dark:border-gray-600 lg:text-gray-500 hover:text-black dark:hover:text-gray-200 duration-150 ${className}`.trim()}
-    >
+    <article className="py-1">
       <Link
-        className="no-underline flex-grow"
-        to={`/${category}/${slug}`}
+        className={`block rounded-lg no-underline ${
+          selected
+            ? 'shadow-inner bg-gray-800'
+            : 'hover:shadow-inner hover:bg-gray-900'
+        }`}
+        to={
+          search ? `/resources/${entry.id}?${search}` : `/resources/${entry.id}`
+        }
         prefetch="intent"
       >
-        <section className="relative p-8 flex flex-col h-full text-xs">
-          <div className="flex flex-row justify-between font-light mb-5">
-            <div>
-              <span className="capitalize">{category}</span>
-              {!author ? null : <span> / by {author}</span>}
-            </div>
-            {views > 0 ? <div>({views})</div> : null}
+        <section className="px-2.5 py-2.5 text-sm">
+          <div className="text-xs pb-1.5 text-gray-500 flex flex-row gap-4">
+            <span className="flex-1 truncate">
+              <span className="capitalize">{entry.category}</span> /{' '}
+              {getSite(entry.url)}
+            </span>
+            <span>{entry.createdAt.substr(0, 10)}</span>
           </div>
-          <h2 className="flex-grow text-xl break-words text-black dark:text-gray-200">
-            {title}
-          </h2>
-          {!description ? null : (
-            <p className="pt-10 line-clamp-2">{description}</p>
+          <h2 className="break-words line-clamp-2">{entry.title}</h2>
+          {!entry.description ? null : (
+            <p className="text-gray-400 line-clamp-1 break-all">
+              {entry.description}
+            </p>
           )}
         </section>
       </Link>

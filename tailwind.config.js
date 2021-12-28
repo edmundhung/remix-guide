@@ -1,16 +1,17 @@
+const colors = require('tailwindcss/colors');
+
 module.exports = {
-  mode: 'jit',
-  purge: ['./app/**/*.tsx', './app/**/*.ts'],
-  darkMode: 'media',
+  content: ['./app/**/*.tsx', './app/**/*.ts'],
   theme: {
+    borderColor: (theme) => ({
+      ...theme('colors'),
+      DEFAULT: theme('colors.gray.800', 'currentColor'),
+    }),
     extend: {
-      gridTemplateColumns: {
-        masonry: 'repeat(auto-fill, minmax(260px, 1fr))',
+      colors: {
+        gray: colors.neutral,
       },
     },
-  },
-  variants: {
-    extend: {},
   },
   plugins: [
     require('@tailwindcss/line-clamp'),

@@ -20,6 +20,7 @@ async function build() {
       'process.env.NODE_ENV': `"${mode}"`,
       'process.env.VERSION': `"${version}"`,
     },
+    conditions: ['worker'], // Needed for diary to be built correctly
     outfile,
   });
   const endTime = Date.now();

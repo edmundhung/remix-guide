@@ -1,21 +1,20 @@
 # remix-guide
 
-Remix Guide is an interactive list of awesome stuffs about Remix. It is built with [Remix](https://docs.remix.run) and is deployed to [Cloudflare Workers](https://workers.cloudflare.com/). All contents are published to Worker KV and Durable Objects.
+Remix Guide is a platform for sharing everything about Remix. It is built with [Remix](https://remix.run) and is deployed to [Cloudflare Workers](https://workers.cloudflare.com/). All contents are saved in Durable Objects and cached with Worker KV.
 
 ## Roadmap
 
-The idea behind Remix Guide is to make all resources prepared by the community more accessible and making the whole process as automatic as possible. Furture plans include:
+The idea behind Remix Guide is to make resources from the community more accessible and making the process as automatic as possible at the same time. Future plans include:
 
-- Online submission
-- Voting system
+- Make and share your own list
 - Better search ranking / recommendations
-- Github repository analysis (e.g. Check package.json for packages and versions used)
+- Support searching by language and version (remix and packages)
 
 ## Submission
 
-All the contents are currently managed under the `content` directory. Please take a reference from existing content and create a Pull Request with your submission details.
+As of v1.0, new resources can only be submitted online. There are some basic validations in place to ensure the submitted URL is relevant to remix. However, in order to minimize the risk of spamming or phishing, additional measures have to be added before it is generally available.
 
-We will publish it as soon as possible.
+If you would like to submit new content, feel free to share them on the `#showcase` channel of the [Remix Discord](https://discord.com/invite/remix). We are watching the channel and will publish anything shared there as soon as possible.
 
 ## Node Version
 

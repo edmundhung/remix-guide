@@ -3,8 +3,8 @@ describe('Index', () => {
     cy.visit('/');
   });
 
-  it('should show the headline of the platform', () => {
-    cy.findAllByText('An interactive list of awesome stuffs about Remix', {
+  it('should show the name of the platform', () => {
+    cy.findAllByText('Remix Guide', {
       exact: false,
     }).should('exist');
   });

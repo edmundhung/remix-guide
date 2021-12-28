@@ -4,23 +4,30 @@ workers_dev = false
 account_id = "c63d756a160ad09cd9a82553c77e9174"
 zone_id = "e433232c2f0e3fddcd03a20251740130"
 route = "remix.guide/*"
-compatibility_date = "2021-11-22"
+compatibility_date = "2021-12-24"
 
 [[kv_namespaces]]
 binding = "CONTENT"
-preview_id = "b9abf9fff06846969b24a000214328f0"
-id = "ac24beac98a54c2786c7605bbbabdbdc"
+id = "f1a419c9f5524449b2c0562c7d774dd4"
 
 [site]
 bucket = "./public"
 entry-point = "."
 
 [durable_objects]
-bindings = [{ name = "COUNTER", class_name = "Counter" }]
+bindings = [
+  { name = "RESOURCES_STORE", class_name = "ResourcesStore" },
+  { name = "USER_STORE", class_name = "UserStore" },
+]
 
 [[migrations]]
 tag = "v0.1"
 new_classes = ["Counter"]
+
+[[migrations]]
+tag = "v1.0"
+new_classes = ["ResourcesStore", "UserStore"]
+deleted_classes = ["Counter"]
 
 [build]
 command = "npm run build"
@@ -30,8 +37,3 @@ watch_dir = "./build/index.js"
 format = "modules"
 dir = "./dist"
 main = "./worker.mjs"
-
-[workaholic]
-source = "content"
-binding = "CONTENT"
-config = "./scripts/workaholic.ts"
