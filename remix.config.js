@@ -3,10 +3,11 @@
  */
 module.exports = {
   appDirectory: 'app',
-  browserBuildDirectory: 'public/build',
+  assetsBuildDirectory: 'public/build',
   publicPath: '/build/',
-  serverBuildDirectory: 'build',
-  serverPlatform: 'neutral',
   serverModuleFormat: 'esm',
+  serverPlatform: 'neutral',
+  serverBuildDirectory: 'build',
   devServerBroadcastDelay: 1000,
+  ignoredRouteFiles: ['.*'],
 };
