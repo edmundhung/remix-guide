@@ -13,6 +13,7 @@ node_modules
 
 # Cypress
 /cypress/videos
+/cypress/screenshots
 
 # Miniflare
 /.mf

@@ -19,7 +19,7 @@
     "prebuild": "npm run cleanup",
     "test:cypress": "cypress run",
     "test": "start-server-and-test http-get://localhost:8787 test:cypress",
-    "start": "miniflare",
+    "start": "node --experimental-vm-modules ./scripts/preview.mjs",
     "prepare": "husky install"
   },
   "dependencies": {
@@ -48,7 +48,7 @@
     "autoprefixer": "^10.4.0",
     "concurrently": "^6.5.1",
     "cross-env": "^7.0.3",
-    "cypress": "^8.7.0",
+    "cypress": "^9.2.0",
     "esbuild": "^0.14.8",
     "eslint": "^8.3.0",
     "eslint-config-prettier": "^8.3.0",

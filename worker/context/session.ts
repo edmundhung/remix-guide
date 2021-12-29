@@ -10,32 +10,10 @@ export function createSession(
   env: Env,
   ctx: ExecutionContext
 ) {
-  if (
-    !env.GITHUB_CLIENT_ID ||
-    !env.GITHUB_CLIENT_SECRET ||
-    !env.GITHUB_CALLBACK_URL ||
-    !env.SESSION_SECERTS
-  ) {
-    env.LOGGER?.warn(
-      'Fail creating the session context; Some env variables are missing'
+  if (!env.SESSION_SECERTS) {
+    throw new Error(
+      'Fail initialising the session storge; SESSION_SECERTS is missing'
     );
-    return {
-      login() {
-        return redirect('/');
-      },
-      logout() {
-        return redirect('/');
-      },
-      isAuthenticated() {
-        return null;
-      },
-      getFlashMessage() {
-        return [null, {}];
-      },
-      commitWithFlashMessage() {
-        return {};
-      },
-    };
   }
 
   let sessionStorage = createCookieSessionStorage({
@@ -48,9 +26,18 @@ export function createSession(
       secure: process.env.NODE_ENV === 'production',
     },
   });
-  let authenticator = new Authenticator<UserProfile>(sessionStorage, {
-    sessionKey: 'user',
-  });
+
+  let authenticator = new Authenticator<UserProfile>(sessionStorage);
+
+  if (
+    !env.GITHUB_CLIENT_ID ||
+    !env.GITHUB_CLIENT_SECRET ||
+    !env.GITHUB_CALLBACK_URL
+  ) {
+    throw new Error(
+      'Fail initialising the GitHub strategy; Some env variables are missing'
+    );
+  }
 
   authenticator.use(
     new GitHubStrategy(

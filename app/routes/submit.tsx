@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import type { ActionFunction } from 'remix';
+import type { LoaderFunction, ActionFunction } from 'remix';
 import { Form, redirect, json, useLoaderData } from 'remix';
 import CategoryIcon from '~/components/CategoryIcon';
 import Panel from '~/components/Panel';
@@ -203,10 +203,13 @@ export default function Submit() {
           </div>
           {selected === null ? null : (
             <div className="py-8">
-              <div className="pb-4">Then, paste the URL here</div>
+              <label htmlFor="url" className="block pb-4">
+                Then, paste the URL here
+              </label>
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1">
                   <input
+                    id="url"
                     name="url"
                     type="text"
                     className="w-full h-8 px-4 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
