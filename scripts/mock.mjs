@@ -1,7 +1,7 @@
 import { MockAgent, setGlobalDispatcher } from 'undici';
 
 export function setupMock() {
-  const mockAgent = new MockAgent({ connections: 1 });
+  const mockAgent = new MockAgent();
 
   setGlobalDispatcher(mockAgent);
 
@@ -34,7 +34,7 @@ export function setupMock() {
     })
     .reply(200, {
       id: 'dev',
-      login: 'RemixGuideDev',
+      login: 'edmundhung',
       name: 'Remix Guide Developer',
       email: 'dev@remix.guide',
       avatar_url: null,
