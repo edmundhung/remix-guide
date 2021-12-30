@@ -1,4 +1,5 @@
 {
-  "baseUrl": "http://localhost:8787",
-  "projectId": "yneac7"
+  "baseUrl": "https://localhost:8787",
+  "projectId": "yneac7",
+  "chromeWebSecurity": false
 }
