@@ -31,4 +31,5 @@ export const maintainers = [
   'jacob-ebey',
   'mcansh',
   'kiliman',
+  'benborgers',
 ];
