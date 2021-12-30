@@ -6,7 +6,7 @@ export function setupMock() {
   setGlobalDispatcher(mockAgent);
 
   // Optional: This makes all the request fails if no matching mock is found
-  mockAgent.disableNetConnect();
+  //   mockAgent.disableNetConnect();
 
   // Create MockClient by origin
   const github = mockAgent.get('https://github.com');
