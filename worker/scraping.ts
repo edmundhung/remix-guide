@@ -436,26 +436,26 @@ async function getAdditionalMetadata(
   packages: string[],
   env: Env
 ): Promise<Page> {
-  if (!env.GITHUB_TOKEN) {
-    throw new Error(
-      'Error capturing additonal metadata; GITHUB_TOKEN is not available'
-    );
-  }
-
-  if (!env.YOUTUBE_API_KEY) {
-    throw new Error(
-      'Error capturing additonal metadata; YOUTUBE_API_KEY is not available'
-    );
-  }
-
   let metadata: Partial<Page> | null = null;
 
   switch (page.siteName) {
     case 'npm': {
+      if (!env.GITHUB_TOKEN) {
+        throw new Error(
+          'Error capturing NPM metadata; GITHUB_TOKEN is not available'
+        );
+      }
+
       metadata = await parseNpmPackage(page.title, packages, env.GITHUB_TOKEN);
       break;
     }
     case 'GitHub': {
+      if (!env.GITHUB_TOKEN) {
+        throw new Error(
+          'Error capturing GitHub metadata; GITHUB_TOKEN is not available'
+        );
+      }
+
       const [repo] = page.title.replace('GitHub - ', '').split(':');
 
       metadata = await parseGithubRepository(repo, packages, env.GITHUB_TOKEN);
@@ -473,6 +473,12 @@ async function getAdditionalMetadata(
       break;
     }
     case 'YouTube': {
+      if (!env.YOUTUBE_API_KEY) {
+        throw new Error(
+          'Error capturing YouTube metadata; YOUTUBE_API_KEY is not available'
+        );
+      }
+
       const videoId = new URL(page.url).searchParams.get('v');
 
       metadata = await parseYouTubeVideo(videoId, env.YOUTUBE_API_KEY);

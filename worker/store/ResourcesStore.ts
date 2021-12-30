@@ -98,11 +98,22 @@ export class ResourcesStore {
             }
 
             const page = await scrapeHTML(resource.url, userAgent);
-            const data = await getAdditionalMetadata(
-              page,
-              Object.keys(this.resourceIdByPackageName),
-              this.env
-            );
+
+            let data: Page | null;
+
+            try {
+              data = await getAdditionalMetadata(
+                page,
+                Object.keys(this.resourceIdByPackageName),
+                this.env
+              );
+            } catch (e) {
+              if (e instanceof Error) {
+                logger.error(e);
+              }
+
+              data = null;
+            }
 
             await this.updateResource({
               ...resource,

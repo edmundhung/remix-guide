@@ -23,7 +23,7 @@ export function createSession(
       path: '/',
       sameSite: 'lax',
       secrets: env.SESSION_SECERTS.split(','),
-      secure: process.env.NODE_ENV === 'production',
+      secure: env.GITHUB_CALLBACK_URL?.startsWith('https') ?? false,
     },
   });
 
