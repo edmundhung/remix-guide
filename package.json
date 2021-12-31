@@ -17,8 +17,7 @@
     "dev": "concurrently \"npm:dev:*\"",
     "postinstall": "remix setup cloudflare-pages",
     "prebuild": "npm run cleanup",
-    "test:cypress": "cypress run",
-    "test": "start-server-and-test http://localhost:8787 test:cypress",
+    "test": "NODE_OPTIONS=\"--experimental-vm-modules --no-warnings\" playwright test",
     "start": "node --experimental-vm-modules ./scripts/preview.mjs",
     "prepare": "husky install"
   },
@@ -38,6 +37,8 @@
   "devDependencies": {
     "@cloudflare/workers-types": "^3.3.0",
     "@cloudflare/wrangler": "^1.19.6",
+    "@playwright-testing-library/test": "^4.0.1",
+    "@playwright/test": "^1.17.1",
     "@remix-run/dev": "^1.1.1",
     "@tailwindcss/aspect-ratio": "^0.4.0",
     "@tailwindcss/line-clamp": "^0.3.0",
