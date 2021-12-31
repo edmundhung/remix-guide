@@ -167,12 +167,15 @@ async function getPackageInfo(packageName: string) {
   return await response.json();
 }
 
-async function getGithubRepositoryMetadata(repo: string, token: string) {
+async function getGithubRepositoryMetadata(
+  repo: string,
+  token: string | undefined
+) {
   const response = await fetch(`https://api.github.com/repos/${repo}`, {
     headers: {
       Accept: 'application/vnd.github.v3+json',
       'User-Agent': 'remix-guide',
-      Authorization: `token ${token}`,
+      Authorization: token ? `token ${token}` : '',
     },
   });
 
@@ -185,7 +188,7 @@ async function getGithubRepositoryMetadata(repo: string, token: string) {
 
 async function getGithubRepositoryFiles(
   repo: string,
-  token: string,
+  token: string | undefined,
   path = ''
 ) {
   const response = await fetch(
@@ -194,7 +197,7 @@ async function getGithubRepositoryFiles(
       headers: {
         Accept: 'application/vnd.github.v3+json',
         'User-Agent': 'remix-guide',
-        Authorization: `token ${token}`,
+        Authorization: token ? `token ${token}` : '',
       },
     }
   );
@@ -308,7 +311,7 @@ function getIntegrations(
 async function parseGithubRepository(
   repo: string,
   packages: string[],
-  token: string
+  token: string | undefined
 ): Partial<Page> | null {
   const [metadata, files] = await Promise.all([
     getGithubRepositoryMetadata(repo, token),
@@ -337,7 +340,7 @@ async function parseGithubRepository(
 async function parseNpmPackage(
   packageName: string,
   packages: string[],
-  githubToken: string
+  githubToken: string | undefined
 ): Partial<Page> {
   const info = await getPackageInfo(packageName);
 
@@ -440,22 +443,10 @@ async function getAdditionalMetadata(
 
   switch (page.siteName) {
     case 'npm': {
-      if (!env.GITHUB_TOKEN) {
-        throw new Error(
-          'Error capturing NPM metadata; GITHUB_TOKEN is not available'
-        );
-      }
-
       metadata = await parseNpmPackage(page.title, packages, env.GITHUB_TOKEN);
       break;
     }
     case 'GitHub': {
-      if (!env.GITHUB_TOKEN) {
-        throw new Error(
-          'Error capturing GitHub metadata; GITHUB_TOKEN is not available'
-        );
-      }
-
       const [repo] = page.title.replace('GitHub - ', '').split(':');
 
       metadata = await parseGithubRepository(repo, packages, env.GITHUB_TOKEN);
