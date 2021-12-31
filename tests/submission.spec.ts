@@ -119,6 +119,35 @@ test.describe('Submission', () => {
       expect(new URL(page.url()).pathname).not.toBe('/submit');
     });
 
+    test('accepts the url as packages only if the site name is npm', async ({
+      page,
+      queries,
+    }) => {
+      await submitURL(
+        page,
+        'https://github.com/sergiodxa/remix-auth',
+        'packages'
+      );
+
+      expect(
+        await queries.findByText(
+          /The provided data looks invalid; Please make sure a proper category is selected/i
+        )
+      ).toBeDefined();
+      expect(new URL(page.url()).pathname).toBe('/submit');
+
+      await submitURL(
+        page,
+        'https://www.npmjs.com/package/remix-auth',
+        'packages'
+      );
+
+      expect(
+        await queries.findByText(/The submitted resource is now published/i)
+      ).toBeDefined();
+      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    });
+
     test('accepts the url as examples only if remix is listed on the dependencies', async ({
       page,
       queries,
@@ -141,6 +170,15 @@ test.describe('Submission', () => {
         'https://github.com/edmundhung/remix-guide',
         'examples'
       );
+
+      expect(
+        await queries.findByText(/The submitted resource is now published/i)
+      ).toBeDefined();
+      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    });
+
+    test('accepts any url as others', async ({ page, queries }) => {
+      await submitURL(page, 'http://example.com/', 'others');
 
       expect(
         await queries.findByText(/The submitted resource is now published/i)
