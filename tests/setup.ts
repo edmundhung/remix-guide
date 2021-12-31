@@ -90,6 +90,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 
   // Assign a unique "port" for each worker process
   port: [
+    // eslint-disable-next-line no-empty-pattern
     async ({}, use, workerInfo) => {
       await use(3000 + workerInfo.workerIndex);
     },
@@ -102,6 +103,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   },
 
   mockAgent: [
+    // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
       const mockAgent = new MockAgent();
       setGlobalDispatcher(mockAgent);
