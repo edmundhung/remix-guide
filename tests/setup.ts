@@ -117,6 +117,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
   mf: [
     async ({ port }, use) => {
       const mf = new Miniflare({
+        envPath: true,
         wranglerConfigPath: true,
         buildCommand: undefined,
         bindings: {
