@@ -1,5 +1,6 @@
 import { test, expect } from './setup';
 import {
+  login,
   submitURL,
   mockPage,
   mockGitHubMetadata,
@@ -28,10 +29,10 @@ test.describe.parallel('Permission', () => {
     ).toBeDefined();
   });
 
-  test('fails as a user', async ({ page, queries, mockAgent, login }) => {
+  test('fails as a user', async ({ page, queries, mockAgent }) => {
     const url = 'http://example.com/user';
 
-    await login('github-username');
+    await login(page, mockAgent, 'github-username');
     await page.goto('/submit');
 
     mockPage(mockAgent, url);
@@ -45,10 +46,10 @@ test.describe.parallel('Permission', () => {
     ).toBeDefined();
   });
 
-  test('success as an admin', async ({ page, queries, mockAgent, login }) => {
+  test('success as an admin', async ({ page, queries, mockAgent }) => {
     const url = 'http://example.com/admin';
 
-    await login('edmundhung');
+    await login(page, mockAgent, 'edmundhung');
     await page.goto('/submit');
 
     mockPage(mockAgent, url);
@@ -62,9 +63,9 @@ test.describe.parallel('Permission', () => {
 });
 
 test.describe.parallel('Workflow', () => {
-  test.beforeEach(async ({ page, login }) => {
+  test.beforeEach(async ({ page, mockAgent }) => {
     await page.goto('/');
-    await login('edmundhung');
+    await login(page, mockAgent);
     await page.goto('/submit');
   });
 
@@ -156,9 +157,9 @@ test.describe.parallel('Workflow', () => {
 });
 
 test.describe.parallel('Scraping', () => {
-  test.beforeEach(async ({ page, login }) => {
+  test.beforeEach(async ({ page, mockAgent }) => {
     await page.goto('/');
-    await login('edmundhung');
+    await login(page, mockAgent);
     await page.goto('/submit');
   });
 
