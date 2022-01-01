@@ -6,6 +6,7 @@ import {
   getResource,
   getPageResourceId,
   mockNpmMetadata,
+  getPageURL,
 } from './utils';
 
 test.describe.parallel('Permission', () => {
@@ -86,7 +87,7 @@ test.describe.parallel('Workflow', () => {
         /Something wrong with the URL; Please try again later/i
       )
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(getPageURL(page).pathname).toBe('/submit');
   });
 
   test('shows error message if the url returns 500', async ({
@@ -108,7 +109,7 @@ test.describe.parallel('Workflow', () => {
         /Something wrong with the URL; Please try again later/i
       )
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(getPageURL(page).pathname).toBe('/submit');
   });
 
   test('redirects user to the resources page if success', async ({
@@ -128,7 +129,7 @@ test.describe.parallel('Workflow', () => {
     expect(
       await queries.findByText(/The submitted resource is now published/i)
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(getPageURL(page).pathname).not.toBe('/submit');
   });
 
   test('redirects user to the resources page if the URL is already submitted', async ({
@@ -150,7 +151,7 @@ test.describe.parallel('Workflow', () => {
     expect(
       await queries.findByText(/A resource with the same url is found/i)
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(getPageURL(page).pathname).not.toBe('/submit');
   });
 });
 
@@ -210,7 +211,7 @@ test.describe.parallel('Scraping', () => {
         /The provided data looks invalid; Please make sure a proper category is selected/i
       )
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(getPageURL(page).pathname).toBe('/submit');
 
     const remixRelatedURL = 'http://example.com/remix';
 
@@ -224,7 +225,7 @@ test.describe.parallel('Scraping', () => {
     expect(
       await queries.findByText(/The submitted resource is now published/i)
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(getPageURL(page).pathname).not.toBe('/submit');
   });
 
   test('accepts the url as packages only if the site name is `npm` and the package name includes `remix`', async ({
@@ -250,7 +251,7 @@ test.describe.parallel('Scraping', () => {
         /The provided data looks invalid; Please make sure a proper category is selected/i
       )
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(getPageURL(page).pathname).toBe('/submit');
 
     mockPage(mockAgent, url, {
       status: 200,
@@ -266,7 +267,7 @@ test.describe.parallel('Scraping', () => {
     expect(
       await queries.findByText(/The submitted resource is now published/i)
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(getPageURL(page).pathname).not.toBe('/submit');
   });
 
   test('accepts the url as examples only if remix is listed on the dependencies', async ({
@@ -296,7 +297,7 @@ test.describe.parallel('Scraping', () => {
         /The provided data looks invalid; Please make sure a proper category is selected/i
       )
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(getPageURL(page).pathname).toBe('/submit');
 
     mockPage(mockAgent, url, {
       status: 200,
@@ -317,7 +318,7 @@ test.describe.parallel('Scraping', () => {
     expect(
       await queries.findByText(/The submitted resource is now published/i)
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(getPageURL(page).pathname).not.toBe('/submit');
   });
 
   test('accepts any url as others', async ({ page, queries, mockAgent }) => {
@@ -332,6 +333,6 @@ test.describe.parallel('Scraping', () => {
     expect(
       await queries.findByText(/The submitted resource is now published/i)
     ).toBeDefined();
-    expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(getPageURL(page).pathname).not.toBe('/submit');
   });
 });
