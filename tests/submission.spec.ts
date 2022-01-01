@@ -1,31 +1,5 @@
 import { test, expect } from './setup';
-import { queries } from '@playwright-testing-library/test';
-import { Page } from 'playwright-core';
-
-async function submitURL(page: Page, url: string, category = 'others') {
-  const $form = await page.$('form[action="/submit"]');
-
-  if (!$form) {
-    throw new Error('Fail to locate the submission form');
-  }
-
-  const option = await queries.findByText($form, category, { exact: false });
-
-  await option.click();
-
-  const input = await queries.findByLabelText(
-    $form,
-    /Then, paste the URL here/i
-  );
-
-  await input.fill(url);
-
-  const submitButton = await queries.findByRole($form, 'button', {
-    name: /Submit/i,
-  });
-
-  await submitButton.click();
-}
+import { submitURL, mockPage, getResource, getPageResourceId } from './utils';
 
 test.describe('Submission', () => {
   test.beforeEach(async ({ page }) => {
@@ -50,6 +24,34 @@ test.describe('Submission', () => {
     test.beforeEach(async ({ page, login }) => {
       await login();
       await page.goto('/submit');
+    });
+
+    test('it scrapes the submitted URL', async ({ page, mf, mockAgent }) => {
+      const url = 'http://example.com/remix-guide';
+      const title = 'test';
+      const description = 'abcd';
+
+      mockPage(mockAgent, url, {
+        status: 200,
+        head: `
+          <meta property="og:title" content="${title}" />
+          <meta property="og:description" content="${description}" />
+          <link rel="canonical" href="${url}" />
+        `,
+      });
+
+      await submitURL(page, url);
+
+      const resourceId = getPageResourceId(page);
+      const resource = await getResource(mf, resourceId);
+
+      expect(resource).toMatchObject({
+        title,
+        description,
+        image: null,
+        siteName: null,
+        url,
+      });
     });
 
     test('redirects user to the resource page if the submission is success', async ({
