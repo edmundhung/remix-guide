@@ -2,7 +2,7 @@ import type { Miniflare } from 'miniflare';
 import type { Page } from 'playwright-core';
 import type { MockAgent } from 'undici';
 import { queries } from '@playwright-testing-library/test';
-import type { Resource } from '../worker/types';
+import type { Resource, ResourceMetadata } from '../worker/types';
 
 export async function submitURL(page: Page, url: string, category = 'others') {
   const $form = await page.$('form[action="/submit"]');
@@ -160,6 +160,19 @@ export async function getResource(mf: Miniflare, resourceId: string) {
   return resource;
 }
 
+export async function listResourcesMetadata(mf: Miniflare) {
+  const content = await mf.getKVNamespace('CONTENT');
+  const resources = await content.list<ResourceMetadata>({
+    prefix: 'resources/',
+  });
+
+  return resources.keys.flatMap((key) => key.metadata ?? []);
+}
+
 export function getPageResourceId(page: Page): string {
   return new URL(page.url()).pathname.replace('/resources/', '');
+}
+
+export function getPageURL(page: Page): URL {
+  return new URL(page.url());
 }

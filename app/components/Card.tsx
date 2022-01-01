@@ -18,6 +18,7 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
             ? 'shadow-inner bg-gray-800'
             : 'hover:shadow-inner hover:bg-gray-900'
         }`}
+        title={entry.title}
         to={
           search ? `/resources/${entry.id}?${search}` : `/resources/${entry.id}`
         }
