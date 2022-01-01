@@ -131,14 +131,14 @@ export function mockYouTubeMetadata(
 export function mockPage(
   mockAgent: MockAgent,
   urlText: string,
-  options: { status?: number; head?: string; body?: string }
+  options?: { status?: number; head?: string; body?: string }
 ) {
   const url = new URL(urlText);
   const client = mockAgent.get(url.origin);
   const html = `
         <html>
-            <head>${options.head}</head>
-            <body>${options.body}</body>
+            <head>${options?.head}</head>
+            <body>${options?.body}</body>
         </html>
     `;
 
@@ -147,7 +147,7 @@ export function mockPage(
       path: urlText.replace(url.origin, ''),
       method: 'GET',
     })
-    .reply(options.status ?? 200, html);
+    .reply(options?.status ?? 200, html);
 }
 
 export async function getResource(mf: Miniflare, resourceId: string) {

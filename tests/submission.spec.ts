@@ -13,8 +13,12 @@ test.describe.parallel('Permission', () => {
     await page.goto('/submit');
   });
 
-  test('fails as a guest', async ({ page, baseURL, queries }) => {
-    await submitURL(page, `${baseURL}`);
+  test('fails as a guest', async ({ page, queries, mockAgent }) => {
+    const url = 'http://example.com/guest';
+
+    mockPage(mockAgent, url);
+
+    await submitURL(page, url);
 
     expect(
       await queries.findByText(
@@ -23,10 +27,15 @@ test.describe.parallel('Permission', () => {
     ).toBeDefined();
   });
 
-  test('fails as a user', async ({ page, baseURL, queries, login }) => {
+  test('fails as a user', async ({ page, queries, mockAgent, login }) => {
+    const url = 'http://example.com/user';
+
     await login('github-username');
     await page.goto('/submit');
-    await submitURL(page, `${baseURL}`);
+
+    mockPage(mockAgent, url);
+
+    await submitURL(page, url);
 
     expect(
       await queries.findByText(
@@ -35,10 +44,15 @@ test.describe.parallel('Permission', () => {
     ).toBeDefined();
   });
 
-  test('success as an admin', async ({ page, baseURL, queries, login }) => {
+  test('success as an admin', async ({ page, queries, mockAgent, login }) => {
+    const url = 'http://example.com/admin';
+
     await login('edmundhung');
     await page.goto('/submit');
-    await submitURL(page, `${baseURL}`);
+
+    mockPage(mockAgent, url);
+
+    await submitURL(page, url);
 
     expect(
       await queries.findByText(/The submitted resource is now published/i)
@@ -60,14 +74,10 @@ test.describe.parallel('Workflow', () => {
   }) => {
     const url = 'http://example.com/url-not-found';
 
-    mockPage(mockAgent, url, {
-      status: 404,
-      head: `
-        <meta property="og:title" content="Oops" />
-        <meta property="og:description" content="Not Found" />
-        <link rel="canonical" href="${url}" />
-      `,
-    });
+    mockPage(mockAgent, url, { status: 404 });
+
+    // FIXME: It crash if disabled
+    mockAgent.enableNetConnect();
 
     await submitURL(page, url);
 
@@ -86,14 +96,10 @@ test.describe.parallel('Workflow', () => {
   }) => {
     const url = 'http://example.com/url-server-error';
 
-    mockPage(mockAgent, url, {
-      status: 500,
-      head: `
-        <meta property="og:title" content="Oops" />
-        <meta property="og:description" content="Server Error" />
-        <link rel="canonical" href="${url}" />
-      `,
-    });
+    mockPage(mockAgent, url, { status: 500 });
+
+    // FIXME: It crash if disabled
+    mockAgent.enableNetConnect();
 
     await submitURL(page, url);
 
@@ -128,11 +134,18 @@ test.describe.parallel('Workflow', () => {
   test('redirects user to the resources page if the URL is already submitted', async ({
     page,
     queries,
-    baseURL,
+    mockAgent,
   }) => {
-    await submitURL(page, `${baseURL}`);
+    const url = 'http://example.com/submitted';
+
+    mockPage(mockAgent, url);
+
+    await submitURL(page, url);
     await page.goto('/submit');
-    await submitURL(page, `${baseURL}`);
+
+    mockPage(mockAgent, url);
+
+    await submitURL(page, url);
 
     expect(
       await queries.findByText(/A resource with the same url is found/i)
