@@ -1,16 +1,19 @@
 import { test, expect } from './setup';
-import { submitURL, mockPage, getResource, getPageResourceId } from './utils';
+import {
+  submitURL,
+  mockPage,
+  mockGitHubMetadata,
+  getResource,
+  getPageResourceId,
+  mockNpmMetadata,
+} from './utils';
 
-test.describe('Submission', () => {
+test.describe.parallel('Permission', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/submit');
   });
 
-  test('shows an error message if user is unauthenticated', async ({
-    page,
-    baseURL,
-    queries,
-  }) => {
+  test('fails as a guest', async ({ page, baseURL, queries }) => {
     await submitURL(page, `${baseURL}`);
 
     expect(
@@ -20,172 +23,302 @@ test.describe('Submission', () => {
     ).toBeDefined();
   });
 
-  test.describe.parallel('When authenticated', () => {
-    test.beforeEach(async ({ page, login }) => {
-      await login();
-      await page.goto('/submit');
+  test('fails as a user', async ({ page, baseURL, queries, login }) => {
+    await login('github-username');
+    await page.goto('/submit');
+    await submitURL(page, `${baseURL}`);
+
+    expect(
+      await queries.findByText(
+        /This feature is not enabled on your account yet/i
+      )
+    ).toBeDefined();
+  });
+
+  test('success as an admin', async ({ page, baseURL, queries, login }) => {
+    await login('edmundhung');
+    await page.goto('/submit');
+    await submitURL(page, `${baseURL}`);
+
+    expect(
+      await queries.findByText(/The submitted resource is now published/i)
+    ).toBeDefined();
+  });
+});
+
+test.describe.parallel('Workflow', () => {
+  test.beforeEach(async ({ page, login }) => {
+    await page.goto('/');
+    await login('edmundhung');
+    await page.goto('/submit');
+  });
+
+  test('shows error message if the url returns 404', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/url-not-found';
+
+    mockPage(mockAgent, url, {
+      status: 404,
+      head: `
+        <meta property="og:title" content="Oops" />
+        <meta property="og:description" content="Not Found" />
+        <link rel="canonical" href="${url}" />
+      `,
     });
 
-    test('it scrapes the submitted URL', async ({ page, mf, mockAgent }) => {
-      const url = 'http://example.com/remix-guide';
-      const title = 'test';
-      const description = 'abcd';
+    await submitURL(page, url);
 
-      mockPage(mockAgent, url, {
-        status: 200,
-        head: `
-          <meta property="og:title" content="${title}" />
-          <meta property="og:description" content="${description}" />
-          <link rel="canonical" href="${url}" />
-        `,
-      });
+    expect(
+      await queries.findByText(
+        /Something wrong with the URL; Please try again later/i
+      )
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).toBe('/submit');
+  });
 
-      await submitURL(page, url);
+  test('shows error message if the url returns 500', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/url-server-error';
 
-      const resourceId = getPageResourceId(page);
-      const resource = await getResource(mf, resourceId);
-
-      expect(resource).toMatchObject({
-        title,
-        description,
-        image: null,
-        siteName: null,
-        url,
-      });
+    mockPage(mockAgent, url, {
+      status: 500,
+      head: `
+        <meta property="og:title" content="Oops" />
+        <meta property="og:description" content="Server Error" />
+        <link rel="canonical" href="${url}" />
+      `,
     });
 
-    test('redirects user to the resource page if the submission is success', async ({
-      page,
-      queries,
-      baseURL,
-    }) => {
-      await submitURL(page, `${baseURL}`);
+    await submitURL(page, url);
 
-      expect(
-        await queries.findByText(/The submitted resource is now published/i)
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(
+      await queries.findByText(
+        /Something wrong with the URL; Please try again later/i
+      )
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).toBe('/submit');
+  });
+
+  test('redirects user to the resources page if success', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/success';
+
+    mockPage(mockAgent, url, {
+      status: 200,
+      head: `<title>Test sucess</title>`,
     });
 
-    test('redirects user to the resource page even the URL is submitted already', async ({
-      page,
-      queries,
-      baseURL,
-    }) => {
-      const url = `${baseURL}/submit`;
+    await submitURL(page, url);
 
-      await submitURL(page, url, 'others');
-      await page.goto('/submit');
-      await submitURL(page, url, 'tutorials'); // Category doesn't matter in this case
+    expect(
+      await queries.findByText(/The submitted resource is now published/i)
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).not.toBe('/submit');
+  });
 
-      expect(
-        await queries.findByText(/A resource with the same url is found/i)
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).not.toBe('/submit');
+  test('redirects user to the resources page if the URL is already submitted', async ({
+    page,
+    queries,
+    baseURL,
+  }) => {
+    await submitURL(page, `${baseURL}`);
+    await page.goto('/submit');
+    await submitURL(page, `${baseURL}`);
+
+    expect(
+      await queries.findByText(/A resource with the same url is found/i)
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).not.toBe('/submit');
+  });
+});
+
+test.describe.parallel('Scraping', () => {
+  test.beforeEach(async ({ page, login }) => {
+    await page.goto('/');
+    await login('edmundhung');
+    await page.goto('/submit');
+  });
+
+  test('scrapes the URL for basic details', async ({ page, mf, mockAgent }) => {
+    const url = 'http://example.com/remix-guide';
+    const title = 'test';
+    const description = 'abcd';
+    const siteName = 'hijk';
+
+    mockPage(mockAgent, url, {
+      status: 200,
+      head: `
+        <meta property="og:title" content="${title}" />
+        <meta property="og:description" content="${description}" />
+        <meta property="og:site_name" content="${siteName}" />
+        <link rel="canonical" href="${url}" />
+      `,
     });
 
-    test('shows an error message if the url is unreachable', async ({
-      page,
-      baseURL,
-      queries,
-    }) => {
-      await submitURL(page, `${baseURL}/url-we-never-use`, 'tutorials');
+    await submitURL(page, url);
 
-      expect(
-        await queries.findByText(
-          /Something wrong with the URL; Please try again later/i
-        )
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).toBe('/submit');
+    const resourceId = getPageResourceId(page);
+    const resource = await getResource(mf, resourceId);
+
+    expect(resource).toMatchObject({
+      category: 'others',
+      title,
+      description,
+      siteName,
+      image: null,
+      url,
+    });
+  });
+
+  test('accepts the url as tutorials only if the term `remix` show up on the title or description of the page', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/hello-world';
+
+    mockPage(mockAgent, url, {
+      status: 200,
     });
 
-    test('accepts the url as tutorials only if the term `remix` show up on the title or description of the page', async ({
-      page,
-      baseURL,
-      queries,
-    }) => {
-      await submitURL(page, 'https://google.com', 'tutorials');
+    await submitURL(page, url, 'tutorials');
 
-      expect(
-        await queries.findByText(
-          /The provided data looks invalid; Please make sure a proper category is selected/i
-        )
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(
+      await queries.findByText(
+        /The provided data looks invalid; Please make sure a proper category is selected/i
+      )
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).toBe('/submit');
 
-      await submitURL(page, `${baseURL}/resources`, 'tutorials');
+    const remixRelatedURL = 'http://example.com/remix';
 
-      expect(
-        await queries.findByText(/The submitted resource is now published/i)
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    mockPage(mockAgent, remixRelatedURL, {
+      status: 200,
+      head: `<title>Remix example</title>`,
     });
 
-    test('accepts the url as packages only if the site name is npm', async ({
-      page,
-      queries,
-    }) => {
-      await submitURL(
-        page,
-        'https://github.com/sergiodxa/remix-auth',
-        'packages'
-      );
+    await submitURL(page, remixRelatedURL, 'tutorials');
 
-      expect(
-        await queries.findByText(
-          /The provided data looks invalid; Please make sure a proper category is selected/i
-        )
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).toBe('/submit');
+    expect(
+      await queries.findByText(/The submitted resource is now published/i)
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).not.toBe('/submit');
+  });
 
-      await submitURL(
-        page,
-        'https://www.npmjs.com/package/remix-auth',
-        'packages'
-      );
+  test('accepts the url as packages only if the site name is `npm` and the package name includes `remix`', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/packages-registry';
 
-      expect(
-        await queries.findByText(/The submitted resource is now published/i)
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    mockPage(mockAgent, url, {
+      status: 200,
+      head: `
+        <title>@random/some-package</title>
+        <meta property="og:site_name" content="npm" />
+      `,
+    });
+    mockNpmMetadata(mockAgent, '@random/some-package');
+
+    await submitURL(page, url, 'packages');
+
+    expect(
+      await queries.findByText(
+        /The provided data looks invalid; Please make sure a proper category is selected/i
+      )
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).toBe('/submit');
+
+    mockPage(mockAgent, url, {
+      status: 200,
+      head: `
+        <title>@random/remix-package</title>
+        <meta property="og:site_name" content="npm" />
+      `,
+    });
+    mockNpmMetadata(mockAgent, '@random/remix-package');
+
+    await submitURL(page, url, 'packages');
+
+    expect(
+      await queries.findByText(/The submitted resource is now published/i)
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).not.toBe('/submit');
+  });
+
+  test('accepts the url as examples only if remix is listed on the dependencies', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/random-repository';
+
+    mockPage(mockAgent, url, {
+      status: 200,
+      head: `
+        <title>random/repository: Some description here</title>
+        <meta property="og:site_name" content="GitHub" />
+      `,
     });
 
-    test('accepts the url as examples only if remix is listed on the dependencies', async ({
-      page,
-      queries,
-    }) => {
-      await submitURL(
-        page,
-        'https://github.com/remix-run/react-router',
-        'examples'
-      );
-
-      expect(
-        await queries.findByText(
-          /The provided data looks invalid; Please make sure a proper category is selected/i
-        )
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).toBe('/submit');
-
-      await submitURL(
-        page,
-        'https://github.com/edmundhung/remix-guide',
-        'examples'
-      );
-
-      expect(
-        await queries.findByText(/The submitted resource is now published/i)
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    mockGitHubMetadata(mockAgent, 'random/repository', {
+      dependencies: {},
+      devDependencies: {},
     });
 
-    test('accepts any url as others', async ({ page, queries }) => {
-      await submitURL(page, 'http://example.com/', 'others');
+    await submitURL(page, url, 'examples');
 
-      expect(
-        await queries.findByText(/The submitted resource is now published/i)
-      ).toBeDefined();
-      expect(new URL(page.url()).pathname).not.toBe('/submit');
+    expect(
+      await queries.findByText(
+        /The provided data looks invalid; Please make sure a proper category is selected/i
+      )
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).toBe('/submit');
+
+    mockPage(mockAgent, url, {
+      status: 200,
+      head: `
+        <title>random/repository: Some description here</title>
+        <meta property="og:site_name" content="GitHub" />
+      `,
     });
+
+    mockGitHubMetadata(mockAgent, 'random/repository', {
+      dependencies: {
+        remix: '1.0.0',
+      },
+    });
+
+    await submitURL(page, url, 'examples');
+
+    expect(
+      await queries.findByText(/The submitted resource is now published/i)
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).not.toBe('/submit');
+  });
+
+  test('accepts any url as others', async ({ page, queries, mockAgent }) => {
+    const url = 'http://example.com/others';
+
+    mockPage(mockAgent, url, {
+      status: 200,
+    });
+
+    await submitURL(page, url, 'others');
+
+    expect(
+      await queries.findByText(/The submitted resource is now published/i)
+    ).toBeDefined();
+    expect(new URL(page.url()).pathname).not.toBe('/submit');
   });
 });
