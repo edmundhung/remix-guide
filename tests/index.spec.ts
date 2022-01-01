@@ -4,12 +4,13 @@ import {
   listResourcesMetadata,
   mockPage,
   submitURL,
+  login,
 } from './utils';
 
 test.describe('Index', () => {
-  test.beforeEach(async ({ page, mockAgent, login }) => {
+  test.beforeEach(async ({ page, mockAgent }) => {
     await page.goto('/');
-    await login('edmundhung');
+    await login(page, mockAgent);
 
     for (let i = 1; i <= 3; i++) {
       await page.goto('/submit');
