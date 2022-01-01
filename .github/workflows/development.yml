@@ -28,8 +28,6 @@ jobs:
         run: npm run build
       - name: Run some tests
         run: npm run test
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   lint:
     name: 🕯 Checking the recipe
