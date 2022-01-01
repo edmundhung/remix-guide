@@ -30,7 +30,7 @@ jobs:
         run: npm run test
 
   lint:
-    name: 🕯 Checking the recipe
+    name: 🔍 Checking the recipes
     runs-on: ubuntu-latest
     steps:
       - name: Set up Node
@@ -55,7 +55,7 @@ jobs:
         run: npx eslint . --ext .js,.mjs,.ts,.tsx
 
   deploy:
-    name: 🛳️ Shiping something new
+    name: 🛳️ Shipping something new
     needs: [test, lint]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
