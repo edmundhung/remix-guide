@@ -8,12 +8,12 @@ import { MockAgent, setGlobalDispatcher } from 'undici';
 
 interface TestFixtures extends TestingLibraryFixtures {
   login: (name?: string) => Promise<void>;
+  mockAgent: MockAgent;
 }
 
 interface WorkerFixtures {
   mf: Miniflare;
   port: number;
-  mockAgent: MockAgent;
 }
 
 export { expect };
@@ -102,18 +102,15 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
     use(`http://localhost:${port}`);
   },
 
-  mockAgent: [
+  mockAgent:
     // eslint-disable-next-line no-empty-pattern
     async ({}, use) => {
       const mockAgent = new MockAgent();
+      mockAgent.disableNetConnect();
       setGlobalDispatcher(mockAgent);
 
       await use(mockAgent);
-
-      mockAgent.disableNetConnect();
     },
-    { scope: 'worker' },
-  ],
 
   // Miniflare instance
   mf: [
