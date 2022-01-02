@@ -11,9 +11,8 @@ node_modules
 # Tailwind
 /app/styles/tailwind.css
 
-# Cypress
-/cypress/videos
-/cypress/screenshots
+# Playwright
+/test-results
 
 # Miniflare
 /.mf
