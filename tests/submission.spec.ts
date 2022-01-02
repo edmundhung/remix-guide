@@ -214,14 +214,12 @@ test.describe.parallel('Scraping', () => {
     ).toBeDefined();
     expect(getPageURL(page).pathname).toBe('/submit');
 
-    const remixRelatedURL = 'http://example.com/remix';
-
-    mockPage(mockAgent, remixRelatedURL, {
+    mockPage(mockAgent, url, {
       status: 200,
       head: `<title>Remix example</title>`,
     });
 
-    await submitURL(page, remixRelatedURL, 'tutorials');
+    await submitURL(page, url, 'tutorials');
 
     expect(
       await queries.findByText(/The submitted resource is now published/i)
