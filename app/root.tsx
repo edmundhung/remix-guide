@@ -109,9 +109,11 @@ export default function App() {
         />
       </nav>
       {!isMenuOpened ? null : (
+        // eslint-disable-next-line jsx-a11y/anchor-has-content
         <Link
           className={`xl:hidden backdrop-filter z-30 absolute top-0 left-0 right-0 bottom-0 backdrop-blur-sm`}
           to={`?${searchWithMenuClosed}`}
+          title="Close menu"
           replace
         />
       )}

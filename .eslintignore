@@ -1,5 +1,8 @@
 /.cache
+/.github
+/.husky
 /build
-/public/build
+/public
+/node_modules
 /dist
 /app/styles/tailwind.css
