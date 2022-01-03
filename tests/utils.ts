@@ -1,8 +1,29 @@
 import type { Miniflare } from 'miniflare';
 import type { Page } from 'playwright-core';
 import type { MockAgent } from 'undici';
+import { createCookie } from '@remix-run/server-runtime';
+import { sign, unsign } from '@remix-run/node/cookieSigning';
 import { queries, getDocument } from '@playwright-testing-library/test';
 import type { Resource, ResourceMetadata } from '../worker/types';
+
+/**
+ * Simulate installGlobals from remix
+ * Required for createCookie
+ */
+global.sign = sign;
+global.unsign = unsign;
+
+export async function setSessionCookie(value: any) {
+  const cookie = createCookie('__session', {
+    httpOnly: true,
+    path: '/',
+    sameSite: 'lax',
+    secrets: ['ReMixGuIDe'],
+    secure: false,
+  });
+
+  return await cookie.serialize(value);
+}
 
 export async function login(
   page: Page,
@@ -42,28 +63,20 @@ export async function login(
       avatar_url: null,
     });
 
-  await page.route('/login', async (route, request) => {
-    // It seems like there is no way to intercept request in the middle of the redirect
-    // Due to limitation of the devtool protocol
-    // We expect the browser is already redirected to github login page after the request
-    const response = await page.request.fetch(request);
-    const responseURL = new URL(response.url());
-    const returnTo = responseURL.searchParams.get('return_to');
+  await page.route('/login', async (route) => {
+    // There is no way to intercept request in the middle of redirects
+    // Which is currently a limitation from the devtool protocol
+    // It is also slower if we mock the response after the page is redirected to github login page
+    // The current solution completely mock the `/login` route behaviour by setting the state cookie itself
 
-    // We need the `return_to` search params to find out all information we need
-    if (!returnTo) {
-      await route.abort();
-      return;
-    }
-
-    const url = new URL(decodeURIComponent(returnTo), responseURL.origin);
+    const url = getPageURL(page);
+    const state = 'build-better-website';
 
     route.fulfill({
       status: 302,
       headers: {
-        Location: `${url.searchParams.get(
-          'redirect_uri'
-        )}?code=remix-guide&state=${url.searchParams.get('state')}`,
+        'Set-Cookie': await setSessionCookie({ 'oauth2:state': state }),
+        Location: `${url.origin}/auth?code=remix-guide&state=${state}`,
       },
     });
   });
