@@ -1,6 +1,5 @@
-import manifest from '__STATIC_CONTENT_MANIFEST';
 import * as build from '../build/index.js';
-import { createFetchHandler } from './adapter';
+import { createFetchHandler, createWorkerAssetHandler } from './adapter';
 import { createContext } from './context';
 import { createLogger } from './logging.js';
 
@@ -9,10 +8,10 @@ export { ResourcesStore, UserStore } from './store';
 
 const handleFetch = createFetchHandler({
   build,
-  manifest,
   getLoadContext(request, env, ctx) {
     return createContext(request, env, ctx);
   },
+  handleAsset: createWorkerAssetHandler(build),
 });
 
 const worker: ExportedHandler = {
