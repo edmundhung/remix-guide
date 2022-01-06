@@ -18,6 +18,7 @@ import {
   json,
 } from 'remix';
 import { useMemo } from 'react';
+import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';
 import { categories, platforms, integrations } from '~/config';
 import type { Context } from '~/types';
@@ -97,6 +98,7 @@ export default function App() {
 
   return (
     <Document>
+      <Progress />
       <nav
         className={`${
           isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden'
