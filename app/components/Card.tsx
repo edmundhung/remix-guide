@@ -15,8 +15,8 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
       <Link
         className={`block rounded-lg no-underline ${
           selected
-            ? 'shadow-inner bg-gray-800'
-            : 'hover:shadow-inner hover:bg-gray-900'
+            ? 'shadow-inner bg-gray-700'
+            : 'hover:shadow-inner hover:bg-gray-800'
         }`}
         title={entry.title}
         to={
@@ -25,7 +25,7 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
         prefetch="intent"
       >
         <section className="px-2.5 py-2.5 text-sm">
-          <div className="text-xs pb-1.5 text-gray-500 flex flex-row gap-4">
+          <div className="text-xs pb-1.5 text-gray-400 flex flex-row gap-4">
             <span className="flex-1 truncate">
               <span className="capitalize">{entry.category}</span> /{' '}
               {getSite(entry.url)}

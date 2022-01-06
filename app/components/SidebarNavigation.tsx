@@ -27,7 +27,7 @@ function SearchInput({ name, value }: SearchInputProps): ReactElement {
   return (
     <div className="flex items-center text-xs">
       <input
-        className="h-8 w-full pr-10 pl-4 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
+        className="h-8 w-full pr-10 pl-4 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
         type="text"
         name={name}
         defaultValue={value ?? ''}
@@ -108,7 +108,7 @@ function LinkMenu({
 
   return (
     <details className="group" open={defaultOpen}>
-      <summary className="list-none cursor-pointer sticky top-0 bg-black py-2 text-xs text-gray-500">
+      <summary className="list-none cursor-pointer sticky top-0 bg-gray-900 py-2 text-xs text-gray-500">
         <div className="relative w-full px-3 py-1.5 flex flex-row items-center gap-4 rounded-lg">
           <span className="w-4 h-4 flex items-center justify-center">
             {children ? (
@@ -214,8 +214,8 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
   }, [location, name, value]);
   const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg ${
     isActive
-      ? 'shadow-inner bg-gray-800'
-      : 'hover:shadow-inner hover:bg-gray-900'
+      ? 'shadow-inner bg-gray-700'
+      : 'hover:shadow-inner hover:bg-gray-800'
   }`;
 
   if (/http:\/\/|https:\/\/|\/\//.test(to)) {

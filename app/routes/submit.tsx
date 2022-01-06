@@ -212,7 +212,7 @@ export default function Submit() {
                     id="url"
                     name="url"
                     type="text"
-                    className="w-full h-8 px-4 py-2 bg-black text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
+                    className="w-full h-8 px-4 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
                     placeholder={getPlaceholder(selected) ?? 'URL'}
                     autoFocus
                   />
