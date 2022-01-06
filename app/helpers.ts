@@ -4,30 +4,45 @@ export function notFound(): Response {
   return new Response(statusText, { status: 404, statusText });
 }
 
-export function formatMeta({
-  title,
-  description,
-  ...meta
-}: Record<string, string>) {
-  const descriptor = {
-    title: title !== 'Remix Guide' ? `${title} - Remix Guide` : title,
-    'og:title': title,
-    'twitter:title': title,
+export function formatMeta(meta: Record<string, string>) {
+  const descriptor: Record<string, string> = {
+    title: 'Remix Guide',
     'og:site_name': 'remix-guide',
     'og:type': 'website',
-    ...meta,
   };
 
-  if (description) {
-    descriptor['description'] = description;
-    descriptor['og:description'] = description;
-    descriptor['twitter:description'] = description;
+  for (const [key, value] of Object.entries(meta)) {
+    if (!key || !value) {
+      continue;
+    }
+
+    switch (key) {
+      case 'title': {
+        descriptor['title'] =
+          value === descriptor['title']
+            ? descriptor['title']
+            : `${value} - ${descriptor['title']}`;
+        descriptor['og:title'] = value;
+        descriptor['twitter:title'] = value;
+        break;
+      }
+      case 'description': {
+        descriptor['description'] = value;
+        descriptor['og:description'] = value;
+        descriptor['twitter:description'] = value;
+        break;
+      }
+      default: {
+        descriptor[key] = value;
+        break;
+      }
+    }
   }
 
   return descriptor;
 }
 
-export function capitalize(text: string | undefined): string | null {
+export function capitalize(text: string | null | undefined): string | null {
   if (!text) {
     return null;
   }
@@ -35,12 +50,15 @@ export function capitalize(text: string | undefined): string | null {
   return text[0].toUpperCase() + text.slice(1).toLowerCase();
 }
 
-export function throttle(callback, limit) {
-  let lastArgs = [];
+export function throttle<Arguments extends any[]>(
+  callback: (...args: Arguments) => void,
+  limit: number
+) {
+  let lastArgs = [] as unknown as Arguments;
   let waiting = false;
 
-  return function () {
-    lastArgs = Array.from(arguments);
+  return function (...args: Arguments): void {
+    lastArgs = Array.from(args) as Arguments;
 
     if (!waiting) {
       waiting = true;

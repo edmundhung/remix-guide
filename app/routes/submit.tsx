@@ -24,11 +24,11 @@ function isValidURL(text: string): boolean {
 }
 
 function isValidCategory(category: string): boolean {
-  return categories.includes(category);
+  return categories.includes(category as Category);
 }
 
-function getDescription(category: Category): string | null {
-  switch (category) {
+function getDescription(category: string): string | null {
+  switch (category as Category) {
     case 'tutorials':
       return 'Article, video or course teaching about Remix';
     case 'packages':
@@ -42,8 +42,8 @@ function getDescription(category: Category): string | null {
   return null;
 }
 
-function getPlaceholder(category: Category): string | null {
-  switch (category) {
+function getPlaceholder(category: string): string | null {
+  switch (category as Category) {
     case 'tutorials':
       return 'e.g. https://kentcdodds.com/blog/super-simple-start-to-remix';
     case 'packages':
@@ -80,7 +80,7 @@ export let action: ActionFunction = async ({ request, context }) => {
   const category = formData.get('category');
   const userAgent = request.headers.get('User-Agent');
 
-  if (!isValidCategory(category)) {
+  if (!category || !isValidCategory(category.toString())) {
     return redirect('/submit', {
       headers: await session.commitWithFlashMessage(
         'Invalid category provided',
@@ -89,7 +89,7 @@ export let action: ActionFunction = async ({ request, context }) => {
     });
   }
 
-  if (!isValidURL(url)) {
+  if (!url || !isValidURL(url.toString())) {
     return redirect('/submit', {
       headers: await session.commitWithFlashMessage(
         'Invalid url provided',
@@ -98,11 +98,20 @@ export let action: ActionFunction = async ({ request, context }) => {
     });
   }
 
+  if (!userAgent) {
+    return redirect('/submit', {
+      headers: await session.commitWithFlashMessage(
+        'User-Agent is missing from the request header',
+        'error'
+      ),
+    });
+  }
+
   try {
     const { id, status } = await store.submit(
-      url,
-      category,
-      userAgent,
+      url.toString(),
+      category.toString(),
+      userAgent.toString(),
       profile.id
     );
 

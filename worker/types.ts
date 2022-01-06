@@ -36,7 +36,7 @@ export interface Page {
   siteName?: string;
   author?: string;
   category?: Category;
-  title?: string;
+  title: string;
   description?: string;
   integrations?: string[];
   image?: string;

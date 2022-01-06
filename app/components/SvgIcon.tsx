@@ -1,6 +1,6 @@
 import type { ReactElement } from 'react';
 
-interface SvgIconProps extends SVGElement {
+interface SvgIconProps extends Partial<SVGElement> {
   href: string;
 }
 

@@ -97,12 +97,12 @@ export function createSession(
       );
       const message = session.get('message') ?? null;
       const setCookieHeader = !message
-        ? {}
+        ? null
         : {
             'Set-Cookie': await sessionStorage.commitSession(session),
           };
 
-      return [message, setCookieHeader];
+      return [message, setCookieHeader ?? {}];
     },
     async commitWithFlashMessage(
       message: string,

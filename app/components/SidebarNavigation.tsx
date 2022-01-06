@@ -70,7 +70,7 @@ interface MenuProps {
   title?: string;
   name?: string;
   to?: string;
-  value?: string | string[];
+  value?: string | string[] | null;
   defaultOpen?: boolean;
   children?: ReactNode;
 }
@@ -87,7 +87,9 @@ function LinkMenu({
   const search = useMemo(() => {
     const searchParams = getResourcesSearchParams(location.search);
 
-    searchParams.delete(name);
+    if (name) {
+      searchParams.delete(name);
+    }
 
     return searchParams.toString();
   }, [location.search, name]);
@@ -97,7 +99,7 @@ function LinkMenu({
       {Array.isArray(children) ? (
         children.map((child, i) => <li key={i}>{child}</li>)
       ) : (
-        <li key={i}>{children}</li>
+        <li>{children}</li>
       )}
     </ul>
   ) : null;
@@ -134,14 +136,16 @@ function LinkMenu({
               }`}
             >
               <span className="flex-1 w-px truncate break-words">
-                {[].concat(value).sort().join(', ')}
+                {([] as string[]).concat(value).sort().join(', ')}
               </span>
-              <Link
-                className="w-4 h-4 flex items-center justify-center hover:rounded-full hover:bg-gray-200 hover:text-black"
-                to={search ? `${to}?${search}` : to}
-              >
-                <SvgIcon className="w-3 h-3" href={timesIcon} />
-              </Link>
+              {to ? (
+                <Link
+                  className="w-4 h-4 flex items-center justify-center hover:rounded-full hover:bg-gray-200 hover:text-black"
+                  to={search ? `${to}?${search}` : to}
+                >
+                  <SvgIcon className="w-3 h-3" href={timesIcon} />
+                </Link>
+              ) : null}
             </div>
           )}
         </div>
@@ -164,16 +168,14 @@ function MenuItem({ to, name, value, children }: MenuItemProps): ReactElement {
     let search = '';
     let isActive = false;
 
-    if (name) {
+    if (name && value) {
       const searchParams = getResourcesSearchParams(location.search);
 
       isActive = searchParams.getAll(name).includes(value);
 
       switch (name) {
         case 'list':
-          if (value !== null) {
-            search = new URLSearchParams({ [name]: value }).toString();
-          }
+          search = new URLSearchParams({ [name]: value }).toString();
           break;
         case 'category':
         case 'platform': {
@@ -242,7 +244,7 @@ interface SidebarNavigationProps {
   categories: string[];
   platforms: string[];
   integrations: string[];
-  user: UserProfile | null;
+  profile: UserProfile | null;
 }
 
 function SidebarNavigation({
@@ -271,11 +273,11 @@ function SidebarNavigation({
         searchOptions.list !==
           new URLSearchParams(transition.location.search).get('list'))
     ) {
-      formRef.current.reset();
+      formRef.current?.reset();
     }
   }, [searchOptions.list, transition]);
 
-  function handleChange(event) {
+  function handleChange(event: React.FormEvent<HTMLFormElement>) {
     handleSubmit(event.currentTarget);
   }
 
@@ -375,9 +377,9 @@ function SidebarNavigation({
           >
             {[
               ...integrations,
-              ...searchOptions.integrations.filter(
+              ...(searchOptions.integrations?.filter(
                 (option) => !integrations.includes(option)
-              ),
+              ) ?? []),
             ].map((option, index) => (
               <MenuItem
                 key={option}

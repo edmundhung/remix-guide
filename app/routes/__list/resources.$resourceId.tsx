@@ -28,6 +28,16 @@ import bookmarkIcon from '~/icons/bookmark.svg';
 import Panel from '~/components/Panel';
 import { getSite, createIntegrationSearch } from '~/search';
 
+interface LoaderData {
+  resource: Resource;
+  authenticated: boolean;
+  bookmarked: boolean;
+  message: string | null;
+  builtWithPackage: ResourceMetadata[] | null;
+  madeByAuthor: ResourceMetadata[] | null;
+  alsoOnSite: ResourceMetadata[] | null;
+}
+
 function getScreenshotURL(url: string): string {
   return `https://cdn.statically.io/screenshot/${url.replace(
     `${new URL(url).protocol}//`,
@@ -35,10 +45,10 @@ function getScreenshotURL(url: string): string {
   )}`;
 }
 
-export let meta: MetaFunction = ({ data }) => {
+export let meta: MetaFunction = ({ data }: { data?: LoaderData }) => {
   return formatMeta({
     title: `${capitalize(data?.resource.category)} - ${data?.resource.title}`,
-    description: data?.resource.description,
+    description: data?.resource.description ?? '',
     'og:url': `https://remix.guide/resources/${data?.resource.id}`,
   });
 };
@@ -109,7 +119,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
           author: resource.author,
         })
       : null,
-    ['concepts', 'tutorials', 'others'].includes(resource.category)
+    ['concepts', 'tutorials', 'others'].includes(resource.category ?? '')
       ? store.search(profile?.id ?? null, {
           ...searchOptions,
           site: getSite(resource.url),
@@ -127,13 +137,13 @@ export let loader: LoaderFunction = async ({ context, params }) => {
       authenticated: profile !== null,
       bookmarked: isUserBookmarked,
       resource:
-        isUserBookmarked === isResourceBookmarked
+        !user || isUserBookmarked === isResourceBookmarked
           ? resource
           : {
               ...resource,
               bookmarked: isUserBookmarked
-                ? resource.bookmarked.concat(user?.profile.id)
-                : resource.bookmarked.filter((id) => id !== user?.profile.id),
+                ? resource.bookmarked.concat(user.profile.id)
+                : resource.bookmarked.filter((id) => id !== user.profile.id),
             },
       message,
       builtWithPackage,
@@ -147,7 +157,9 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
-  return ['bookmark', 'unbookmark'].includes(submission?.formData.get('type'));
+  return ['bookmark', 'unbookmark'].includes(
+    submission?.formData.get('type')?.toString() ?? ''
+  );
 };
 
 export default function EntryDetail() {
@@ -161,14 +173,7 @@ export default function EntryDetail() {
     builtWithPackage,
     madeByAuthor,
     alsoOnSite,
-  } = useLoaderData<{
-    resource: Resource;
-    authenticated: boolean;
-    bookmarked: boolean;
-    builtWithPackage: ResourceMetadata[] | null;
-    madeByAuthor: ResourceMetadata[] | null;
-    alsoOnSite: ResourceMetadata[] | null;
-  }>();
+  } = useLoaderData<LoaderData>();
 
   useEffect(() => {
     submit({ type: 'view' }, { method: 'post' });
@@ -197,7 +202,9 @@ export default function EntryDetail() {
                 ? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
                 : ''
             }`}
-            disabled={!authenticated || transition.submission}
+            disabled={
+              !authenticated || typeof transition.submission !== 'undefined'
+            }
           >
             <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
           </button>
@@ -213,7 +220,7 @@ export default function EntryDetail() {
             <div className="pt-0.5 flex-1">
               <div className="flex items-center justify-between text-xs pb-1.5 text-gray-400">
                 <span className="capitalize">{resource.category}</span>
-                <span>{resource.createdAt.substr(0, 10)}</span>
+                <span>{resource.createdAt.substring(0, 10)}</span>
               </div>
               <div>
                 <a
@@ -239,7 +246,7 @@ export default function EntryDetail() {
                 />
                 {site}
               </a>
-              {!resource.integrations?.length > 0 ? null : (
+              {!resource.integrations?.length ? null : (
                 <div className="pt-4 flex flex-wrap gap-2">
                   {resource.integrations?.map((integration) => (
                     <Link
@@ -309,7 +316,7 @@ export default function EntryDetail() {
             <RelatedResources
               entries={madeByAuthor}
               search={new URLSearchParams({
-                author: resource.author,
+                author: resource.author ?? '',
               }).toString()}
             />
           </div>

@@ -141,10 +141,12 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
                   switch (key) {
                     case 'createdAt':
                       diff =
-                        new Date(next.createdAt) - new Date(prev.createdAt);
+                        new Date(next.createdAt).valueOf() -
+                        new Date(prev.createdAt).valueOf();
                       break;
                     case 'bookmarkCounts':
-                      diff = next.bookmarkCounts - prev.bookmarkCounts;
+                      diff =
+                        (next.bookmarkCounts ?? 0) - (prev.bookmarkCounts ?? 0);
                       break;
                     case 'viewCounts':
                       diff = next.viewCounts - prev.viewCounts;
@@ -162,7 +164,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
                 if (includes) {
                   return includes.indexOf(prev.id) - includes.indexOf(next.id);
                 } else {
-                  return new Date(next.createdAt) - new Date(prev.createdAt);
+                  return (
+                    new Date(next.createdAt).valueOf() -
+                    new Date(prev.createdAt).valueOf()
+                  );
                 }
               }
             }

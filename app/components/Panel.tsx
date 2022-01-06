@@ -14,7 +14,7 @@ import { getResourcesSearchParams } from '~/search';
 
 function formatMessage(message: string): ReactElement {
   const [type, content] = message.split(':');
-  let icon: ReactElement | null = null;
+  let icon: string | null = null;
 
   switch (type.trim() as MessageType) {
     case 'success':
@@ -43,7 +43,7 @@ interface PanelProps {
   title: string;
   type?: 'list' | 'details';
   elements?: ReactElement;
-  message?: string;
+  message?: string | null;
   children: ReactNode;
 }
 

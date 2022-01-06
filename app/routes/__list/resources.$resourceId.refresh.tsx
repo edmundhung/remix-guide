@@ -11,11 +11,18 @@ export let loader: LoaderFunction = async ({ request, context, params }) => {
     return redirect(`/resources/${params.resourceId}`);
   }
 
-  await store.refresh(
-    profile.id,
-    params.resourceId ?? '',
-    request.headers.get('User-Agent')
-  );
+  const userAgent = request.headers.get('User-Agent');
+
+  if (!userAgent) {
+    return redirect(`/resources/${params.resourceId}`, {
+      headers: await session.commitWithFlashMessage(
+        'Refresh failed. User-Agent is missing from the request header',
+        'error'
+      ),
+    });
+  }
+
+  await store.refresh(profile.id, params.resourceId ?? '', userAgent);
 
   return redirect(`/resources/${params.resourceId}`, {
     headers: await session.commitWithFlashMessage(
