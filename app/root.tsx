@@ -32,6 +32,7 @@ export let links: LinksFunction = () => {
 
 export let meta: MetaFunction = () => {
   return {
+    'color-scheme': 'dark',
     viewport: 'width=device-width, initial-scale=1',
   };
 };
