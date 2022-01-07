@@ -110,7 +110,7 @@ function LinkMenu({
 
   return (
     <details className="group" open={defaultOpen}>
-      <summary className="list-none cursor-pointer sticky top-0 bg-gray-900 py-2 text-xs text-gray-500">
+      <summary className="list-none cursor-pointer sticky top-0 bg-gray-900 py-2 text-xs text-gray-400">
         <div className="relative w-full px-3 py-1.5 flex flex-row items-center gap-4 rounded-lg">
           <span className="w-4 h-4 flex items-center justify-center">
             {children ? (
