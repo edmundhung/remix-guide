@@ -234,8 +234,13 @@ export class ResourcesStore {
       Object.keys(this.resourceIdByPackageName),
       this.env
     );
+    const isValid = await isValidResource(
+      data,
+      category,
+      this.env.GOOGLE_API_KEY
+    );
 
-    if (!isValidResource(data, category)) {
+    if (!isValid) {
       return {
         id: null,
         status: 'INVALID',

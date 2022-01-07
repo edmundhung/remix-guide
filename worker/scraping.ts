@@ -157,6 +157,47 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
   };
 }
 
+async function checkSafeBrowsingAPI(urls: string[], apiKey: string) {
+  const response = await fetch(
+    `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`,
+    {
+      method: 'POST',
+      body: JSON.stringify({
+        client: {
+          clientId: 'remix-guide',
+          clientVersion: process.env.VERSION,
+        },
+        threatInfo: {
+          // Based on https://developers.google.com/safe-browsing/v4/reference/rest/v4/ThreatType
+          threatTypes: [
+            'THREAT_TYPE_UNSPECIFIED',
+            'MALWARE',
+            'SOCIAL_ENGINEERING',
+            'POTENTIALLY_HARMFUL_APPLICATION',
+            'UNWANTED_SOFTWARE',
+          ],
+          // Based on https://developers.google.com/safe-browsing/v4/reference/rest/v4/PlatformType
+          platformTypes: ['ANY_PLATFORM', 'PLATFORM_TYPE_UNSPECIFIED'],
+          // Based on https://developers.google.com/safe-browsing/v4/reference/rest/v4/ThreatEntryType
+          threatEntryTypes: ['URL'],
+          threatEntries: urls.map((url) => ({ url })),
+        },
+      }),
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error(
+      `Fail to look up threats of the URLs from the Safe Browsing API; Received ${response.status} ${response.statusText}`
+    );
+  }
+
+  const result = await response.json<any>();
+  const matches = result?.matches ?? [];
+
+  return matches.length === 0;
+}
+
 async function getPackageInfo(packageName: string) {
   const response = await fetch(`https://registry.npmjs.org/${packageName}`);
 
@@ -391,8 +432,22 @@ async function parseYouTubeVideo(videoId: string, apiKey: string) {
   };
 }
 
-function isValidResource(page: Page, category: Category): boolean {
-  switch (category) {
+async function isValidResource(
+  page: Page,
+  category: string,
+  apiKey?: string
+): Promise<boolean> {
+  let isSafe = true;
+
+  if (apiKey) {
+    isSafe = await checkSafeBrowsingAPI([page.url], apiKey);
+  }
+
+  if (!isSafe) {
+    return false;
+  }
+
+  switch (category as Category) {
     case 'tutorials':
       return (
         !['npm', 'GitHub'].includes(page.siteName) &&
@@ -464,15 +519,15 @@ async function getAdditionalMetadata(
       break;
     }
     case 'YouTube': {
-      if (!env.YOUTUBE_API_KEY) {
+      if (!env.GOOGLE_API_KEY) {
         throw new Error(
-          'Error capturing YouTube metadata; YOUTUBE_API_KEY is not available'
+          'Error capturing YouTube metadata; GOOGLE_API_KEY is not available'
         );
       }
 
       const videoId = new URL(page.url).searchParams.get('v');
 
-      metadata = await parseYouTubeVideo(videoId, env.YOUTUBE_API_KEY);
+      metadata = await parseYouTubeVideo(videoId, env.GOOGLE_API_KEY);
       break;
     }
   }
