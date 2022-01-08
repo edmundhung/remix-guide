@@ -420,7 +420,7 @@ function SidebarNavigation({
         ) : (
           <Form action="/login" method="post" reloadDocument>
             <button className="w-full py-1 text-center rounded-lg hover:shadow-md hover:shadow-inner hover:bg-gray-900">
-              Login with Github
+              Login with GitHub
             </button>
           </Form>
         )}
