@@ -57,6 +57,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
           GITHUB_CLIENT_ID: 'test-client-id',
           GITHUB_CLIENT_SECRET: 'test-secret',
           GITHUB_CALLBACK_URL: `http://localhost:${port}/auth`,
+          GOOGLE_API_KEY: 'test-google-api-key',
         },
         port,
       });

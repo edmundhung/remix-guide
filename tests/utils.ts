@@ -208,6 +208,17 @@ export function mockYouTubeMetadata(
     .reply(200, {});
 }
 
+export function mockSafeBrowsingAPI(mockAgent: MockAgent, apiKey: string) {
+  const safeBrowsingAPI = mockAgent.get('https://safebrowsing.googleapis.com');
+
+  safeBrowsingAPI
+    .intercept({
+      path: `/v4/threatMatches:find?key=${apiKey}`,
+      method: 'POST',
+    })
+    .reply(200, {});
+}
+
 export function mockPage(
   mockAgent: MockAgent,
   urlText: string,
@@ -228,6 +239,9 @@ export function mockPage(
       method: 'GET',
     })
     .reply(options?.status ?? 200, html);
+
+  // Assume it is always safe for now
+  mockSafeBrowsingAPI(mockAgent, 'test-google-api-key');
 }
 
 export async function getResource(mf: Miniflare, resourceId: string) {
