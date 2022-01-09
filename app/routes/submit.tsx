@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import type { LoaderFunction, ActionFunction } from 'remix';
 import { Form, redirect, json, useLoaderData } from 'remix';
 import CategoryIcon from '~/components/CategoryIcon';
-import Panel from '~/components/Panel';
 import { maintainers, categories } from '~/config';
 import { Context, Category } from '~/types';
 import type { MetaFunction } from 'remix';
 import { formatMeta } from '~/helpers';
+import MenuLink from '~/components/MenuLink';
+import FlashMessage from '~/components/FlashMessage';
+import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 
 export let meta: MetaFunction = () => {
   return formatMeta({
@@ -180,63 +182,74 @@ export default function Submit() {
   };
 
   return (
-    <Panel title="Submit a new Resource" message={message}>
-      <section className="px-2.5 pt-2">
-        <Form className="lg:max-w-3xl" method="post">
-          <h3 className="">Please select a cateogry</h3>
-          <div>
-            {categories.map((category) => (
-              <div className="mt-4" key={category}>
-                <input
-                  id={category}
-                  className="peer hidden"
-                  type="radio"
-                  name="category"
-                  value={category}
-                  onChange={handleSelect}
-                  checked={category === selected}
-                />
-                <label
-                  className="cursor-pointer flex flex-col md:flex-row md:items-center gap-4 border peer-checked:border-white p-4 rounded-lg"
-                  htmlFor={category}
-                >
-                  <div className="flex items-center gap-4">
-                    <CategoryIcon category={category} />
-                    <div className="capitalize w-24">{category}</div>
-                  </div>
-
-                  <div className="">{getDescription(category)}</div>
-                </label>
-              </div>
-            ))}
-          </div>
-          {selected === null ? null : (
-            <div className="py-8">
-              <label htmlFor="url" className="block pb-4">
-                Then, paste the URL here
-              </label>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
+    <PaneContainer>
+      <PaneHeader>
+        <MenuLink />
+        <div className="flex-1 leading-8 line-clamp-1">
+          Submit a new Resource
+        </div>
+      </PaneHeader>
+      <PaneContent>
+        <section className="px-2.5 pt-2">
+          <Form className="lg:max-w-3xl" method="post">
+            <h3 className="">Please select a cateogry</h3>
+            <div>
+              {categories.map((category) => (
+                <div className="mt-4" key={category}>
                   <input
-                    id="url"
-                    name="url"
-                    type="text"
-                    className="w-full h-8 px-4 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
-                    placeholder={getPlaceholder(selected) ?? 'URL'}
-                    autoFocus
+                    id={category}
+                    className="peer hidden"
+                    type="radio"
+                    name="category"
+                    value={category}
+                    onChange={handleSelect}
+                    checked={category === selected}
                   />
+                  <label
+                    className="cursor-pointer flex flex-col md:flex-row md:items-center gap-4 border peer-checked:border-white p-4 rounded-lg"
+                    htmlFor={category}
+                  >
+                    <div className="flex items-center gap-4">
+                      <CategoryIcon category={category} />
+                      <div className="capitalize w-24">{category}</div>
+                    </div>
+
+                    <div className="">{getDescription(category)}</div>
+                  </label>
                 </div>
-                <button
-                  type="submit"
-                  className="shadow-inner bg-gray-800 hover:bg-gray-200 hover:text-black rounded-md px-4 h-8"
-                >
-                  Submit
-                </button>
-              </div>
+              ))}
             </div>
-          )}
-        </Form>
-      </section>
-    </Panel>
+            {selected === null ? null : (
+              <div className="py-8">
+                <label htmlFor="url" className="block pb-4">
+                  Then, paste the URL here
+                </label>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <input
+                      id="url"
+                      name="url"
+                      type="text"
+                      className="w-full h-8 px-4 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
+                      placeholder={getPlaceholder(selected) ?? 'URL'}
+                      autoFocus
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="shadow-inner bg-gray-800 hover:bg-gray-200 hover:text-black rounded-md px-4 h-8"
+                  >
+                    Submit
+                  </button>
+                </div>
+              </div>
+            )}
+          </Form>
+        </section>
+      </PaneContent>
+      <PaneFooter>
+        <FlashMessage message={message} />
+      </PaneFooter>
+    </PaneContainer>
   );
 }

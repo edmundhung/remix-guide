@@ -8,14 +8,14 @@ interface BannerProps {
 
 function Banner({ version }: BannerProps): ReactElement {
   return (
-    <div className="hidden h-full w-full md:flex flex-col">
-      <div className="flex flex-col flex-1 items-center justify-center">
+    <div className="min-h-screen w-full flex flex-col">
+      <div className="flex-1 flex flex-col items-center justify-center">
         <SvgIcon className="w-20 h-20" href={logo} />
         <h1 className="text-xl mt-6">Remix Guide</h1>
         <div className="pt-2 text-xs">Sharing everything about Remix</div>
       </div>
       {version ? (
-        <div className="p-6 text-center text-xs text-gray-500">
+        <div className="py-5 mb text-center text-sm text-gray-500">
           Version{' '}
           <a
             className="hover:underline"

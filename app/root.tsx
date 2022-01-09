@@ -6,7 +6,6 @@ import type {
 } from 'remix';
 import {
   Meta,
-  Link,
   Links,
   Scripts,
   useLoaderData,
@@ -17,10 +16,8 @@ import {
   ScrollRestoration,
   json,
 } from 'remix';
-import { useMemo } from 'react';
 import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';
-import { categories, platforms, integrations } from '~/config';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
@@ -85,16 +82,7 @@ function Document({
 export default function App() {
   const { profile } = useLoaderData();
   const location = useLocation();
-  const [isMenuOpened, searchWithMenuClosed] = useMemo(() => {
-    const searchPararms = new URLSearchParams(location.search);
-    const hasMenu = searchPararms.has('menu');
-
-    if (hasMenu) {
-      searchPararms.delete('menu');
-    }
-
-    return [hasMenu, searchPararms.toString()];
-  }, [location.search]);
+  const isMenuOpened = new URLSearchParams(location.search).has('menu');
 
   return (
     <Document>
@@ -102,24 +90,10 @@ export default function App() {
       <nav
         className={`${
           isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden'
-        } z-40 xl:block w-72 h-full border-r`}
+        } z-40 xl:block w-full lg:w-96 xl:w-64 h-full border-r`}
       >
-        <SidebarNavigation
-          categories={categories}
-          platforms={platforms}
-          integrations={integrations}
-          profile={profile}
-        />
+        <SidebarNavigation profile={profile} />
       </nav>
-      {!isMenuOpened ? null : (
-        // eslint-disable-next-line jsx-a11y/anchor-has-content
-        <Link
-          className={`xl:hidden backdrop-filter z-30 absolute top-0 left-0 right-0 bottom-0 backdrop-blur-sm`}
-          to={`?${searchWithMenuClosed}`}
-          title="Close menu"
-          replace
-        />
-      )}
       <main className="flex-1">
         <Outlet />
       </main>

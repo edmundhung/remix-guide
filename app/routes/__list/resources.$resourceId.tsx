@@ -25,8 +25,10 @@ import Card from '~/components/Card';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
-import Panel from '~/components/Panel';
 import { getSite, createIntegrationSearch } from '~/search';
+import BackLink from '~/components/BackLink';
+import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
+import FlashMessage from '~/components/FlashMessage';
 
 interface LoaderData {
   resource: Resource;
@@ -182,11 +184,10 @@ export default function EntryDetail() {
   const site = getSite(resource.url);
 
   return (
-    <Panel
-      title={resource.title}
-      type="details"
-      message={message}
-      elements={
+    <PaneContainer>
+      <PaneHeader>
+        <BackLink />
+        <div className="flex-1" />
         <Form className="flex flex-row items-center" method="post">
           <input
             type="hidden"
@@ -212,126 +213,132 @@ export default function EntryDetail() {
             {resource.bookmarked.length}
           </label>
         </Form>
-      }
-    >
-      <div className="max-w-screen-xl divide-y">
-        <div className="px-2.5 pt-3 pb-8">
-          <div className="flex flex-col-reverse lg:flex-row justify-between gap-8 2xl:gap-12">
-            <div className="pt-0.5 flex-1">
-              <div className="flex items-center justify-between text-xs pb-1.5 text-gray-400">
-                <span className="capitalize">{resource.category}</span>
-                <span>{resource.createdAt.substring(0, 10)}</span>
-              </div>
-              <div>
+      </PaneHeader>
+      <PaneContent>
+        <div className="max-w-screen-xl divide-y">
+          <div className="px-2.5 pt-3 pb-8">
+            <div className="flex flex-col-reverse md:flex-row justify-between gap-8 2xl:gap-12">
+              <div className="pt-0.5 flex-1">
+                <div className="flex items-center justify-between text-xs pb-1.5 text-gray-400">
+                  <span className="capitalize">{resource.category}</span>
+                  <span>{resource.createdAt.substring(0, 10)}</span>
+                </div>
+                <div>
+                  <a
+                    className="sticky top-0"
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <h2 className="inline-block text-xl break-words">
+                      {resource.title}
+                    </h2>
+                  </a>
+                </div>
                 <a
-                  className="sticky top-0"
+                  className="hover:underline text-gray-400"
                   href={resource.url}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <h2 className="inline-block text-xl break-words">
-                    {resource.title}
-                  </h2>
-                </a>
-              </div>
-              <a
-                className="hover:underline text-gray-400"
-                href={resource.url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <SvgIcon
-                  className="inline-block w-3 h-3 mr-2"
-                  href={linkIcon}
-                />
-                {site}
-              </a>
-              {!resource.integrations?.length ? null : (
-                <div className="pt-4 flex flex-wrap gap-2">
-                  {resource.integrations?.map((integration) => (
-                    <Link
-                      key={integration}
-                      className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-                      to={`/resources?${createIntegrationSearch(integration)}`}
-                    >
-                      {integration}
-                    </Link>
-                  ))}
-                </div>
-              )}
-              {!resource.description ? null : (
-                <p className="pt-6 text-gray-400 break-words whitespace-pre-line">
-                  {resource.description}
-                </p>
-              )}
-            </div>
-            <div className="lg:max-w-xs w-auto">
-              {resource.video ? (
-                <div className="pt-1 w-full lg:w-72">
-                  <div className="aspect-w-16 aspect-h-9">
-                    <iframe
-                      width="720"
-                      height="405"
-                      src={resource.video}
-                      title={resource.title}
-                      frameBorder="0"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                    />
-                  </div>
-                </div>
-              ) : (
-                <a
-                  className="relative"
-                  href={resource.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <img
-                    className="max-h-96 rounded-lg bg-white"
-                    src={resource.image ?? getScreenshotURL(resource.url)}
-                    width="auto"
-                    height="auto"
-                    alt="cover"
+                  <SvgIcon
+                    className="inline-block w-3 h-3 mr-2"
+                    href={linkIcon}
                   />
+                  {site}
                 </a>
-              )}
+                {!resource.integrations?.length ? null : (
+                  <div className="pt-4 flex flex-wrap gap-2">
+                    {resource.integrations?.map((integration) => (
+                      <Link
+                        key={integration}
+                        className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
+                        to={`/resources?${createIntegrationSearch(
+                          integration
+                        )}`}
+                      >
+                        {integration}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+                {!resource.description ? null : (
+                  <p className="pt-6 text-gray-400 break-words whitespace-pre-line">
+                    {resource.description}
+                  </p>
+                )}
+              </div>
+              <div className="md:max-w-xs w-auto">
+                {resource.video ? (
+                  <div className="pt-1 w-full md:w-72">
+                    <div className="aspect-w-16 aspect-h-9">
+                      <iframe
+                        width="720"
+                        height="405"
+                        src={resource.video}
+                        title={resource.title}
+                        frameBorder="0"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <a
+                    className="relative"
+                    href={resource.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <img
+                      className="max-h-96 rounded-lg bg-white"
+                      src={resource.image ?? getScreenshotURL(resource.url)}
+                      width="auto"
+                      height="auto"
+                      alt="cover"
+                    />
+                  </a>
+                )}
+              </div>
             </div>
           </div>
+          {builtWithPackage ? (
+            <div className="py-8">
+              <h3 className="px-2.5 pb-4">Built with {resource.title}</h3>
+              <RelatedResources
+                entries={builtWithPackage}
+                search={new URLSearchParams({
+                  integration: resource.title,
+                }).toString()}
+              />
+            </div>
+          ) : null}
+          {madeByAuthor ? (
+            <div className="py-8">
+              <h3 className="px-2.5 pb-4">Made by {resource.author}</h3>
+              <RelatedResources
+                entries={madeByAuthor}
+                search={new URLSearchParams({
+                  author: resource.author ?? '',
+                }).toString()}
+              />
+            </div>
+          ) : null}
+          {alsoOnSite ? (
+            <div className="py-8">
+              <h3 className="px-2.5 pb-4">Also on {site}</h3>
+              <RelatedResources
+                entries={alsoOnSite}
+                search={new URLSearchParams({ site }).toString()}
+              />
+            </div>
+          ) : null}
         </div>
-        {builtWithPackage ? (
-          <div className="py-8">
-            <h3 className="px-2.5 pb-4">Built with {resource.title}</h3>
-            <RelatedResources
-              entries={builtWithPackage}
-              search={new URLSearchParams({
-                integration: resource.title,
-              }).toString()}
-            />
-          </div>
-        ) : null}
-        {madeByAuthor ? (
-          <div className="py-8">
-            <h3 className="px-2.5 pb-4">Made by {resource.author}</h3>
-            <RelatedResources
-              entries={madeByAuthor}
-              search={new URLSearchParams({
-                author: resource.author ?? '',
-              }).toString()}
-            />
-          </div>
-        ) : null}
-        {alsoOnSite ? (
-          <div className="py-8">
-            <h3 className="px-2.5 pb-4">Also on {site}</h3>
-            <RelatedResources
-              entries={alsoOnSite}
-              search={new URLSearchParams({ site }).toString()}
-            />
-          </div>
-        ) : null}
-      </div>
-    </Panel>
+      </PaneContent>
+      <PaneFooter>
+        <FlashMessage message={message} />
+      </PaneFooter>
+    </PaneContainer>
   );
 }
 
