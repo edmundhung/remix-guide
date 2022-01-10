@@ -10,7 +10,7 @@ function MenuLink(): ReactElement {
   const searchWithMenuOpened = useMemo(() => {
     const searchParams = getResourcesSearchParams(location.search);
 
-    searchParams.set('menu', 'open');
+    searchParams.set('open', 'menu');
 
     return searchParams.toString();
   }, [location.search]);

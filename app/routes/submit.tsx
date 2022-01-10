@@ -237,7 +237,7 @@ export default function Submit() {
                   </div>
                   <button
                     type="submit"
-                    className="shadow-inner bg-gray-800 hover:bg-gray-200 hover:text-black rounded-md px-4 h-8"
+                    className="bg-gray-800 hover:bg-gray-200 hover:text-black rounded-md px-4 h-8"
                   >
                     Submit
                   </button>

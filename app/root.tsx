@@ -16,6 +16,7 @@ import {
   ScrollRestoration,
   json,
 } from 'remix';
+import clsx from 'clsx';
 import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';
 import type { Context } from '~/types';
@@ -82,19 +83,21 @@ function Document({
 export default function App() {
   const { profile } = useLoaderData();
   const location = useLocation();
-  const isMenuOpened = new URLSearchParams(location.search).has('menu');
+  const isMenuOpened =
+    new URLSearchParams(location.search).get('open') === 'menu';
 
   return (
     <Document>
       <Progress />
       <nav
-        className={`${
+        className={clsx(
+          'z-40 xl:block w-full lg:w-96 xl:w-64 h-full border-r',
           isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden'
-        } z-40 xl:block w-full lg:w-96 xl:w-64 h-full border-r`}
+        )}
       >
         <SidebarNavigation profile={profile} />
       </nav>
-      <main className="flex-1">
+      <main className={clsx('flex-1', { 'hidden lg:block': isMenuOpened })}>
         <Outlet />
       </main>
     </Document>

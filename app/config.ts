@@ -8,7 +8,6 @@ export const categories: Category[] = [
 ];
 
 export const platforms = [
-  'architect',
   'aws',
   'azure',
   'cloudflare',
@@ -19,7 +18,13 @@ export const platforms = [
   'vercel',
 ];
 
-export const integrations = ['cypress', 'express', 'prisma', 'tailwindcss'];
+export const integrations = [
+  'architect',
+  'cypress',
+  'express',
+  'prisma',
+  'tailwindcss',
+];
 
 export const maintainers = [
   'edmundhung',

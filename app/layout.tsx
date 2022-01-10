@@ -11,7 +11,7 @@ interface PaneContainerProps {
 
 export function PaneContainer({ children }: PaneContainerProps): ReactElement {
   return (
-    <section className="flex flex-col w-full h-full max-h-screen min-h-screen lg:overflow-y-auto">
+    <section className="flex flex-col w-full h-full lg:max-h-screen min-h-screen lg:overflow-y-auto">
       {children}
     </section>
   );
@@ -54,7 +54,7 @@ export function PaneFooter({
 }: PaneFooterProps): ReactElement {
   return (
     <footer
-      className={clsx('sticky bottom-0 bg-gray-900 z-20', {
+      className={clsx('sticky bottom-0 z-20', {
         'px-2.5 xl:px-5': padding !== 'none',
       })}
     >
@@ -143,11 +143,10 @@ export function ItemLink({
 
     return [isActive, search];
   }, [location, name, value]);
-  const className = `px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg ${
-    isActive
-      ? 'shadow-inner bg-gray-700'
-      : 'hover:shadow-inner hover:bg-gray-800'
-  }`;
+  const className = clsx(
+    'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg',
+    isActive ? 'bg-gray-700' : 'hover:bg-gray-800'
+  );
 
   if (/http:\/\/|https:\/\/|\/\//.test(to)) {
     return (

@@ -15,8 +15,8 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
       <Link
         className={`block rounded-lg no-underline ${
           selected
-            ? 'shadow-inner bg-gray-700 text-gray-300'
-            : 'hover:shadow-inner hover:bg-gray-800 text-gray-400'
+            ? 'bg-gray-700 text-gray-300'
+            : 'hover:bg-gray-800 text-gray-400'
         }`}
         title={entry.title}
         to={

@@ -27,10 +27,10 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
   const location = useLocation();
   const navigate = useNavigate();
   const searchPararms = new URLSearchParams(location.search);
-  const hasMenu = searchPararms.has('menu');
+  const hasMenu = searchPararms.get('open') === 'menu';
 
   if (hasMenu) {
-    searchPararms.delete('menu');
+    searchPararms.delete('open');
   }
 
   const search = searchPararms.toString();
@@ -57,7 +57,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
         </Link>
       </PaneHeader>
       <PaneContent>
-        <div className="flex-1">
+        <div className="lg:flex-1">
           <List title="Menu">
             <ItemLink to="/" name="list" value={null}>
               <SvgIcon className="w-4 h-4" href={homeIcon} /> Home

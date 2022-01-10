@@ -11,15 +11,13 @@ export function getResourcesSearchParams(search: string): URLSearchParams {
     'integration',
     'author',
     'site',
-    'menu', // For mobile
+    'open', // For dialog
   ];
 
-  for (const key of searchParams.keys()) {
-    if (supported.includes(key)) {
-      continue;
+  for (const [key, value] of Array.from(searchParams.entries())) {
+    if (!supported.includes(key) || value === '') {
+      searchParams.delete(key);
     }
-
-    searchParams.delete(key);
   }
 
   return searchParams;
@@ -51,4 +49,16 @@ export function createIntegrationSearch(value: string): string {
   }
 
   return searchParams.toString();
+}
+
+export function toggleSearchList(searchParams: URLSearchParams): string {
+  const search = new URLSearchParams(searchParams);
+
+  if (search.get('open') === 'search') {
+    search.delete('open');
+  } else {
+    search.set('open', 'search');
+  }
+
+  return search.toString();
 }
