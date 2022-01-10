@@ -56,7 +56,7 @@ function SearchList({ searchParams }: SearchListProps) {
         <PaneHeader padding="minimum">
           <div className="relative w-full flex items-center">
             <Link
-              className="z-10 absolute left-3"
+              className="z-10 absolute left-2"
               to={
                 searchOptions.list
                   ? `?${new URLSearchParams({
@@ -65,8 +65,8 @@ function SearchList({ searchParams }: SearchListProps) {
                   : '/'
               }
             >
-              <span className="flex items-center justify-center w-5 h-5">
-                <SvgIcon className="w-3 h-3" href={backIcon} />
+              <span className="flex items-center justify-center w-6 h-6">
+                <SvgIcon className="w-4 h-4" href={backIcon} />
               </span>
             </Link>
             <input
@@ -81,7 +81,7 @@ function SearchList({ searchParams }: SearchListProps) {
             />
             <button
               type="button"
-              className={clsx('z-10 absolute right-3', {
+              className={clsx('z-10 absolute right-2', {
                 invisible: keyword.trim() === '',
               })}
               onClick={() => {
@@ -89,8 +89,8 @@ function SearchList({ searchParams }: SearchListProps) {
                 ref.current?.focus();
               }}
             >
-              <span className="flex items-center justify-center w-5 h-5">
-                <SvgIcon className="w-3 h-3" href={timesIcon} />
+              <span className="flex items-center justify-center w-6 h-6">
+                <SvgIcon className="w-4 h-4" href={timesIcon} />
               </span>
             </button>
           </div>
@@ -114,7 +114,7 @@ function SearchList({ searchParams }: SearchListProps) {
           </List>
           <List title="Category">
             <div className="grid grid-cols-2 gap-1 capitalize">
-              <div className="col-span-2">
+              <div className="col-span-2 normal-case">
                 <InputOption
                   type="radio"
                   name="category"
@@ -153,7 +153,7 @@ function SearchList({ searchParams }: SearchListProps) {
             </div>
           </List>
           <List title="Integration">
-            <div className="columns-2">
+            <div className="grid grid-cols-2 gap-1">
               {integrations.map((option) => (
                 <InputOption
                   key={option}
@@ -169,10 +169,10 @@ function SearchList({ searchParams }: SearchListProps) {
           </List>
         </PaneContent>
         <PaneFooter padding="minimum">
-          <div className="py-3">
+          <div className="py-3 ">
             <button
               type="submit"
-              className="w-full p-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
+              className="w-full drop-shadow-lg p-2 bg-gray-800 hover:bg-gray-700 rounded-lg"
             >
               Search
             </button>

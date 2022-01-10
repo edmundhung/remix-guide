@@ -37,30 +37,30 @@ export default function ResourcesList({
             {title}
           </div>
           <Link
-            className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+            className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={`?${toggleSearchList(searchParams)}`}
           >
-            <SvgIcon className="w-3 h-3" href={searchIcon} />
+            <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={searchIcon} />
           </Link>
         </PaneHeader>
       ) : (
         <PaneHeader>
-          <div className="flex-1 flex flex-row lg:flex-row-reverse gap-4">
+          <div className="flex-1 flex flex-row lg:flex-row-reverse items-center justify-center gap-4">
             <Link
-              className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+              className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
               to={`?${toggleSearchList(searchParams)}`}
             >
-              <SvgIcon className="w-3 h-3" href={pencilIcon} />
+              <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={pencilIcon} />
             </Link>
             <div className="flex-1 line-clamp-1 text-center lg:text-left">
               Search Result
             </div>
           </div>
           <Link
-            className="flex items-center justify-center w-6 h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+            className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
             to={list ? `?${new URLSearchParams({ list }).toString()}` : '/'}
           >
-            <SvgIcon className="w-3 h-3" href={timesIcon} />
+            <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={timesIcon} />
           </Link>
         </PaneHeader>
       )}

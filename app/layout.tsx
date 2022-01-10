@@ -54,7 +54,7 @@ export function PaneFooter({
 }: PaneFooterProps): ReactElement {
   return (
     <footer
-      className={clsx('sticky bottom-0 z-20', {
+      className={clsx('sticky bottom-0 z-20 bg-gray-900/75', {
         'px-2.5 xl:px-5': padding !== 'none',
       })}
     >

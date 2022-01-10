@@ -1,4 +1,4 @@
-import {
+import type {
   LoaderFunction,
   ActionFunction,
   ShouldReloadFunction,
@@ -10,10 +10,12 @@ import {
   json,
   redirect,
   useLoaderData,
+  useLocation,
   useTransition,
   useFetcher,
 } from 'remix';
-import { ReactElement, useEffect } from 'react';
+import type { ReactElement } from 'react';
+import { useEffect, useMemo } from 'react';
 import { capitalize, formatMeta, notFound } from '~/helpers';
 import type {
   Context,
@@ -24,9 +26,13 @@ import type {
 import Card from '~/components/Card';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
+import backIcon from '~/icons/back.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
-import { getSite, createIntegrationSearch } from '~/search';
-import BackLink from '~/components/BackLink';
+import {
+  getSite,
+  createIntegrationSearch,
+  getResourcesSearchParams,
+} from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
 
@@ -164,7 +170,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
   );
 };
 
-export default function EntryDetail() {
+export default function ResourceDetails() {
   const transition = useTransition();
   const { submit } = useFetcher();
   const {
@@ -176,6 +182,11 @@ export default function EntryDetail() {
     madeByAuthor,
     alsoOnSite,
   } = useLoaderData<LoaderData>();
+  const location = useLocation();
+  const search = useMemo(
+    () => getResourcesSearchParams(location.search).toString(),
+    [location.search]
+  );
 
   useEffect(() => {
     submit({ type: 'view' }, { method: 'post' });
@@ -186,7 +197,13 @@ export default function EntryDetail() {
   return (
     <PaneContainer>
       <PaneHeader>
-        <BackLink />
+        <Link
+          className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+          to={search === '' ? '/' : `/resources?${search}`}
+          replace
+        >
+          <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={backIcon} />
+        </Link>
         <div className="flex-1" />
         <Form className="flex flex-row items-center" method="post">
           <input
@@ -196,7 +213,7 @@ export default function EntryDetail() {
           />
           <button
             type="submit"
-            className={`flex items-center justify-center w-6 h-6 ${
+            className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${
               bookmarked
                 ? 'rounded-full text-red-500 bg-gray-200'
                 : authenticated
@@ -207,7 +224,7 @@ export default function EntryDetail() {
               !authenticated || typeof transition.submission !== 'undefined'
             }
           >
-            <SvgIcon className="w-3 h-3" href={bookmarkIcon} />
+            <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
           </button>
           <label className="px-2 w-10 text-right">
             {resource.bookmarked.length}
