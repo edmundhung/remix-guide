@@ -98,7 +98,7 @@ export function List({ title, children }: ListProps): ReactElement {
   return (
     <div className="text-sm">
       {title ? (
-        <div className="sticky top-0 bg-gray-900 py-2 text-xs text-gray-400">
+        <div className="sticky top-16 bg-gray-900 py-2 text-xs text-gray-400">
           <div className="px-3 py-1.5">{title}</div>
         </div>
       ) : null}

@@ -20,12 +20,13 @@ interface SearchListProps {
 
 interface InputOptionProps {
   type: 'radio' | 'checkbox';
+  label?: string;
   name: string;
   value?: string | null;
   checked: boolean;
 }
 
-function InputOption({ type, name, value, checked }: InputOptionProps) {
+function InputOption({ type, label, name, value, checked }: InputOptionProps) {
   const id = `${name}-${value ?? 'any'}`;
 
   return (
@@ -40,7 +41,7 @@ function InputOption({ type, name, value, checked }: InputOptionProps) {
         value={value ?? ''}
         defaultChecked={checked}
       />
-      {value ?? `Any ${name}`}
+      {label ?? value ?? ''}
     </label>
   );
 }
@@ -98,16 +99,14 @@ function SearchList({ searchParams }: SearchListProps) {
         <PaneContent>
           <List title="List">
             <div className="grid grid-cols-2 gap-1 capitalize">
-              {['discover', 'bookmarks', 'history'].map((option) => (
+              {[null, 'bookmarks', 'history'].map((option) => (
                 <InputOption
                   key={option}
                   type="radio"
                   name="list"
-                  value={option}
-                  checked={
-                    option === searchOptions.list ||
-                    (option === 'discover' && searchOptions.list === null)
-                  }
+                  label={option ?? 'Discover'}
+                  value={option ?? ''}
+                  checked={option === searchOptions.list}
                 />
               ))}
             </div>
@@ -118,6 +117,7 @@ function SearchList({ searchParams }: SearchListProps) {
                 <InputOption
                   type="radio"
                   name="category"
+                  label="Any category"
                   checked={!searchOptions.category}
                 />
               </div>
@@ -138,6 +138,7 @@ function SearchList({ searchParams }: SearchListProps) {
                 <InputOption
                   type="radio"
                   name="platform"
+                  label="Any platform"
                   checked={!searchOptions.platform}
                 />
               </div>
@@ -154,7 +155,12 @@ function SearchList({ searchParams }: SearchListProps) {
           </List>
           <List title="Integration">
             <div className="grid grid-cols-2 gap-1">
-              {integrations.map((option) => (
+              {Array.from(
+                new Set([
+                  ...integrations,
+                  ...(searchOptions.integrations ?? []),
+                ])
+              ).map((option) => (
                 <InputOption
                   key={option}
                   type="checkbox"
@@ -167,6 +173,30 @@ function SearchList({ searchParams }: SearchListProps) {
               ))}
             </div>
           </List>
+          {searchOptions.author ? (
+            <List title="Author">
+              <div className="grid grid-cols-2 gap-1">
+                <InputOption
+                  type="checkbox"
+                  name="author"
+                  value={searchOptions.author}
+                  checked
+                />
+              </div>
+            </List>
+          ) : null}
+          {searchOptions.site ? (
+            <List title="Site">
+              <div className="grid grid-cols-2 gap-1">
+                <InputOption
+                  type="checkbox"
+                  name="site"
+                  value={searchOptions.site}
+                  checked
+                />
+              </div>
+            </List>
+          ) : null}
         </PaneContent>
         <PaneFooter padding="minimum">
           <div className="py-3 ">

@@ -200,7 +200,6 @@ export default function ResourceDetails() {
         <Link
           className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
           to={search === '' ? '/' : `/resources?${search}`}
-          replace
         >
           <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={backIcon} />
         </Link>
