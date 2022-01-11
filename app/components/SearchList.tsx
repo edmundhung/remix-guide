@@ -36,6 +36,7 @@ function InputOption({ type, label, name, value, checked }: InputOptionProps) {
     >
       <input
         id={id}
+        className="h-4 w-4 border-gray-300 rounded text-blue-500 focus:ring-blue-500 ring-blue-500"
         type={type}
         name={name}
         value={value ?? ''}
@@ -72,7 +73,7 @@ function SearchList({ searchParams }: SearchListProps) {
             </Link>
             <input
               ref={ref}
-              className="h-10 flex-1 px-9 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
+              className="h-10 flex-1 px-9 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:border-white focus:ring-0"
               type="text"
               name="q"
               value={keyword}
