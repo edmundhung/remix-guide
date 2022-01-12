@@ -23,11 +23,7 @@ import {
   PaneContent,
   List,
 } from '~/layout';
-import {
-  getRelatedSearchParams,
-  getResourceURL,
-  getSearchOptions,
-} from '~/search';
+import { getResourceURL, getSearchOptions } from '~/search';
 import { SearchOptions } from '~/types';
 import { maintainers } from '~/config';
 
@@ -99,7 +95,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
   const location = useLocation();
   const navigate = useNavigate();
   const search = useMemo(() => {
-    const searchPararms = getRelatedSearchParams(location.search);
+    const searchPararms = new URLSearchParams(location.search);
     const hasMenu = searchPararms.get('open') === 'menu';
 
     if (hasMenu) {
