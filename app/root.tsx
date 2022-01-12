@@ -91,7 +91,7 @@ export default function App() {
       <Progress />
       <nav
         className={clsx(
-          'z-40 xl:block w-full lg:w-96 xl:w-64 h-full border-r',
+          'z-30 xl:block w-full lg:w-96 xl:w-64 h-full border-r',
           isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden'
         )}
       >

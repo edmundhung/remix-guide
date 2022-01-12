@@ -12,10 +12,12 @@ import {
   List,
   PaneFooter,
 } from '~/layout';
-import { getSearchOptions } from '~/search';
+import { SearchOptions } from '~/types';
+import { getAction, getResourceSearchParams } from '~/search';
 
 interface SearchListProps {
-  searchParams: URLSearchParams;
+  searchOptions: SearchOptions;
+  selectedResourceId: string | null | undefined;
 }
 
 interface InputOptionProps {
@@ -47,13 +49,12 @@ function InputOption({ type, label, name, value, checked }: InputOptionProps) {
   );
 }
 
-function SearchList({ searchParams }: SearchListProps) {
+function SearchList({ searchOptions, selectedResourceId }: SearchListProps) {
   const ref = useRef<HTMLInputElement>(null);
-  const searchOptions = getSearchOptions(searchParams);
   const [keyword, setKeyword] = useState(searchOptions.keyword ?? '');
 
   return (
-    <Form action="/resources">
+    <Form action={getAction(searchOptions, selectedResourceId)}>
       <PaneContainer>
         <PaneHeader padding="minimum">
           <div className="relative w-full flex items-center">
@@ -61,10 +62,13 @@ function SearchList({ searchParams }: SearchListProps) {
               className="z-10 absolute left-2"
               to={
                 searchOptions.list
-                  ? `?${new URLSearchParams({
+                  ? selectedResourceId
+                    ? `?resourceId=${selectedResourceId}`
+                    : '?'
+                  : `?${getResourceSearchParams({
                       list: searchOptions.list,
-                    }).toString()}`
-                  : '/'
+                      category: searchOptions.category,
+                    })}`
               }
             >
               <span className="flex items-center justify-center w-6 h-6">
@@ -98,20 +102,6 @@ function SearchList({ searchParams }: SearchListProps) {
           </div>
         </PaneHeader>
         <PaneContent>
-          <List title="List">
-            <div className="grid grid-cols-2 gap-1 capitalize">
-              {[null, 'bookmarks', 'history'].map((option) => (
-                <InputOption
-                  key={option}
-                  type="radio"
-                  name="list"
-                  label={option ?? 'Discover'}
-                  value={option ?? ''}
-                  checked={option === searchOptions.list}
-                />
-              ))}
-            </div>
-          </List>
           <List title="Category">
             <div className="grid grid-cols-2 gap-1 capitalize">
               <div className="col-span-2 normal-case">

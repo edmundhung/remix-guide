@@ -75,7 +75,8 @@ export interface Resource extends Page {
 
 export interface SearchOptions {
   keyword?: string | null;
-  list?: 'bookmarks' | 'history' | null;
+  list?: string | null;
+  owner?: string | null;
   author?: string | null;
   site?: string | null;
   category?: Category | null;

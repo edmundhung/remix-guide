@@ -1,24 +1,20 @@
 import type { MetaFunction } from 'remix';
-import { useMatches } from 'remix';
-import Banner from '~/components/Banner';
+import About from '~/components/About';
 import { capitalize, formatMeta } from '~/helpers';
+import { getSearchOptions } from '~/search';
 
 export let meta: MetaFunction = ({ location }) => {
-  const searchParams = new URLSearchParams(location.search);
-  const list = searchParams.get('list');
+  const searchParams = getSearchOptions(
+    `${location.pathname}${location.search}`
+  );
 
   return formatMeta({
-    title: `${capitalize(list) ?? 'Latest Resources'}`,
+    title: `${capitalize(searchParams.category) ?? 'Discover'}`,
     description: 'A platform for sharing everything about Remix',
-    'og:url': list
-      ? `https://remix.guide/resources?list=${list}`
+    'og:url': searchParams.category
+      ? `https://remix.guide/resources?category=${searchParams.category}`
       : 'https://remix.guide/resources',
   });
 };
 
-export default function Resources() {
-  const matches = useMatches();
-  const { version } = matches[0]?.data ?? {};
-
-  return <Banner version={version} />;
-}
+export default About;

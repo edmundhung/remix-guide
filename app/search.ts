@@ -1,7 +1,7 @@
 import { SearchOptions } from '~/types';
 import { platforms } from '~/config';
 
-export function getResourcesSearchParams(search: string): URLSearchParams {
+export function getRelatedSearchParams(search: string): URLSearchParams {
   const searchParams = new URLSearchParams(search);
   const supported = [
     'list',
@@ -23,16 +23,37 @@ export function getResourcesSearchParams(search: string): URLSearchParams {
   return searchParams;
 }
 
-export function getSearchOptions(searchParams: URLSearchParams): SearchOptions {
-  return {
+export function getSearchOptions(url: string): SearchOptions {
+  const { pathname, searchParams } = new URL(url, 'https://remix.guide');
+  const options: SearchOptions = {
     keyword: searchParams.get('q'),
-    list: searchParams.get('list'),
     author: searchParams.get('author'),
+    owner: null,
+    list: null,
     site: searchParams.get('site'),
     category: searchParams.get('category'),
     platform: searchParams.get('platform'),
     integrations: searchParams.getAll('integration'),
   };
+
+  if (
+    pathname !== '/' &&
+    pathname !== '/resources' &&
+    !pathname.startsWith('/resources/')
+  ) {
+    const [_, owner, list] =
+      pathname.match(/^\/([a-z-0-9]+)(?:\/([a-z-0-9]+))*$/i) ?? [];
+
+    if (owner) {
+      options.owner = owner;
+    }
+
+    options.list = list ?? 'bookmarks';
+  }
+
+  return Object.fromEntries(
+    Object.entries(options).map(([key, value]) => [key, value ? value : null])
+  );
 }
 
 export function getSite(url: string): string {
@@ -49,6 +70,72 @@ export function createIntegrationSearch(value: string): string {
   }
 
   return searchParams.toString();
+}
+
+export function getResourcePathname(options: SearchOptions): string {
+  return options.owner ? `/${options.owner}/${options.list}` : '/resources';
+}
+
+export function getResourceSearchParams(
+  options: SearchOptions
+): URLSearchParams {
+  return new URLSearchParams(
+    Object.entries(options).flatMap(([key, value]) => {
+      switch (key as keyof SearchOptions) {
+        case 'author':
+        case 'category':
+        case 'platform':
+        case 'site':
+        case 'keyword':
+          if (value) {
+            return [[key === 'keyword' ? 'q' : key, value]];
+          }
+
+          break;
+        case 'integrations':
+          if (Array.isArray(value)) {
+            return value.map((v) => ['integration', v]);
+          }
+
+          break;
+      }
+
+      return [];
+    })
+  );
+}
+
+export function getResourceURL(
+  options: SearchOptions,
+  resourceId?: string | null
+): string {
+  const searchParams = getResourceSearchParams(options);
+  let pathname = getResourcePathname(options);
+
+  if (resourceId) {
+    if (pathname === '/resources') {
+      pathname = `${pathname}/${resourceId}`;
+    } else {
+      searchParams.set('resourceId', resourceId);
+    }
+  }
+
+  const search = searchParams.toString();
+
+  return search ? `${pathname}?${search}` : pathname;
+}
+
+export function getAction(
+  options: SearchOptions,
+  resourceId?: string | null
+): string {
+  let action = getResourcePathname(options);
+
+  if (options.list && resourceId) {
+    action = `${action}?resourceId=${resourceId}`;
+  }
+
+  return action;
 }
 
 export function toggleSearchList(searchParams: URLSearchParams): string {

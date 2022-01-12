@@ -1,12 +1,12 @@
 import type { ReactElement } from 'react';
+import { useMatches } from 'remix';
 import SvgIcon from '~/components/SvgIcon';
 import logo from '~/icons/logo.svg';
 
-interface BannerProps {
-  version?: string;
-}
+function About(): ReactElement {
+  const matches = useMatches();
+  const { version } = matches[0]?.data ?? {};
 
-function Banner({ version }: BannerProps): ReactElement {
   return (
     <div className="min-h-screen w-full flex flex-col">
       <div className="flex-1 flex flex-col items-center justify-center">
@@ -15,7 +15,7 @@ function Banner({ version }: BannerProps): ReactElement {
         <div className="pt-2 text-xs">Sharing everything about Remix</div>
       </div>
       {version ? (
-        <div className="py-5 mb text-center text-sm text-gray-500">
+        <div className="py-5 mb text-center text-sm text-gray-400">
           Version{' '}
           <a
             className="hover:underline"
@@ -31,4 +31,4 @@ function Banner({ version }: BannerProps): ReactElement {
   );
 }
 
-export default Banner;
+export default About;

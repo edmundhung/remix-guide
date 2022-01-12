@@ -1,7 +1,5 @@
-import { ReactElement, ReactNode, useMemo } from 'react';
-import { Link, useLocation } from 'remix';
+import type { ReactElement, ReactNode } from 'react';
 import clsx from 'clsx';
-import { getResourcesSearchParams } from '~/search';
 
 type Padding = 'none' | 'minimum' | 'maximum';
 
@@ -28,7 +26,7 @@ export function PaneHeader({
 }: PaneHeaderProps): ReactElement {
   return (
     <header
-      className={clsx('sticky top-0 bg-gray-900 border-b lg:border-none z-20', {
+      className={clsx('sticky top-0 bg-gray-900 border-b lg:border-none z-10', {
         'px-2.5 xl:px-5': padding !== 'none',
       })}
     >
@@ -54,7 +52,7 @@ export function PaneFooter({
 }: PaneFooterProps): ReactElement {
   return (
     <footer
-      className={clsx('sticky bottom-0 z-20 bg-gray-900/75', {
+      className={clsx('sticky bottom-0 z-10 bg-gray-900/75', {
         'px-2.5 xl:px-5': padding !== 'none',
       })}
     >
@@ -79,7 +77,7 @@ export function PaneContent({
       })}
     >
       <div
-        className={clsx('flex flex-col flex-1 divide-y py-2', {
+        className={clsx('flex flex-col flex-1 py-2', {
           'px-3': padding === 'maximum',
         })}
       >
@@ -91,15 +89,19 @@ export function PaneContent({
 
 interface ListProps {
   title?: string;
+  action?: ReactElement | null;
   children: ReactNode;
 }
 
-export function List({ title, children }: ListProps): ReactElement {
+export function List({ title, action, children }: ListProps): ReactElement {
   return (
     <div className="text-sm">
       {title ? (
-        <div className="sticky top-16 bg-gray-900 py-2 text-xs text-gray-400">
-          <div className="px-3 py-1.5">{title}</div>
+        <div className="sticky top-16 bg-gray-900 py-2 text-gray-400">
+          <div className="flex flex-row items-center px-3 py-1.5 gap-4">
+            <div className="flex-1 line-clamp-1">{title}</div>
+            {action}
+          </div>
         </div>
       ) : null}
       <div className={title ? 'pb-4' : 'py-4'}>
@@ -112,58 +114,5 @@ export function List({ title, children }: ListProps): ReactElement {
         </ul>
       </div>
     </div>
-  );
-}
-
-interface ItemLinkProps {
-  to: string;
-  name?: string;
-  value?: string | null;
-  children: ReactNode;
-}
-
-export function ItemLink({
-  to,
-  name,
-  value,
-  children,
-}: ItemLinkProps): ReactElement {
-  const location = useLocation();
-  const [isActive, search] = useMemo(() => {
-    let search = '';
-    let isActive = false;
-
-    if (name) {
-      const searchParams = getResourcesSearchParams(location.search);
-      const values = searchParams.getAll(name);
-
-      isActive = !value ? values.length === 0 : values.includes(value);
-      search = !value ? '' : new URLSearchParams({ [name]: value }).toString();
-    }
-
-    return [isActive, search];
-  }, [location, name, value]);
-  const className = clsx(
-    'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg',
-    isActive ? 'bg-gray-700' : 'hover:bg-gray-800'
-  );
-
-  if (/http:\/\/|https:\/\/|\/\//.test(to)) {
-    return (
-      <a
-        className={className}
-        href={search ? `${to}?${search}` : to}
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        {children}
-      </a>
-    );
-  }
-
-  return (
-    <Link className={className} to={search ? `${to}?${search}` : to}>
-      {children}
-    </Link>
   );
 }

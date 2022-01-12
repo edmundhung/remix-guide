@@ -31,7 +31,7 @@ import bookmarkIcon from '~/icons/bookmark.svg';
 import {
   getSite,
   createIntegrationSearch,
-  getResourcesSearchParams,
+  getRelatedSearchParams,
 } from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
@@ -44,6 +44,32 @@ interface LoaderData {
   builtWithPackage: ResourceMetadata[] | null;
   madeByAuthor: ResourceMetadata[] | null;
   alsoOnSite: ResourceMetadata[] | null;
+}
+
+interface RelatedResourcesProps {
+  entries: ResourceMetadata[];
+  searchOptions: SearchOptions;
+}
+
+function RelatedResources({
+  entries,
+  searchOptions,
+}: RelatedResourcesProps): ReactElement {
+  if (entries.length === 0) {
+    return (
+      <div className="text-center py-8 text-gray-500">
+        No resources found at the moment
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2">
+      {entries.map((entry) => (
+        <Card key={entry.id} entry={entry} searchOptions={searchOptions} />
+      ))}
+    </div>
+  );
 }
 
 function getScreenshotURL(url: string): string {
@@ -87,7 +113,11 @@ export let action: ActionFunction = async ({ context, params, request }) => {
       return new Response('Bad Request', { status: 400 });
   }
 
-  return redirect(request.headers.get('referrer') ?? request.url);
+  return redirect(
+    formData.get('referer')?.toString() ??
+      request.headers.get('referer') ??
+      request.url
+  );
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
@@ -184,27 +214,46 @@ export default function ResourceDetails() {
   } = useLoaderData<LoaderData>();
   const location = useLocation();
   const search = useMemo(
-    () => getResourcesSearchParams(location.search).toString(),
+    () => getRelatedSearchParams(location.search).toString(),
     [location.search]
   );
 
   useEffect(() => {
-    submit({ type: 'view' }, { method: 'post' });
+    submit(
+      { type: 'view' },
+      { method: 'post', action: `/resources/${resource.id}` }
+    );
   }, [submit, resource.id]);
 
   const site = getSite(resource.url);
+  const backUrl = location.pathname.startsWith('/resources')
+    ? search === ''
+      ? '/'
+      : `/resources?${search}`
+    : search === ''
+    ? location.pathname
+    : `${location.pathname}?${search}`;
 
   return (
     <PaneContainer>
       <PaneHeader>
         <Link
           className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-          to={search === '' ? '/' : `/resources?${search}`}
+          to={backUrl}
         >
           <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={backIcon} />
         </Link>
         <div className="flex-1" />
-        <Form className="flex flex-row items-center" method="post">
+        <Form
+          className="flex flex-row items-center"
+          method="post"
+          action={`/resources/${resource.id}?${search}`}
+        >
+          <input
+            type="hidden"
+            name="referer"
+            value={`${location.pathname}${location.search}`}
+          />
           <input
             type="hidden"
             name="type"
@@ -323,9 +372,7 @@ export default function ResourceDetails() {
               <h3 className="px-2.5 pb-4">Built with {resource.title}</h3>
               <RelatedResources
                 entries={builtWithPackage}
-                search={new URLSearchParams({
-                  integration: resource.title,
-                }).toString()}
+                searchOptions={{ integrations: [resource.title] }}
               />
             </div>
           ) : null}
@@ -334,19 +381,14 @@ export default function ResourceDetails() {
               <h3 className="px-2.5 pb-4">Made by {resource.author}</h3>
               <RelatedResources
                 entries={madeByAuthor}
-                search={new URLSearchParams({
-                  author: resource.author ?? '',
-                }).toString()}
+                searchOptions={{ author: resource.author ?? '' }}
               />
             </div>
           ) : null}
           {alsoOnSite ? (
             <div className="py-8">
               <h3 className="px-2.5 pb-4">Also on {site}</h3>
-              <RelatedResources
-                entries={alsoOnSite}
-                search={new URLSearchParams({ site }).toString()}
-              />
+              <RelatedResources entries={alsoOnSite} searchOptions={{ site }} />
             </div>
           ) : null}
         </div>
@@ -355,31 +397,5 @@ export default function ResourceDetails() {
         <FlashMessage message={message} />
       </PaneFooter>
     </PaneContainer>
-  );
-}
-
-interface RelatedResourcesProps {
-  entries: ResourceMetadata[];
-  search: string;
-}
-
-function RelatedResources({
-  entries,
-  search,
-}: RelatedResourcesProps): ReactElement {
-  if (entries.length === 0) {
-    return (
-      <div className="text-center py-8 text-gray-500">
-        No resources found at the moment
-      </div>
-    );
-  }
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-2">
-      {entries.map((entry) => (
-        <Card key={entry.id} entry={entry} search={search} />
-      ))}
-    </div>
   );
 }

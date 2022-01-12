@@ -2,7 +2,7 @@ import type { LoaderFunction, ShouldReloadFunction } from 'remix';
 import { useMemo } from 'react';
 import { Outlet, useLoaderData, useLocation, useParams, json } from 'remix';
 import clsx from 'clsx';
-import { getResourcesSearchParams, getSearchOptions } from '~/search';
+import { getSearchOptions } from '~/search';
 import type { ResourceMetadata, Context } from '~/types';
 import { maintainers } from '~/config';
 import ResourcesList from '~/components/ResourcesList';
@@ -11,9 +11,7 @@ import SearchList from '~/components/SearchList';
 export let loader: LoaderFunction = async ({ request, context }) => {
   const { session, store } = context as Context;
   const profile = await session.isAuthenticated();
-  const url = new URL(request.url);
-  const searchParams = getResourcesSearchParams(url.search);
-  const searchOptions = getSearchOptions(searchParams);
+  const searchOptions = getSearchOptions(request.url);
   const entries = await store.search(profile?.id ?? null, searchOptions);
 
   return json({
@@ -26,7 +24,13 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
   url,
   prevUrl,
 }) => {
-  return url.searchParams.toString() !== prevUrl.searchParams.toString();
+  const nextSearch = new URLSearchParams(url.searchParams);
+  const prevSearch = new URLSearchParams(prevUrl.searchParams);
+
+  nextSearch.delete('resourceId');
+  prevSearch.delete('resourceId');
+
+  return nextSearch.toString() !== prevSearch.toString();
 };
 
 export default function List() {
@@ -34,12 +38,18 @@ export default function List() {
     useLoaderData<{ entries: ResourceMetadata[]; submitEnabled: boolean }>();
   const location = useLocation();
   const searchParams = useMemo(
-    () => getResourcesSearchParams(location.search),
+    () => new URLSearchParams(location.search),
     [location.search]
+  );
+  const searchOptions = getSearchOptions(
+    `${location.pathname}${location.search}`
   );
   const isSearching = searchParams.get('open') === 'search';
   const params = useParams();
-  const resourceSelected = typeof params.resourceId !== 'undefined';
+  const resourceId = searchOptions.list
+    ? searchParams.get('resourceId')
+    : params.resourceId;
+  const resourceSelected = typeof resourceId !== 'undefined';
 
   return (
     <div className="h-full flex flex-row">
@@ -49,12 +59,15 @@ export default function List() {
         })}
       >
         {isSearching ? (
-          <SearchList searchParams={searchParams} />
+          <SearchList
+            searchOptions={searchOptions}
+            selectedResourceId={resourceId}
+          />
         ) : (
           <ResourcesList
             entries={entries}
-            searchParams={searchParams}
-            selectedResourceId={params.resourceId}
+            searchOptions={searchOptions}
+            selectedResourceId={resourceId}
             submitEnabled={submitEnabled}
           />
         )}

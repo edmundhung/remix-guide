@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import { Link, useLocation } from 'remix';
 import SvgIcon from '~/components/SvgIcon';
 import menuIcon from '~/icons/menu.svg';
-import { getResourcesSearchParams } from '~/search';
+import { getRelatedSearchParams } from '~/search';
 
 function MenuLink(): ReactElement {
   const location = useLocation();
   const searchWithMenuOpened = useMemo(() => {
-    const searchParams = getResourcesSearchParams(location.search);
+    const searchParams = getRelatedSearchParams(location.search);
 
     searchParams.set('open', 'menu');
 

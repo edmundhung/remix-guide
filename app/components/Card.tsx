@@ -1,15 +1,16 @@
 import { Link } from 'remix';
 import type { ReactElement } from 'react';
 import type { ResourceMetadata } from '~/types';
-import { getSite } from '~/search';
+import { getSite, getResourceURL } from '~/search';
+import type { SearchOptions } from '~/types';
 
 interface CardProps {
   entry: ResourceMetadata;
-  search: string;
+  searchOptions: SearchOptions;
   selected?: boolean;
 }
 
-function Card({ entry, search, selected }: CardProps): ReactElement {
+function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
   return (
     <article className="py-1">
       <Link
@@ -19,9 +20,7 @@ function Card({ entry, search, selected }: CardProps): ReactElement {
             : 'hover:bg-gray-800 text-gray-400'
         }`}
         title={entry.title}
-        to={
-          search ? `/resources/${entry.id}?${search}` : `/resources/${entry.id}`
-        }
+        to={getResourceURL(searchOptions, entry.id)}
         prefetch="intent"
       >
         <section className="px-2.5 py-2.5 text-sm">
