@@ -49,7 +49,8 @@ export default function List() {
   const resourceId = searchOptions.list
     ? searchParams.get('resourceId')
     : params.resourceId;
-  const resourceSelected = typeof resourceId !== 'undefined';
+  const resourceSelected =
+    typeof resourceId !== 'undefined' && resourceId !== null;
 
   return (
     <div className="h-full flex flex-row">
