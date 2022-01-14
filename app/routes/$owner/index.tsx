@@ -1,5 +1,5 @@
-import { json, LoaderFunction } from 'remix';
-import { Outlet } from 'remix';
+import type { LoaderFunction } from 'remix';
+import { redirect } from 'remix';
 import { notFound } from '~/helpers';
 import type { Context } from '~/types';
 
@@ -11,9 +11,5 @@ export let loader: LoaderFunction = async ({ context, params }) => {
     throw notFound();
   }
 
-  return json({});
+  throw redirect(`${params.owner}/bookmarks`);
 };
-
-export default function UserProfile() {
-  return <Outlet />;
-}

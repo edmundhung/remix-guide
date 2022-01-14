@@ -57,18 +57,17 @@ function SearchLink({
   children,
 }: SearchLinkProps): ReactElement {
   const location = useLocation();
-  const [to, isActive, shouldReload] = useMemo(() => {
+  const [to, isActive] = useMemo(() => {
     const to = getResourceURL({ owner, list, category });
     const currentOptions = getSearchOptions(
       `${location.pathname}${location.search}`
     );
-    const shouldReload = !location.search && !to.includes('?');
     const isActive =
       (typeof owner === 'undefined' || owner === currentOptions.owner) &&
       (typeof list === 'undefined' || list === currentOptions.list) &&
       (typeof category === 'undefined' || category === currentOptions.category);
 
-    return [to, isActive, shouldReload];
+    return [to, isActive];
   }, [owner, list, category, location]);
 
   return (
@@ -80,7 +79,6 @@ function SearchLink({
           : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
       )}
       to={isActive ? '/' : to}
-      reloadDocument={shouldReload}
     >
       {children}
     </Link>

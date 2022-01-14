@@ -1,7 +1,8 @@
-import type { LoaderFunction, ShouldReloadFunction } from 'remix';
-import { Outlet, useLoaderData, useParams, json } from 'remix';
+import { useMemo } from 'react';
+import { LoaderFunction, ShouldReloadFunction, useLocation } from 'remix';
+import { Outlet, useLoaderData, json } from 'remix';
 import Feed from '~/components/Feed';
-import { getSearchOptions } from '~/search';
+import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { ResourceMetadata, Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, context }) => {
@@ -19,12 +20,21 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
   url,
   prevUrl,
 }) => {
-  return url.searchParams.toString() !== prevUrl.searchParams.toString();
+  const nextSearch = getRelatedSearchParams(url.search).toString();
+  const prevSearch = getRelatedSearchParams(prevUrl.search).toString();
+
+  return nextSearch !== prevSearch;
 };
 
-export default function ListRoute() {
+export default function List() {
   const { entries } = useLoaderData<{ entries: ResourceMetadata[] }>();
-  const { resourceId } = useParams();
+  const location = useLocation();
+  const resourceId = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const resourceId = searchParams.get('resourceId');
+
+    return resourceId;
+  }, [location.search]);
 
   return (
     <Feed entries={entries} selectedId={resourceId}>

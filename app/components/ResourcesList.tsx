@@ -16,7 +16,6 @@ interface ResourcesListProps {
   entries: ResourceMetadata[];
   selectedResourceId: string | null | undefined;
   searchOptions: SearchOptions;
-  submitEnabled: boolean;
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
