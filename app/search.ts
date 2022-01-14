@@ -1,5 +1,6 @@
 import { SearchOptions } from '~/types';
 import { platforms } from '~/config';
+import { capitalize } from '~/helpers';
 
 export function getRelatedSearchParams(search: string): URLSearchParams {
   const searchParams = new URLSearchParams(search);
@@ -148,4 +149,54 @@ export function toggleSearchList(searchParams: URLSearchParams): string {
   }
 
   return search.toString();
+}
+
+export function getTitleBySearchOptions(searchOptions: SearchOptions): string {
+  const options = Object.keys(searchOptions).reduce((result, key) => {
+    switch (key as keyof SearchOptions) {
+      case 'author':
+        if (searchOptions.author) {
+          result.push(`Made by ${searchOptions.author}`);
+        }
+        break;
+      case 'category':
+        if (searchOptions.category) {
+          result.push(capitalize(searchOptions.category));
+        }
+        break;
+      case 'keyword':
+        if (searchOptions.keyword?.trim()) {
+          result.push(`Mentioned ${searchOptions.keyword}`);
+        }
+        break;
+      case 'platform':
+        if (searchOptions.platform) {
+          result.push(`Hosted on ${searchOptions.platform}`);
+        }
+        break;
+      case 'list':
+        if (searchOptions.list) {
+          result.push(capitalize(searchOptions.list));
+        }
+        break;
+      case 'integrations':
+        if ((searchOptions.integrations ?? []).length > 0) {
+          result.push(`Built with ${searchOptions.integrations?.join(', ')}`);
+        }
+        break;
+      case 'site':
+        if (searchOptions.site) {
+          result.push(`Published on ${searchOptions.site}`);
+        }
+        break;
+    }
+
+    return result;
+  }, [] as string[]);
+
+  if (options.length > 1) {
+    return 'Search Result';
+  }
+
+  return options[0] ?? 'Discover';
 }

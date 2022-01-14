@@ -7,8 +7,11 @@ import timesIcon from '~/icons/times.svg';
 import type { ResourceMetadata } from '~/types';
 import MenuLink from '~/components/MenuLink';
 import { PaneContainer, PaneHeader, PaneContent } from '~/layout';
-import { getRelatedSearchParams, toggleSearchList } from '~/search';
-import { capitalize } from '~/helpers';
+import {
+  getRelatedSearchParams,
+  getTitleBySearchOptions,
+  toggleSearchList,
+} from '~/search';
 import type { SearchOptions } from '~/types';
 import { useMemo } from 'react';
 
@@ -52,9 +55,7 @@ export default function ResourcesList({
         <PaneHeader>
           <MenuLink />
           <div className="flex-1 line-clamp-1 text-center lg:text-left">
-            {!searchOptions.list && searchOptions.category
-              ? capitalize(searchOptions.category)
-              : capitalize(searchOptions.list) ?? 'Discover'}
+            {getTitleBySearchOptions(searchOptions)}
           </div>
           <Link
             className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
@@ -73,7 +74,7 @@ export default function ResourcesList({
               <SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={pencilIcon} />
             </Link>
             <div className="flex-1 line-clamp-1 text-center lg:text-left">
-              Search Result
+              {getTitleBySearchOptions(searchOptions)}
             </div>
           </div>
           <Link
@@ -83,6 +84,8 @@ export default function ResourcesList({
                 ? selectedResourceId
                   ? `?resourceId=${selectedResourceId}`
                   : '?'
+                : selectedResourceId
+                ? `/resources/${selectedResourceId}`
                 : '/'
             }
           >

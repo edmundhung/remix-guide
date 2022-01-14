@@ -42,6 +42,8 @@ export function formatMeta(meta: Record<string, string>) {
   return descriptor;
 }
 
+export function capitalize(text: string): string;
+export function capitalize(text: null | undefined): null;
 export function capitalize(text: string | null | undefined): string | null {
   if (!text) {
     return null;

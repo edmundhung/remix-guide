@@ -6,16 +6,40 @@ import {
 } from 'remix';
 import { json } from 'remix';
 import About from '~/components/About';
-import * as ResourcesDetails from '~/routes/__list/resources.$resourceId';
+import ResourcesDetails from '~/components/ResourcesDetails';
+import SuggestedResources from '~/components/SuggestedResources';
 import { capitalize, formatMeta, notFound } from '~/helpers';
+import { getSuggestions, patchResource } from '~/resources';
+import {
+  Context,
+  Resource,
+  ResourceMetadata,
+  SearchOptions,
+  User,
+} from '~/types';
+
+interface LoaderData {
+  resource: Resource;
+  user: User | null;
+  suggestions: Array<{
+    entries: ResourceMetadata[];
+    searchOptions: SearchOptions;
+  }>;
+}
 
 export let meta: MetaFunction = ({ data, params }) => {
+  const { list, owner } = params;
+
+  if (!list || !owner) {
+    return {};
+  }
+
   return formatMeta({
-    title: `${capitalize(params.list)}${
+    title: `${capitalize(list)}${
       data?.resource ? ` - ${data?.resource?.title}` : ''
     }`,
     description: data?.resource?.description ?? '',
-    'og:url': `https://remix.guide/${params.owner}/${params.list}`,
+    'og:url': `https://remix.guide/${owner}/${list}`,
   });
 };
 
@@ -31,19 +55,33 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
     return json({});
   }
 
-  return ResourcesDetails.loader({
-    context,
-    params: {
-      ...params,
-      resourceId,
-    },
-    request,
+  const { session, store } = context as Context;
+  const [resource, profile] = await Promise.all([
+    store.query(resourceId),
+    session.isAuthenticated(),
+  ]);
+
+  if (!resource) {
+    throw notFound();
+  }
+
+  const [user, suggestions] = await Promise.all([
+    profile?.id ? store.getUser(profile.id) : null,
+    getSuggestions(store, resource, profile?.id ?? null),
+  ]);
+
+  return json({
+    user,
+    resource: user ? patchResource(resource, user) : resource,
+    suggestions,
   });
 };
 
-export const unstable_shouldReload: ShouldReloadFunction = (args) => {
-  const { prevUrl, url } = args;
-
+export const unstable_shouldReload: ShouldReloadFunction = ({
+  prevUrl,
+  url,
+  submission,
+}) => {
   if (
     prevUrl.searchParams.get('resourceId') !==
     url.searchParams.get('resourceId')
@@ -51,16 +89,27 @@ export const unstable_shouldReload: ShouldReloadFunction = (args) => {
     return true;
   }
 
-  return ResourcesDetails.unstable_shouldReload(args);
+  return ['bookmark', 'unbookmark'].includes(
+    submission?.formData.get('type')?.toString() ?? ''
+  );
 };
 
 export default function UserProfile() {
-  const data = useLoaderData();
+  const { resource, user, suggestions } = useLoaderData<LoaderData>();
 
-  if (!data?.resource) {
+  if (!resource) {
     return <About />;
   }
 
-  // eslint-disable-next-line react/jsx-pascal-case
-  return <ResourcesDetails.default />;
+  return (
+    <ResourcesDetails resource={resource} user={user}>
+      {suggestions.map(({ entries, searchOptions }) => (
+        <SuggestedResources
+          key={JSON.stringify(searchOptions)}
+          entries={entries}
+          searchOptions={searchOptions}
+        />
+      ))}
+    </ResourcesDetails>
+  );
 }
