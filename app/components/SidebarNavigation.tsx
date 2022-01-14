@@ -79,6 +79,7 @@ function SearchLink({
           : 'text-gray-400 hover:text-gray-200 hover:bg-gray-800'
       )}
       to={isActive ? '/' : to}
+      prefetch="intent"
     >
       {children}
     </Link>
@@ -107,7 +108,11 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
     <PaneContainer>
       <PaneHeader>
         <h1 className="flex-1 text-lg">
-          <Link className="w-full flex flex-row items-center gap-4" to="/">
+          <Link
+            className="w-full flex flex-row items-center gap-4"
+            to="/"
+            prefetch="intent"
+          >
             <SvgIcon className="w-4 h-4" href={logo} />
             Remix Guide
           </Link>
@@ -141,6 +146,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
                       )
                     }
                     to="/submit"
+                    prefetch="intent"
                   >
                     <SvgIcon className="w-3 h-3" href={plusIcon} />
                   </NavLink>
