@@ -254,6 +254,20 @@ test.describe.parallel('Scraping', () => {
     });
   });
 
+  test('accepts the URL only if it has a non-IP address like hostname', async ({
+    page,
+    queries,
+    mockAgent,
+  }) => {
+    const url = 'http://1.1.1.1/hello-world';
+
+    mockPage(mockAgent, url);
+
+    await submitURL(page, url);
+
+    expect(await queries.findByText(/Invalid URL provided/i)).toBeDefined();
+  });
+
   test('accepts the url as tutorials only if the term `remix` show up on the title or description of the page', async ({
     page,
     queries,

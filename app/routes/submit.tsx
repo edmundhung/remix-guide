@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import type { LoaderFunction, ActionFunction } from 'remix';
+import type { LoaderFunction, MetaFunction, ActionFunction } from 'remix';
 import { Form, redirect, json, useLoaderData } from 'remix';
 import CategoryIcon from '~/components/CategoryIcon';
 import { maintainers, categories } from '~/config';
 import { Context, Category } from '~/types';
-import type { MetaFunction } from 'remix';
 import { formatMeta } from '~/helpers';
 import MenuLink from '~/components/MenuLink';
 import FlashMessage from '~/components/FlashMessage';
@@ -19,7 +18,12 @@ export let meta: MetaFunction = () => {
 
 function isValidURL(text: string): boolean {
   try {
-    return ['http:', 'https:'].includes(new URL(text).protocol);
+    const url = new URL(text);
+
+    return (
+      ['http:', 'https:'].includes(url.protocol) &&
+      !/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/.test(url.hostname)
+    );
   } catch (e) {
     return false;
   }
@@ -94,7 +98,7 @@ export let action: ActionFunction = async ({ request, context }) => {
   if (!url || !isValidURL(url.toString())) {
     return redirect('/submit', {
       headers: await session.commitWithFlashMessage(
-        'Invalid url provided',
+        'Invalid URL provided',
         'warning'
       ),
     });
