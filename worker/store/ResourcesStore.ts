@@ -5,7 +5,13 @@ import {
   isValidResource,
   getAdditionalMetadata,
 } from '../scraping';
-import type { Resource, Env, Page, SubmissionStatus } from '../types';
+import type {
+  Resource,
+  Env,
+  Page,
+  SubmissionStatus,
+  ResourceMetadata,
+} from '../types';
 
 /**
  * ID Generator based on nanoid

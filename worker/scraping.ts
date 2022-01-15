@@ -150,10 +150,18 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
     ),
   });
 
+  // Revalidate the canonical URL to ensure everything looks ok
+  if (
+    page.url &&
+    new URL(page.url).toString() !== new URL(response.url).toString()
+  ) {
+    return await scrapeHTML(page.url, userAgent);
+  }
+
   return {
     ...page,
     image: page.image && (await isURLReachable(page.image)) ? page.image : null,
-    url: page.url ?? url,
+    url: response.url,
   };
 }
 

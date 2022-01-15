@@ -194,6 +194,66 @@ test.describe.parallel('Scraping', () => {
     });
   });
 
+  test('follows redirects when scraping the URL', async ({
+    page,
+    mf,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/redirect';
+    const target = 'http://example.com/target';
+
+    mockPage(mockAgent, url, {
+      status: 303,
+      headers: {
+        location: 'http://example.com/target',
+      },
+    });
+
+    mockPage(mockAgent, target);
+
+    await submitURL(page, url);
+
+    const resourceId = getPageResourceId(page);
+    const resource = await getResource(mf, resourceId);
+
+    expect(resource).toMatchObject({
+      url: target,
+    });
+  });
+
+  test('revalidate the URL if it is different from the canonical URL', async ({
+    page,
+    mf,
+    mockAgent,
+  }) => {
+    const url = 'http://example.com/revalidate';
+    const homepage = 'http://example.com';
+
+    mockPage(mockAgent, url, {
+      head: `
+        <title>Revalidate Page</title>
+        <link rel="canonical" href="${homepage}" />
+      `,
+    });
+
+    mockPage(mockAgent, homepage, {
+      head: `
+        <title>Homepage</title>
+        <link rel="canonical" href="${homepage}" />
+      `,
+    });
+
+    await submitURL(page, url);
+
+    const resourceId = getPageResourceId(page);
+    const resource = await getResource(mf, resourceId);
+
+    expect(resource).toMatchObject({
+      title: 'Homepage',
+      url: new URL(homepage).toString(),
+    });
+  });
+
   test('accepts the url as tutorials only if the term `remix` show up on the title or description of the page', async ({
     page,
     queries,

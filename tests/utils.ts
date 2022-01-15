@@ -222,7 +222,7 @@ export function mockSafeBrowsingAPI(mockAgent: MockAgent, apiKey: string) {
 export function mockPage(
   mockAgent: MockAgent,
   urlText: string,
-  options?: { status?: number; head?: string; body?: string }
+  options?: { status?: number; head?: string; body?: string; headers?: any }
 ) {
   const url = new URL(urlText);
   const client = mockAgent.get(url.origin);
@@ -235,10 +235,12 @@ export function mockPage(
 
   client
     .intercept({
-      path: urlText.replace(url.origin, ''),
+      path: urlText !== url.origin ? urlText.replace(url.origin, '') : '/',
       method: 'GET',
     })
-    .reply(options?.status ?? 200, html);
+    .reply(options?.status ?? 200, html, {
+      headers: options?.headers,
+    });
 
   // Assume it is always safe for now
   mockSafeBrowsingAPI(mockAgent, 'test-google-api-key');
