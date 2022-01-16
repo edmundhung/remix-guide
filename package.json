@@ -30,7 +30,8 @@
     "react": "^17.0.1",
     "react-dom": "^17.0.1",
     "remix": "^1.1.1",
-    "remix-auth": "^2.6.0",
+    "remix-auth": "^3.2.1",
+    "remix-auth-github": "^1.0.0",
     "toucan-js": "^2.5.0",
     "workers-logger": "^0.1.0"
   },

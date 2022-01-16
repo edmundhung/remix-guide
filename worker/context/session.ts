@@ -1,5 +1,5 @@
-import { Authenticator } from 'remix-auth/build/authenticator';
-import { GitHubStrategy } from 'remix-auth/build/strategies/github';
+import { Authenticator } from 'remix-auth';
+import { GitHubStrategy } from 'remix-auth-github';
 import { createCookieSessionStorage, redirect } from 'remix';
 import type { Env, MessageType, UserProfile } from '../types';
 
@@ -47,45 +47,49 @@ export function createSession(
         callbackURL: env.GITHUB_CALLBACK_URL,
         userAgent: 'remix-guide',
       },
-      async (accessToken, refreshToken, extraParams, githubProfile) => {
-        const profile: UserProfile = {
-          id: githubProfile.id,
-          name: githubProfile.displayName,
-          email: githubProfile.emails[0].value,
+      async ({ profile }) => {
+        const userProfile: UserProfile = {
+          id: profile.id,
+          name: profile.displayName,
+          email: profile.emails[0].value,
         };
 
         const id = env.USER_STORE.idFromName(profile.id);
         const store = env.USER_STORE.get(id);
         const response = await store.fetch('http://user/profile', {
           method: 'PUT',
-          body: JSON.stringify(profile),
+          body: JSON.stringify(userProfile),
         });
 
         if (!response.ok) {
           throw new Error('Update user profile failed');
         }
 
-        return profile;
+        return userProfile;
       }
     )
   );
 
   return {
     async login(): Promise<void> {
-      await authenticator.authenticate('github', request, {
-        successRedirect: '/',
+      const user = await authenticator.authenticate('github', request, {
         failureRedirect: '/',
       });
-    },
-    async logout(): Promise<Response> {
       const session = await sessionStorage.getSession(
-        request.headers.get('Cookie')
+        request.headers.get('cookie')
       );
 
-      return redirect('/', {
+      session.set(authenticator.sessionKey, user);
+
+      throw redirect(`/${user.name}`, {
         headers: {
-          'Set-Cookie': await sessionStorage.destroySession(session),
+          'Set-Cookie': await sessionStorage.commitSession(session),
         },
+      });
+    },
+    async logout(): Promise<void> {
+      await authenticator.logout(request, {
+        redirectTo: '/',
       });
     },
     async isAuthenticated(): Promise<UserProfile | null> {
