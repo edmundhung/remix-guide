@@ -72,7 +72,6 @@ export class ResourcesStore {
 
             if (url !== page.url) {
               id = this.resourceIdByURL[page.url] ?? null;
-              status = 'RESUBMITTED';
             }
 
             if (!id) {
@@ -80,11 +79,14 @@ export class ResourcesStore {
 
               id = result.id;
               status = result.status;
-              this.resourceIdByURL[page.url] = id;
+            } else {
+              status = 'RESUBMITTED';
             }
 
-            this.resourceIdByURL[url] = id;
-            this.state.storage.put('index/URL', this.resourceIdByURL);
+            if (typeof this.resourceIdByURL[page.url] === 'undefined') {
+              this.resourceIdByURL[page.url] = id;
+              this.state.storage.put('index/URL', this.resourceIdByURL);
+            }
           } else {
             status = 'RESUBMITTED';
           }
@@ -138,7 +140,9 @@ export class ResourcesStore {
           }
 
           const resourceId = url.searchParams.get('resourceId');
-          const resource = await this.getResource(resourceId);
+          const resource = resourceId
+            ? await this.getResource(resourceId)
+            : null;
 
           if (!resource) {
             return new Response('Not Found', { status: 404 });
