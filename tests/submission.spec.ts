@@ -167,14 +167,12 @@ test.describe.parallel('Scraping', () => {
 		const url = 'http://example.com/remix-guide';
 		const title = 'test';
 		const description = 'abcd';
-		const siteName = 'hijk';
 
 		mockPage(mockAgent, url, {
 			status: 200,
 			head: `
         <meta property="og:title" content="${title}" />
         <meta property="og:description" content="${description}" />
-        <meta property="og:site_name" content="${siteName}" />
         <link rel="canonical" href="${url}" />
       `,
 		});
@@ -188,7 +186,6 @@ test.describe.parallel('Scraping', () => {
 			category: 'others',
 			title,
 			description,
-			siteName,
 			image: null,
 			url,
 		});

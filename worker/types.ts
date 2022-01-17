@@ -33,7 +33,6 @@ export type Category = 'tutorials' | 'packages' | 'examples' | 'others';
 
 export interface Page {
 	url: string;
-	siteName?: string;
 	author?: string;
 	category?: Category;
 	title: string;

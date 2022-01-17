@@ -112,12 +112,10 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
 		switch (hostname) {
 			case 'www.youtube.com':
 				return {
-					siteName: 'YouTube',
 					url,
 				};
 			case 'youtu.be':
 				return {
-					siteName: 'YouTube',
 					url: `https://www.youtube.com/watch?v=${pathname.slice(1)}`,
 				};
 		}
@@ -143,7 +141,6 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
 			createAttributeParser('meta[name="twitter:image"]', 'content'),
 			createAttributeParser('meta[name="image"]', 'content'),
 		),
-		siteName: createAttributeParser('meta[property="og:site_name"]', 'content'),
 		url: mergeParsers(
 			createAttributeParser('link[rel="canonical"]', 'href'),
 			createAttributeParser('meta[property="og:url"]', 'content'),
@@ -455,20 +452,23 @@ async function isValidResource(
 		return false;
 	}
 
+	const { hostname } = new URL(page.url);
+
 	switch (category as Category) {
 		case 'tutorials':
 			return (
-				!['npm', 'GitHub'].includes(page.siteName) &&
+				!['www.npmjs.com', 'github.com'].includes(hostname) &&
 				(page.title?.toLowerCase().includes('remix') ||
 					page.description?.toLowerCase().includes('remix'))
 			);
 		case 'packages':
 			return (
-				page.siteName === 'npm' && page.title?.toLowerCase().includes('remix')
+				hostname === 'www.npmjs.com' &&
+				page.title?.toLowerCase().includes('remix')
 			);
 		case 'examples':
 			return (
-				page.siteName === 'GitHub' &&
+				hostname === 'github.com' &&
 				page.integrations
 					?.map((option) => option.toLowerCase())
 					.includes('remix')
@@ -504,18 +504,18 @@ async function getAdditionalMetadata(
 ): Promise<Page> {
 	let metadata: Partial<Page> | null = null;
 
-	switch (page.siteName) {
-		case 'npm': {
+	switch (new URL(page.url).hostname) {
+		case 'www.npmjs.com': {
 			metadata = await parseNpmPackage(page.title, packages, env.GITHUB_TOKEN);
 			break;
 		}
-		case 'GitHub': {
+		case 'github.com': {
 			const [repo] = page.title.replace('GitHub - ', '').split(':');
 
 			metadata = await parseGithubRepository(repo, packages, env.GITHUB_TOKEN);
 			break;
 		}
-		case 'Gist': {
+		case 'gist.github.com': {
 			const [author] = page.url
 				.replace('https://gist.github.com/', '')
 				.split('/');
@@ -526,7 +526,7 @@ async function getAdditionalMetadata(
 			};
 			break;
 		}
-		case 'YouTube': {
+		case 'www.youtube.com': {
 			if (!env.GOOGLE_API_KEY) {
 				throw new Error(
 					'Error capturing YouTube metadata; GOOGLE_API_KEY is not available',
