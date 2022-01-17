@@ -4,10 +4,10 @@
 export {};
 
 interface Env {
-  NODE_ENV: string;
-  VERSION: string;
+	NODE_ENV: string;
+	VERSION: string;
 }
 
 declare global {
-  const process: { env: Partial<Env> };
+	const process: { env: Partial<Env> };
 }
