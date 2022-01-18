@@ -298,21 +298,19 @@ test.describe.parallel('Scraping', () => {
 		expect(getPageURL(page).pathname).not.toBe('/submit');
 	});
 
-	test('accepts the url as packages only if the site name is `npm` and the package name includes `remix`', async ({
+	test('accepts the url as packages only if the hostname is `www.npmjs.com` and the package name includes `remix`', async ({
 		page,
 		queries,
 		mockAgent,
 	}) => {
 		const url = 'http://example.com/packages-registry';
+		const npm = 'http://www.npmjs.com/remix-packages';
 
 		mockPage(mockAgent, url, {
 			status: 200,
-			head: `
-        <title>@random/some-package</title>
-        <meta property="og:site_name" content="npm" />
-      `,
+			head: `<title>@random/some-package</title>`,
 		});
-		mockNpmMetadata(mockAgent, '@random/some-package');
+		mockNpmMetadata(mockAgent, '@random/remix-package');
 
 		await submitURL(page, url, 'packages');
 
@@ -323,16 +321,14 @@ test.describe.parallel('Scraping', () => {
 		).toBeDefined();
 		expect(getPageURL(page).pathname).toBe('/submit');
 
-		mockPage(mockAgent, url, {
+		mockPage(mockAgent, npm, {
 			status: 200,
-			head: `
-        <title>@random/remix-package</title>
-        <meta property="og:site_name" content="npm" />
+			head: `<title>@random/remix-package</title>
       `,
 		});
 		mockNpmMetadata(mockAgent, '@random/remix-package');
 
-		await submitURL(page, url, 'packages');
+		await submitURL(page, npm, 'packages');
 
 		expect(
 			await queries.findByText(/The submitted resource is now published/i),
@@ -345,14 +341,11 @@ test.describe.parallel('Scraping', () => {
 		queries,
 		mockAgent,
 	}) => {
-		const url = 'http://example.com/random-repository';
+		const url = 'http://github.com/random/repository';
 
 		mockPage(mockAgent, url, {
 			status: 200,
-			head: `
-        <title>random/repository: Some description here</title>
-        <meta property="og:site_name" content="GitHub" />
-      `,
+			head: `<title>random/repository: Some description here</title>`,
 		});
 
 		mockGitHubMetadata(mockAgent, 'random/repository', {
