@@ -10,6 +10,10 @@ compatibility_date = "2021-12-24"
 binding = "CONTENT"
 id = "f1a419c9f5524449b2c0562c7d774dd4"
 
+[[kv_namespaces]]
+binding = "PAGE"
+id = "cbc1be986daa4173b3cd3ac419c2d29f"
+
 [site]
 bucket = "./public"
 entry-point = "."

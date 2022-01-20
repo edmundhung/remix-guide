@@ -157,12 +157,16 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
 
 	return {
 		...page,
+		category: 'tutorials',
 		image: page.image && (await isURLReachable(page.image)) ? page.image : null,
 		url: response.url,
 	};
 }
 
-async function checkSafeBrowsingAPI(urls: string[], apiKey: string) {
+async function checkSafeBrowsingAPI(
+	urls: string[],
+	apiKey: string,
+): Promise<boolean> {
 	const response = await fetch(
 		`https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${apiKey}`,
 		{
@@ -203,7 +207,7 @@ async function checkSafeBrowsingAPI(urls: string[], apiKey: string) {
 	return matches.length === 0;
 }
 
-async function getPackageInfo(packageName: string) {
+async function getPackageInfo(packageName: string): Promise<any> {
 	const response = await fetch(`https://registry.npmjs.org/${packageName}`);
 
 	if (!response.ok) {
@@ -216,7 +220,7 @@ async function getPackageInfo(packageName: string) {
 async function getGithubRepositoryMetadata(
 	repo: string,
 	token: string | undefined,
-) {
+): Promise<any> {
 	const response = await fetch(`https://api.github.com/repos/${repo}`, {
 		headers: {
 			Accept: 'application/vnd.github.v3+json',
@@ -236,7 +240,7 @@ async function getGithubRepositoryFiles(
 	repo: string,
 	token: string | undefined,
 	path = '',
-) {
+): Promise<any[]> {
 	const response = await fetch(
 		`https://api.github.com/repos/${repo}/contents/${path}`,
 		{
@@ -255,7 +259,10 @@ async function getGithubRepositoryFiles(
 	return await response.json();
 }
 
-async function getGithubRepositoryPackacgeJSON(repo: string, branch: string) {
+async function getGithubRepositoryPackacgeJSON(
+	repo: string,
+	branch: string,
+): Promise<any> {
 	const response = await fetch(
 		`https://raw.githubusercontent.com/${repo}/${branch}/package.json`,
 	);
@@ -267,7 +274,10 @@ async function getGithubRepositoryPackacgeJSON(repo: string, branch: string) {
 	return await response.json();
 }
 
-async function getYouTubeMetadata(videoId: string, apiKey: string) {
+async function getYouTubeMetadata(
+	videoId: string,
+	apiKey: string,
+): Promise<any> {
 	const response = await fetch(
 		`https://youtube.googleapis.com/youtube/v3/videos?id=${videoId}&key=${apiKey}&part=snippet`,
 	);
@@ -331,7 +341,7 @@ function getIntegrations(
 	}
 
 	for (const file of files) {
-		switch (file.name) {
+		switch (file) {
 			case 'wrangler.toml':
 				integrations.add('cloudflare');
 				break;
@@ -356,9 +366,8 @@ function getIntegrations(
 
 async function parseGithubRepository(
 	repo: string,
-	packages: string[],
 	token: string | undefined,
-): Partial<Page> | null {
+): Promise<Partial<Page> | null> {
 	const [metadata, files] = await Promise.all([
 		getGithubRepositoryMetadata(repo, token),
 		getGithubRepositoryFiles(repo, token),
@@ -368,114 +377,78 @@ async function parseGithubRepository(
 		return null;
 	}
 
-	const packageJSON = files.find((file) => file.name === 'package.json')
+	const configs = files.map((file) => file.name);
+	const packageJSON = configs.find((name) => name === 'package.json')
 		? await getGithubRepositoryPackacgeJSON(repo, metadata['default_branch'])
 		: null;
 
 	return {
 		title: metadata['full_name'],
+		category: 'examples',
 		description: metadata['description'],
 		author: metadata['owner']?.['login'],
-		integrations: getIntegrations(files, packages, {
+		dependencies: {
 			...packageJSON?.dependencies,
 			...packageJSON?.devDependencies,
-		}),
+		},
+		configs,
 	};
 }
 
 async function parseNpmPackage(
 	packageName: string,
-	packages: string[],
 	githubToken: string | undefined,
-): Partial<Page> {
+): Promise<Partial<Page> | null> {
 	const info = await getPackageInfo(packageName);
 
 	if (!info) {
 		return null;
 	}
 
-	const repoUrl =
+	const [, ...names] =
 		info['repository']?.type === 'git'
 			? new URL(
 					info['repository'].url.replace(/^git\+/, '').replace(/\.git$/, ''),
-			  )
+			  ).pathname.split('/', 3)
+			: [];
+
+	const details =
+		names.length === 2
+			? await parseGithubRepository(names.join('/'), githubToken)
 			: null;
-	const details = repoUrl
-		? await parseGithubRepository(
-				repoUrl.pathname.slice(1),
-				packages,
-				githubToken,
-		  )
-		: null;
 
 	return {
 		...details,
+		category: 'packages',
 		title: info.name,
 		description: info.description,
 	};
 }
 
-async function parseYouTubeVideo(videoId: string, apiKey: string) {
+async function parseYouTubeVideo(videoId: string, apiKey: string | undefined) {
+	if (!apiKey) {
+		return null;
+	}
+
 	const metadata = await getYouTubeMetadata(videoId, apiKey);
 
 	if (!metadata) {
 		return null;
 	}
 
-	const [video] = metadata.items;
-	const { thumbnails } = video.snippet;
+	const [video] = metadata.items ?? [];
+	const { title, description, thumbnails } = video?.snippet ?? {};
 
 	return {
-		title: video.snippet.title,
-		description: video.snippet.description,
+		title,
+		description,
 		image:
-			thumbnails.standard?.url ??
-			thumbnails.high?.url ??
-			thumbnails.medium?.url ??
+			thumbnails?.standard?.url ??
+			thumbnails?.high?.url ??
+			thumbnails?.medium?.url ??
 			null,
 		video: `https://www.youtube.com/embed/${videoId}`,
 	};
-}
-
-async function isValidResource(
-	page: Page,
-	category: string,
-	apiKey?: string,
-): Promise<boolean> {
-	let isSafe = true;
-
-	if (apiKey) {
-		isSafe = await checkSafeBrowsingAPI([page.url], apiKey);
-	}
-
-	if (!isSafe) {
-		return false;
-	}
-
-	const { hostname } = new URL(page.url);
-
-	switch (category as Category) {
-		case 'tutorials':
-			return (
-				!['www.npmjs.com', 'github.com'].includes(hostname) &&
-				(page.title?.toLowerCase().includes('remix') ||
-					page.description?.toLowerCase().includes('remix'))
-			);
-		case 'packages':
-			return (
-				hostname === 'www.npmjs.com' &&
-				page.title?.toLowerCase().includes('remix')
-			);
-		case 'examples':
-			return (
-				hostname === 'github.com' &&
-				page.integrations
-					?.map((option) => option.toLowerCase())
-					.includes('remix')
-			);
-		case 'others':
-			return true;
-	}
 }
 
 function getIntegrationsFromPage(page: Page, packages: string[]): string[] {
@@ -497,59 +470,53 @@ function getIntegrationsFromPage(page: Page, packages: string[]): string[] {
 	return Array.from(result);
 }
 
-async function getAdditionalMetadata(
-	page: Page,
-	packages: string[],
+async function getPageMetadata(
+	url: string,
 	env: Env,
-): Promise<Page> {
+): Promise<Partial<Page> | null> {
+	const { hostname, pathname, searchParams } = new URL(url);
+
 	let metadata: Partial<Page> | null = null;
 
-	switch (new URL(page.url).hostname) {
-		case 'www.npmjs.com': {
-			metadata = await parseNpmPackage(page.title, packages, env.GITHUB_TOKEN);
-			break;
-		}
-		case 'github.com': {
-			const [repo] = page.title.replace('GitHub - ', '').split(':');
+	if (hostname === 'www.npmjs.com' && pathname.startsWith('/package/')) {
+		metadata = await parseNpmPackage(
+			pathname.replace('/package/', ''),
+			env.GITHUB_TOKEN,
+		);
+	} else if (
+		hostname === 'github.com' &&
+		pathname.slice(1).split('/').length === 2
+	) {
+		metadata = await parseGithubRepository(pathname.slice(1), env.GITHUB_TOKEN);
+	} else if (hostname === 'gist.github.com') {
+		const [author] = pathname.slice(1).split('/');
 
-			metadata = await parseGithubRepository(repo, packages, env.GITHUB_TOKEN);
-			break;
-		}
-		case 'gist.github.com': {
-			const [author] = page.url
-				.replace('https://gist.github.com/', '')
-				.split('/');
-
-			metadata = {
-				author,
-				description: '',
-			};
-			break;
-		}
-		case 'www.youtube.com': {
-			if (!env.GOOGLE_API_KEY) {
-				throw new Error(
-					'Error capturing YouTube metadata; GOOGLE_API_KEY is not available',
-				);
-			}
-
-			const videoId = new URL(page.url).searchParams.get('v');
-
-			metadata = await parseYouTubeVideo(videoId, env.GOOGLE_API_KEY);
-			break;
-		}
+		metadata = {
+			author,
+			description: '',
+		};
+	} else if (hostname === 'www.youtube.com' && searchParams.has('v')) {
+		metadata = await parseYouTubeVideo(
+			searchParams.get('v') as string,
+			env.GOOGLE_API_KEY,
+		);
 	}
 
-	const result = {
-		...page,
-		...metadata,
-	};
-
-	if (!result.integrations) {
-		result.integrations = getIntegrationsFromPage(result, packages);
+	if (metadata !== null) {
+		metadata = Object.fromEntries(
+			Object.entries(metadata).filter(
+				([, value]) => typeof value !== 'undefined',
+			),
+		);
 	}
 
-	return result;
+	return metadata;
 }
 
-export { scrapeHTML, getAdditionalMetadata, isValidResource };
+export {
+	scrapeHTML,
+	getPageMetadata,
+	getIntegrations,
+	getIntegrationsFromPage,
+	checkSafeBrowsingAPI,
+};

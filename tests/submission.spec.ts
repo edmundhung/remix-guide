@@ -8,6 +8,7 @@ import {
 	getPageResourceId,
 	mockNpmMetadata,
 	getPageURL,
+	getPage,
 } from './utils';
 
 test.describe.parallel('Permission', () => {
@@ -179,15 +180,95 @@ test.describe.parallel('Scraping', () => {
 
 		await submitURL(page, url);
 
-		const resourceId = getPageResourceId(page);
-		const resource = await getResource(mf, resourceId);
+		const pageData = await getPage(mf, url);
 
-		expect(resource).toMatchObject({
+		expect(pageData).toMatchObject({
 			category: 'others',
 			title,
 			description,
 			image: null,
 			url,
+		});
+	});
+
+	test('scrapes the repository if the hostname is `github.com`', async ({
+		page,
+		mf,
+		mockAgent,
+	}) => {
+		const url = 'http://github.com/random/repository';
+
+		mockPage(mockAgent, url, {
+			head: `
+				<title>Test repository</title>
+				<meta property="og:description" content="Nothing special" />
+			`,
+		});
+		mockGitHubMetadata(mockAgent, 'random/repository', {
+			login: 'tester',
+			description: 'Testing description',
+			files: ['.foobar', 'package.json'],
+			dependencies: {
+				remix: '1.0.0',
+			},
+			devDependencies: {
+				secret: '0.0.1',
+			},
+		});
+
+		await submitURL(page, url, 'examples');
+
+		const pageData = await getPage(mf, url);
+
+		expect(pageData).toMatchObject({
+			url,
+			category: 'examples',
+			title: 'random/repository',
+			description: 'Testing description',
+			author: 'tester',
+			dependencies: {
+				remix: '1.0.0',
+				secret: '0.0.1',
+			},
+			configs: ['.foobar', 'package.json'],
+		});
+	});
+
+	test('scrapes the registry if the hostname is `www.npmjs.com` with pathname starts with `package`', async ({
+		page,
+		mf,
+		mockAgent,
+	}) => {
+		const url = 'http://www.npmjs.com/package/@someone/example-package';
+
+		mockPage(mockAgent, url);
+		mockNpmMetadata(mockAgent, '@someone/example-package', {
+			description: 'Package description',
+			repositoryURL: 'http://github.com/someone/example-package',
+		});
+		mockGitHubMetadata(mockAgent, 'someone/example-package', {
+			login: 'someone',
+			description: 'Repository description',
+			files: ['.something', 'package.json'],
+			dependencies: {
+				unknown: '0.1.0',
+			},
+		});
+
+		await submitURL(page, url, 'packages');
+
+		const pageData = await getPage(mf, url);
+
+		expect(pageData).toMatchObject({
+			url,
+			category: 'packages',
+			title: '@someone/example-package',
+			description: 'Package description',
+			author: 'someone',
+			dependencies: {
+				unknown: '0.1.0',
+			},
+			configs: ['.something', 'package.json'],
 		});
 	});
 
@@ -263,125 +344,6 @@ test.describe.parallel('Scraping', () => {
 		await submitURL(page, url);
 
 		expect(await queries.findByText(/Invalid URL provided/i)).toBeDefined();
-	});
-
-	test('accepts the url as tutorials only if the term `remix` show up on the title or description of the page', async ({
-		page,
-		queries,
-		mockAgent,
-	}) => {
-		const url = 'http://example.com/hello-world';
-
-		mockPage(mockAgent, url, {
-			status: 200,
-		});
-
-		await submitURL(page, url, 'tutorials');
-
-		expect(
-			await queries.findByText(
-				/The provided data looks invalid; Please make sure a proper category is selected/i,
-			),
-		).toBeDefined();
-		expect(getPageURL(page).pathname).toBe('/submit');
-
-		mockPage(mockAgent, url, {
-			status: 200,
-			head: `<title>Remix example</title>`,
-		});
-
-		await submitURL(page, url, 'tutorials');
-
-		expect(
-			await queries.findByText(/The submitted resource is now published/i),
-		).toBeDefined();
-		expect(getPageURL(page).pathname).not.toBe('/submit');
-	});
-
-	test('accepts the url as packages only if the hostname is `www.npmjs.com` and the package name includes `remix`', async ({
-		page,
-		queries,
-		mockAgent,
-	}) => {
-		const url = 'http://example.com/packages-registry';
-		const npm = 'http://www.npmjs.com/remix-packages';
-
-		mockPage(mockAgent, url, {
-			status: 200,
-			head: `<title>@random/some-package</title>`,
-		});
-		mockNpmMetadata(mockAgent, '@random/remix-package');
-
-		await submitURL(page, url, 'packages');
-
-		expect(
-			await queries.findByText(
-				/The provided data looks invalid; Please make sure a proper category is selected/i,
-			),
-		).toBeDefined();
-		expect(getPageURL(page).pathname).toBe('/submit');
-
-		mockPage(mockAgent, npm, {
-			status: 200,
-			head: `<title>@random/remix-package</title>
-      `,
-		});
-		mockNpmMetadata(mockAgent, '@random/remix-package');
-
-		await submitURL(page, npm, 'packages');
-
-		expect(
-			await queries.findByText(/The submitted resource is now published/i),
-		).toBeDefined();
-		expect(getPageURL(page).pathname).not.toBe('/submit');
-	});
-
-	test('accepts the url as examples only if remix is listed on the dependencies', async ({
-		page,
-		queries,
-		mockAgent,
-	}) => {
-		const url = 'http://github.com/random/repository';
-
-		mockPage(mockAgent, url, {
-			status: 200,
-			head: `<title>random/repository: Some description here</title>`,
-		});
-
-		mockGitHubMetadata(mockAgent, 'random/repository', {
-			dependencies: {},
-			devDependencies: {},
-		});
-
-		await submitURL(page, url, 'examples');
-
-		expect(
-			await queries.findByText(
-				/The provided data looks invalid; Please make sure a proper category is selected/i,
-			),
-		).toBeDefined();
-		expect(getPageURL(page).pathname).toBe('/submit');
-
-		mockPage(mockAgent, url, {
-			status: 200,
-			head: `
-        <title>random/repository: Some description here</title>
-        <meta property="og:site_name" content="GitHub" />
-      `,
-		});
-
-		mockGitHubMetadata(mockAgent, 'random/repository', {
-			dependencies: {
-				remix: '1.0.0',
-			},
-		});
-
-		await submitURL(page, url, 'examples');
-
-		expect(
-			await queries.findByText(/The submitted resource is now published/i),
-		).toBeDefined();
-		expect(getPageURL(page).pathname).not.toBe('/submit');
 	});
 
 	test('accepts any url as others', async ({ page, queries, mockAgent }) => {

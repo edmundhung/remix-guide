@@ -1,16 +1,20 @@
 import { customAlphabet } from 'nanoid';
+import { json } from 'remix';
 import { createLogger } from '../logging';
 import {
 	scrapeHTML,
-	isValidResource,
-	getAdditionalMetadata,
+	getPageMetadata,
+	checkSafeBrowsingAPI,
+	getIntegrations,
+	getIntegrationsFromPage,
 } from '../scraping';
 import type {
-	Resource,
 	Env,
 	Page,
-	SubmissionStatus,
+	Resource,
+	ResourceSummary,
 	ResourceMetadata,
+	SubmissionStatus,
 } from '../types';
 
 /**
@@ -22,25 +26,318 @@ const generateId = customAlphabet(
 	12,
 );
 
+type Unwrap<T> = T extends Promise<infer U>
+	? U
+	: T extends (...args: any) => Promise<infer U>
+	? U
+	: T extends (...args: any) => infer U
+	? U
+	: T;
+
+async function createResourceStore(state: DurableObjectState, env: Env) {
+	const { PAGE, CONTENT, GOOGLE_API_KEY } = env;
+	const resourceIdByURL =
+		(await state.storage.get<Record<string, string | undefined>>(
+			'index/URL',
+		)) ?? {};
+	const resourceIdByPackageName =
+		(await state.storage.get<Record<string, string | undefined>>(
+			'index/PackageName',
+		)) ?? {};
+
+	async function createResource(
+		page: Page,
+		category: string,
+		userId: string,
+	): Promise<{
+		id: string | null;
+		status: SubmissionStatus;
+	}> {
+		if (page.category !== category || !page.isSafe) {
+			return {
+				id: null,
+				status: 'INVALID',
+			};
+		}
+
+		const id = generateId();
+		const now = new Date().toISOString();
+
+		await updateResource(
+			{
+				id,
+				url: page.url,
+				bookmarked: [],
+				viewCounts: 0,
+				createdAt: now,
+				createdBy: userId,
+				updatedAt: now,
+				updatedBy: userId,
+			},
+			page,
+		);
+
+		if (category === 'packages') {
+			resourceIdByPackageName[page.title] = id;
+			state.storage.put('index/PackageName', resourceIdByPackageName);
+		}
+
+		return {
+			id,
+			status: 'PUBLISHED',
+		};
+	}
+
+	async function getResource(resourceId: string) {
+		const resource = await state.storage.get<ResourceSummary>(resourceId);
+
+		if (!resource) {
+			return null;
+		}
+
+		return {
+			id: resource.id,
+			url: resource.url,
+			bookmarked: resource.bookmarked,
+			viewCounts: resource.viewCounts,
+			createdAt: resource.createdAt,
+			createdBy: resource.createdBy,
+			updatedAt: resource.updatedAt,
+			updatedBy: resource.updatedBy,
+		};
+	}
+
+	async function updateResource(
+		resource: ResourceSummary,
+		page?: Page,
+	): Promise<void> {
+		await state.storage.put(resource.id, resource);
+		await updateResourceCache(resource, page);
+	}
+
+	async function updateResourceCache(
+		summary: ResourceSummary,
+		pageData?: Page,
+	): Promise<void> {
+		const page = pageData ?? (await PAGE.get<Page>(summary.url, 'json'));
+
+		if (!page) {
+			throw new Error('No page data found for the corresponding URL');
+		}
+
+		const packages = Object.keys(resourceIdByPackageName);
+		const integrations =
+			page.category === 'packages' || page.category === 'examples'
+				? getIntegrations(page.configs ?? [], packages, page.dependencies ?? {})
+				: getIntegrationsFromPage(page, packages);
+		const resource: Resource = {
+			...summary,
+			category: page.category,
+			author: page.author,
+			title: page.title,
+			description: page.description,
+			image: page.image,
+			video: page.video,
+			isSafe: page.isSafe,
+			dependencies: page.dependencies,
+			configs: page.configs,
+			integrations,
+		};
+		const metadata: ResourceMetadata = {
+			id: resource.id,
+			url: resource.url,
+			category: resource.category,
+			author: resource.author,
+			title: resource.title,
+			description: resource.description?.slice(0, 80),
+			viewCounts: resource.viewCounts,
+			bookmarkCounts: resource.bookmarked.length,
+			integrations: resource.integrations,
+			createdAt: resource.createdAt,
+		};
+
+		await CONTENT.put(`resources/${resource.id}`, JSON.stringify(resource), {
+			metadata,
+		});
+	}
+
+	return {
+		async submit(
+			userId: string,
+			url: string,
+			userAgent: string,
+			category: string,
+		) {
+			let status: SubmissionStatus | null = null;
+			let page = await PAGE.get<Page>(url, 'json');
+
+			if (!page) {
+				page = await scrapeHTML(url, userAgent);
+
+				const [pageMetadata, isSafe] = await Promise.all([
+					getPageMetadata(page.url, env),
+					GOOGLE_API_KEY
+						? checkSafeBrowsingAPI([page.url], GOOGLE_API_KEY)
+						: true,
+				]);
+				const now = new Date().toISOString();
+
+				page = {
+					...page,
+					...pageMetadata,
+					isSafe,
+					createdAt: now,
+					updatedAt: now,
+				};
+
+				if (category === 'others') {
+					page.category = category;
+				}
+
+				PAGE.put(page.url, JSON.stringify(page));
+			}
+
+			let id = resourceIdByURL[page.url] ?? null;
+
+			if (!id) {
+				const result = await createResource(page, category, userId);
+
+				id = result.id;
+				status = result.status;
+
+				if (id) {
+					resourceIdByURL[page.url] = id;
+					state.storage.put('index/URL', resourceIdByURL);
+				}
+			} else {
+				status = 'RESUBMITTED';
+			}
+
+			return { id, status };
+		},
+		async refresh(userId: string, resourceId: string, userAgent: string) {
+			let resource = await getResource(resourceId);
+
+			if (!resource) {
+				return false;
+			}
+
+			const [currentPage, updatedPage, pageMetadata, isSafe] =
+				await Promise.all([
+					PAGE.get<Page>(resource.url, 'json'),
+					scrapeHTML(resource.url, userAgent),
+					getPageMetadata(resource.url, env),
+					GOOGLE_API_KEY
+						? checkSafeBrowsingAPI([resource.url], GOOGLE_API_KEY)
+						: true,
+				]);
+
+			const now = new Date().toISOString();
+			const page = {
+				...updatedPage,
+				...pageMetadata,
+				isSafe,
+				createdAt: currentPage?.createdAt ?? resource.createdAt ?? now,
+				updatedAt: now,
+			};
+
+			PAGE.put(page.url, JSON.stringify(page));
+
+			if (resource.url !== page.url) {
+				PAGE.put(resource.url, JSON.stringify(page));
+
+				resource = {
+					...resource,
+					url: page.url,
+					updatedAt: now,
+					updatedBy: userId,
+				};
+			}
+
+			await updateResource(resource, page);
+
+			return true;
+		},
+		async getDetails(resourceId: string | null) {
+			const resource = resourceId ? await getResource(resourceId) : null;
+
+			if (!resource) {
+				return null;
+			}
+
+			updateResourceCache(resource);
+
+			return resource;
+		},
+		async view(resourceId: string | null) {
+			const resource = resourceId ? await getResource(resourceId) : null;
+
+			if (!resource) {
+				return false;
+			}
+
+			updateResource({
+				...resource,
+				viewCounts: resource.viewCounts + 1,
+			});
+
+			return true;
+		},
+		async bookmark(userId: string, resourceId: string | null) {
+			const resource = resourceId ? await getResource(resourceId) : null;
+
+			if (!resource) {
+				return false;
+			}
+
+			let bookmarked = resource.bookmarked ?? [];
+
+			if (!bookmarked.includes(userId)) {
+				bookmarked = bookmarked.concat(userId);
+			}
+
+			if (bookmarked !== resource.bookmarked) {
+				updateResource({ ...resource, bookmarked });
+			}
+
+			return true;
+		},
+		async unbookmark(userId: string, resourceId: string | null) {
+			const resource = resourceId ? await getResource(resourceId) : null;
+
+			if (!resource) {
+				return false;
+			}
+
+			let bookmarked = resource.bookmarked ?? [];
+
+			if (bookmarked.includes(userId)) {
+				bookmarked = bookmarked.filter((id) => id !== userId);
+			}
+
+			if (bookmarked !== resource.bookmarked) {
+				updateResource({ ...resource, bookmarked });
+			}
+
+			return true;
+		},
+	};
+}
+
 /**
  * ResourcesStore - A durable object that keeps resources data and preview info
  */
 export class ResourcesStore {
-	state: DurableObjectState;
 	env: Env;
-	resourceIdByURL: Record<string, string | null>;
-	resourceIdByPackageName: Record<string, string | null>;
+	state: DurableObjectState;
+	store: Unwrap<typeof createResourceStore> | null;
 
-	constructor(state, env) {
-		this.state = state;
+	constructor(state: DurableObjectState, env: Env) {
 		this.env = env;
-		this.state.blockConcurrencyWhile(async () => {
-			let resourceIdByURL = await this.state.storage.get('index/URL');
-			let resourceIdByPackageName = await this.state.storage.get(
-				'index/PackageName',
-			);
-			this.resourceIdByURL = resourceIdByURL ?? {};
-			this.resourceIdByPackageName = resourceIdByPackageName ?? {};
+		this.state = state;
+		this.store = null;
+		state.blockConcurrencyWhile(async () => {
+			this.store = await createResourceStore(state, env);
 		});
 	}
 
@@ -50,176 +347,80 @@ export class ResourcesStore {
 			LOGGER_NAME: 'store:ResourcesStore',
 		});
 
-		let response: Response;
+		let response = new Response('Not found', { status: 404 });
 
 		try {
 			let url = new URL(request.url);
 			let method = request.method.toUpperCase();
 
-			switch (url.pathname) {
-				case '/submit': {
-					if (method !== 'POST') {
-						break;
-					}
+			if (!this.store) {
+				throw new Error('');
+			} else if (url.pathname === '/submit' && method === 'POST') {
+				const { url, category, userAgent, userId } = await request.json();
+				const result = await this.store.submit(
+					userId,
+					url,
+					userAgent,
+					category,
+				);
 
-					const { url, category, userAgent, userId } = await request.json();
+				response = json(result, 201);
+			} else if (url.pathname === '/refresh' && method === 'POST') {
+				const { userId, resourceId, userAgent } = await request.json();
+				const success = await this.store.refresh(userId, resourceId, userAgent);
 
-					let status: SubmissionStatus | null = null;
-					let id = this.resourceIdByURL[url] ?? null;
-
-					if (!id) {
-						const page = await scrapeHTML(url, userAgent);
-
-						if (url !== page.url) {
-							id = this.resourceIdByURL[page.url] ?? null;
-						}
-
-						if (!id) {
-							const result = await this.createResource(page, category, userId);
-
-							id = result.id;
-							status = result.status;
-						} else {
-							status = 'RESUBMITTED';
-						}
-
-						if (typeof this.resourceIdByURL[page.url] === 'undefined') {
-							this.resourceIdByURL[page.url] = id;
-							this.state.storage.put('index/URL', this.resourceIdByURL);
-						}
-					} else {
-						status = 'RESUBMITTED';
-					}
-
-					const body = JSON.stringify({ id, status });
-
-					response = new Response(body, { status: 201 });
-					break;
-				}
-				case '/refresh': {
-					if (method === 'POST') {
-						const { resourceId, userId, userAgent } = await request.json();
-						const resource = await this.getResource(resourceId);
-
-						if (!resource) {
-							return new Response('Not Found', { status: 404 });
-						}
-
-						const page = await scrapeHTML(resource.url, userAgent);
-
-						let data: Page | null;
-
-						try {
-							data = await getAdditionalMetadata(
-								page,
-								Object.keys(this.resourceIdByPackageName),
-								this.env,
-							);
-						} catch (e) {
-							if (e instanceof Error) {
-								logger.error(e);
-							}
-
-							data = null;
-						}
-
-						await this.updateResource({
-							...resource,
-							...data,
-							updatedAt: new Date().toISOString(),
-							updatedBy: userId,
-						});
-
-						response = new Response('OK', { status: 200 });
-					}
-					break;
-				}
-				case '/details': {
-					if (method !== 'GET') {
-						break;
-					}
-
-					const resourceId = url.searchParams.get('resourceId');
-					const resource = resourceId
-						? await this.getResource(resourceId)
-						: null;
-
-					if (!resource) {
-						return new Response('Not Found', { status: 404 });
-					}
-
-					this.updateResourceCache(resource);
-
-					response = new Response(JSON.stringify(resource), {
-						status: 200,
-					});
-					break;
-				}
-				case '/view': {
-					if (method !== 'PUT') {
-						break;
-					}
-
-					const { resourceId } = await request.json();
-					const resource = await this.getResource(resourceId);
-
-					if (!resource) {
-						return new Response('Not Found', { status: 404 });
-					}
-
-					this.updateResource({
-						...resource,
-						viewCounts: resource.viewCounts + 1,
-					});
-
+				if (success) {
 					response = new Response('OK', { status: 200 });
-					break;
 				}
-				case '/bookmark': {
-					if (method !== 'PUT' && method !== 'DELETE') {
-						break;
-					}
+			} else if (url.pathname === '/details' && method === 'GET') {
+				const resourceId = url.searchParams.get('resourceId');
+				const resource = await this.store.getDetails(resourceId);
 
-					const { userId, resourceId } = await request.json();
+				if (resource) {
+					response = json(resource);
+				}
+			} else if (url.pathname === '/view' && method === 'PUT') {
+				const { resourceId } = await request.json();
+				const success = await this.store.view(resourceId);
 
-					let resource = await this.getResource(resourceId);
-
-					if (!resource) {
-						return new Response('Not Found', { status: 404 });
-					}
-
-					let bookmarked = resource.bookmarked ?? [];
-
-					switch (method) {
-						case 'PUT':
-							if (!bookmarked.includes(userId)) {
-								bookmarked = bookmarked.concat(userId);
-							}
-							break;
-						case 'DELETE':
-							if (bookmarked.includes(userId)) {
-								bookmarked = bookmarked.filter((id) => id !== userId);
-							}
-							break;
-					}
-
-					if (bookmarked !== resource.bookmarked) {
-						this.updateResource({ ...resource, bookmarked });
-					}
-
+				if (success) {
 					response = new Response('OK', { status: 200 });
-					break;
 				}
-			}
+			} else if (url.pathname === '/bookmark' && method === 'PUT') {
+				const { userId, resourceId } = await request.json();
+				const success = await this.store.bookmark(userId, resourceId);
 
-			if (!response) {
-				response = new Response('Not found', { status: 404 });
+				if (success) {
+					response = new Response('OK', { status: 200 });
+				}
+			} else if (url.pathname === '/bookmark' && method === 'DELETE') {
+				const { userId, resourceId } = await request.json();
+				const success = await this.store.unbookmark(userId, resourceId);
+
+				if (success) {
+					response = new Response('OK', { status: 200 });
+				}
+			} else if (url.pathname === '/backup' && method === 'POST') {
+				const data = await this.state.storage.list();
+
+				response = json(Object.fromEntries(data));
+			} else if (url.pathname === '/restore' && method === 'POST') {
+				const data = await request.json();
+
+				await this.state.storage.put(data as Record<string, any>);
+
+				// Re-initialise everything again
+				this.store = await createResourceStore(this.state, this.env);
+
+				response = new Response('OK', { status: 200 });
 			}
 		} catch (e) {
-			logger.error(e);
-			logger.log(
-				`ResourcesStore failed while handling fetch - ${request.url}; Received message: ${e.message}`,
-			);
+			if (e instanceof Error) {
+				logger.error(e);
+				logger.log(
+					`ResourcesStore failed while handling fetch - ${request.url}; Received message: ${e.message}`,
+				);
+			}
 
 			response = new Response('Internal Server Error', { status: 500 });
 		} finally {
@@ -227,96 +428,5 @@ export class ResourcesStore {
 		}
 
 		return response;
-	}
-
-	async createResource(
-		page: Page,
-		category: string,
-		userId: string,
-	): Promise<{
-		id: string | null;
-		status: SubmissionStatus;
-	}> {
-		const id = generateId();
-		const now = new Date().toISOString();
-		const data = await getAdditionalMetadata(
-			page,
-			Object.keys(this.resourceIdByPackageName),
-			this.env,
-		);
-		const isValid = await isValidResource(
-			data,
-			category,
-			this.env.GOOGLE_API_KEY,
-		);
-
-		if (!isValid) {
-			return {
-				id: null,
-				status: 'INVALID',
-			};
-		}
-
-		await this.updateResource({
-			...data,
-			id,
-			category,
-			bookmarked: [],
-			viewCounts: 0,
-			createdAt: now,
-			createdBy: userId,
-			updatedAt: now,
-			updatedBy: userId,
-		});
-
-		if (category === 'packages') {
-			this.resourceIdByPackageName[data.title] = id;
-			this.state.storage.put('index/PackageName', this.resourceIdByPackageName);
-		}
-
-		return {
-			id,
-			status: 'PUBLISHED',
-		};
-	}
-
-	async getResource(resourceId: string) {
-		const resource = await this.state.storage.get<Resource>(resourceId);
-
-		if (!resource) {
-			return null;
-		}
-
-		return resource;
-	}
-
-	async updateResource(resource: Resource): Promise<Resource> {
-		await this.state.storage.put(resource.id, resource);
-		await this.updateResourceCache(resource);
-
-		return resource;
-	}
-
-	async updateResourceCache(resource: Resource): Promise<void> {
-		const metadata: ResourceMetadata = {
-			id: resource.id,
-			url: resource.url,
-			category: resource.category,
-			author: resource.author,
-			title: resource.title,
-			description: resource.description?.slice(0, 80),
-			integrations: resource.integrations,
-			viewCounts: resource.viewCounts,
-			bookmarkCounts: resource.bookmarked.length,
-			createdAt: resource.createdAt,
-		};
-
-		await this.env.CONTENT.put(
-			`resources/${resource.id}`,
-			JSON.stringify(resource),
-			{
-				metadata,
-			},
-		);
 	}
 }

@@ -256,6 +256,13 @@ export async function getResource(mf: Miniflare, resourceId: string) {
 	return resource;
 }
 
+export async function getPage(mf: Miniflare, url: string) {
+	const PAGE = await mf.getKVNamespace('PAGE');
+	const page = await PAGE.get<Page>(url, 'json');
+
+	return page;
+}
+
 export async function listResourcesMetadata(mf: Miniflare) {
 	const content = await mf.getKVNamespace('CONTENT');
 	const resources = await content.list<ResourceMetadata>({

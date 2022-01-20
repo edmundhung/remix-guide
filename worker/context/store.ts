@@ -369,5 +369,43 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 				throw e;
 			}
 		},
+		async backupResources(): Promise<any> {
+			try {
+				const response = await resourcesStore.fetch('http://resources/backup', {
+					method: 'POST',
+				});
+
+				if (!response.ok) {
+					throw new Error(
+						`Backup resources failed; ResourcesStore rejected with ${response.status} ${response.statusText}`,
+					);
+				}
+
+				return await response.json();
+			} catch (e) {
+				env.LOGGER?.error(e);
+				throw e;
+			}
+		},
+		async restoreResources(data: Record<string, any>): Promise<void> {
+			try {
+				const response = await resourcesStore.fetch(
+					'http://resources/restore',
+					{
+						method: 'POST',
+						body: JSON.stringify(data),
+					},
+				);
+
+				if (!response.ok) {
+					throw new Error(
+						`Restore resources failed; ResourcesStore rejected with ${response.status} ${response.statusText}`,
+					);
+				}
+			} catch (e) {
+				env.LOGGER?.error(e);
+				throw e;
+			}
+		},
 	};
 }

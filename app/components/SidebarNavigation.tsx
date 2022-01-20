@@ -15,6 +15,7 @@ import tutorialscon from '~/icons/chalkboard-teacher.svg';
 import packagesIcon from '~/icons/box-open.svg';
 import examplesIcon from '~/icons/map-signs.svg';
 import othersIcon from '~/icons/mail-bulk.svg';
+import toolsIcon from '~/icons/tools.svg';
 import type { UserProfile } from '~/types';
 import {
 	PaneContainer,
@@ -25,7 +26,7 @@ import {
 } from '~/layout';
 import { getResourceURL, getSearchOptions } from '~/search';
 import { SearchOptions } from '~/types';
-import { maintainers } from '~/config';
+import { administrators, maintainers } from '~/config';
 
 interface ExternalLinkProps {
 	href: string;
@@ -175,6 +176,24 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 							<SvgIcon className="w-4 h-4" href={othersIcon} /> Others
 						</SearchLink>
 					</List>
+					{profile && administrators.includes(profile.name) ? (
+						<List title="Administrator">
+							<NavLink
+								to="/admin"
+								className={({ isActive }) =>
+									clsx(
+										'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg',
+										isActive
+											? 'text-gray-200 bg-gray-700'
+											: 'text-gray-400 hover:text-gray-200 hover:bg-gray-800',
+									)
+								}
+							>
+								<SvgIcon className="w-4 h-4" href={toolsIcon} /> Backup /
+								Restore
+							</NavLink>
+						</List>
+					) : null}
 				</div>
 				<div className="border-t">
 					<List>

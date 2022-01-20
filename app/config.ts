@@ -26,8 +26,9 @@ export const integrations = [
 	'tailwindcss',
 ];
 
-export const maintainers = [
-	'edmundhung',
+export const administrators = ['edmundhung'];
+
+export const maintainers = administrators.concat(
 	'marbiano',
 	'CanRau',
 	'ryanflorence',
@@ -37,4 +38,4 @@ export const maintainers = [
 	'mcansh',
 	'kiliman',
 	'benborgers',
-];
+);

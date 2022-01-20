@@ -13,6 +13,7 @@ export interface Env {
 	LOGGER_NAME?: string;
 	LOGGER?: Tracker;
 	CONTENT: KVNamespace;
+	PAGE: KVNamespace;
 	RESOURCES_STORE: DurableObjectNamespace;
 	USER_STORE: DurableObjectNamespace;
 }
@@ -34,12 +35,16 @@ export type Category = 'tutorials' | 'packages' | 'examples' | 'others';
 export interface Page {
 	url: string;
 	author?: string;
-	category?: Category;
+	category?: string;
 	title: string;
 	description?: string;
-	integrations?: string[];
+	dependencies?: Record<string, string>;
+	configs?: string[];
 	image?: string;
 	video?: string;
+	isSafe: boolean;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID';
@@ -62,14 +67,19 @@ export interface ResourceMetadata
 	bookmarkCounts?: number;
 }
 
-export interface Resource extends Page {
+export interface ResourceSummary {
 	id: string;
+	url: string;
 	viewCounts: number;
 	bookmarked: string[];
 	createdAt: string;
 	createdBy: string;
 	updatedAt: string;
 	updatedBy: string;
+}
+
+export interface Resource extends Page, ResourceSummary {
+	integrations: string[];
 }
 
 export interface SearchOptions {
