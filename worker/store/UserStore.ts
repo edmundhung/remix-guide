@@ -1,27 +1,101 @@
+import { json } from 'remix';
 import { createLogger } from '../logging';
-import type { Env, UserProfile, User } from '../types';
+import type { Env, UserProfile, User, AsyncReturnType } from '../types';
+
+async function createUserStore(state: DurableObjectState, env: Env) {
+	const { CONTENT } = env;
+
+	let profile = (await state.storage.get<UserProfile>('profile')) ?? null;
+	let bookmarked = (await state.storage.get<string[]>('bookmarked')) ?? [];
+	let viewed = (await state.storage.get<string[]>('viewed')) ?? [];
+
+	return {
+		async getUser(): Promise<User | null> {
+			if (!profile) {
+				return null;
+			}
+
+			return {
+				profile,
+				viewed,
+				bookmarked,
+			};
+		},
+		async updateProfile(newProfile: UserProfile): Promise<void> {
+			if (profile !== null && profile.id !== newProfile.id) {
+				throw new Error(
+					'The user store is already registered with a different userId',
+				);
+			}
+
+			profile = newProfile;
+			state.storage.put('profile', profile);
+			CONTENT.put(`user/${profile.id}`, JSON.stringify(profile), {
+				metadata: profile,
+			});
+		},
+		async view(userId: string, resourceId: string): Promise<void> {
+			if (profile?.id !== userId) {
+				throw new Error(
+					'View failed; Please ensure the request is sent to the proper DO',
+				);
+			}
+
+			viewed = viewed.filter((id) => id !== resourceId);
+			viewed.unshift(resourceId);
+			state.storage.put('viewed', viewed);
+		},
+		async bookmark(userId: string, resourceId: string): Promise<void> {
+			if (profile?.id !== userId) {
+				throw new Error(
+					'Bookmark failed; Please ensure the request is sent to the proper DO',
+				);
+			}
+
+			const isBookmarked = bookmarked.includes(resourceId);
+
+			if (isBookmarked) {
+				return;
+			}
+
+			bookmarked.unshift(resourceId);
+
+			state.storage.put('bookmarked', bookmarked);
+		},
+		async unbookmark(userId: string, resourceId: string): Promise<void> {
+			if (profile?.id !== userId) {
+				throw new Error(
+					'Unbookmark failed; Please ensure the request is sent to the proper DO',
+				);
+			}
+
+			const isBookmarked = bookmarked.includes(resourceId);
+
+			if (!isBookmarked) {
+				return;
+			}
+
+			bookmarked = bookmarked.filter((id) => id !== resourceId);
+
+			state.storage.put('bookmarked', bookmarked);
+		},
+	};
+}
 
 /**
  * UserStore - A durable object that keeps user profile, bookmarks and views
  */
 export class UserStore {
-	state: DurableObjectState;
 	env: Env;
-	profile: UserProfile;
-	bookmarked: string[];
-	viewed: string[];
+	state: DurableObjectState;
+	store: AsyncReturnType<typeof createUserStore> | null;
 
-	constructor(state, env) {
+	constructor(state: DurableObjectState, env: Env) {
 		this.state = state;
 		this.env = env;
+		this.store = null;
 		this.state.blockConcurrencyWhile(async () => {
-			let profile = await this.state.storage.get('profile');
-			let bookmarked = await this.state.storage.get('bookmarked');
-			let viewed = await this.state.storage.get('viewed');
-
-			this.profile = profile ?? null;
-			this.bookmarked = bookmarked ?? [];
-			this.viewed = viewed ?? [];
+			this.store = await createUserStore(state, env);
 		});
 	}
 
@@ -31,113 +105,52 @@ export class UserStore {
 			LOGGER_NAME: 'store:UserStore',
 		});
 
-		let response: Response;
+		let response = new Response('Not found', { status: 404 });
 
 		try {
 			let url = new URL(request.url);
 			let method = request.method.toUpperCase();
 
-			switch (url.pathname) {
-				case '/': {
-					if (method !== 'GET') {
-						break;
-					}
+			if (!this.store) {
+				throw new Error('');
+			} else if (url.pathname === '/' && method === 'GET') {
+				const user = await this.store.getUser();
 
-					const user: User = {
-						profile: this.profile,
-						viewed: this.viewed,
-						bookmarked: this.bookmarked,
-					};
-					const body = JSON.stringify({ user });
-
-					response = new Response(body, { status: 200 });
-					break;
+				if (user) {
+					response = json({ user });
 				}
-				case '/profile': {
-					if (method !== 'PUT') {
-						break;
-					}
+			} else if (url.pathname === '/profile' && method === 'PUT') {
+				const profile = await request.json<UserProfile>();
 
-					const profile = await request.json();
+				await this.store.updateProfile(profile);
 
-					if (this.profile !== null && this.profile.id !== profile.id) {
-						throw new Error(
-							'The user store is already registered with a different userId',
-						);
-					}
+				response = new Response('OK', { status: 200 });
+			} else if (url.pathname === '/view' && method === 'PUT') {
+				const { userId, resourceId } = await request.json();
 
-					this.profile = profile;
-					this.state.storage.put('profile', profile);
-					this.env.CONTENT.put(`user/${profile.id}`, JSON.stringify(profile), {
-						metadata: profile,
-					});
+				await this.store.view(userId, resourceId);
 
-					response = new Response('OK', { status: 200 });
-					break;
-				}
-				case '/view': {
-					if (method !== 'PUT') {
-						break;
-					}
+				response = new Response('OK', { status: 200 });
+			} else if (url.pathname === '/bookmark' && method === 'PUT') {
+				const { userId, resourceId } = await request.json();
 
-					const { userId, resourceId } = await request.json();
+				await this.store.bookmark(userId, resourceId);
 
-					if (this.profile.id !== userId) {
-						throw new Error(
-							'View failed; Please ensure the request is sent to the proper DO',
-						);
-					}
+				response = new Response('OK', { status: 200 });
+			} else if (url.pathname === '/bookmark' && method === 'DELETE') {
+				const { userId, resourceId } = await request.json();
 
-					this.viewed = this.viewed.filter((id) => id !== resourceId);
-					this.viewed.unshift(resourceId);
-					this.state.storage.put('viewed', this.viewed);
+				await this.store.unbookmark(userId, resourceId);
 
-					response = new Response('OK', { status: 200 });
-					break;
-				}
-				case '/bookmark': {
-					if (method !== 'PUT' && method !== 'DELETE') {
-						break;
-					}
-
-					const { userId, resourceId } = await request.json();
-
-					if (this.profile.id !== userId) {
-						throw new Error(
-							'Bookmark failed; Please ensure the request is sent to the proper DO',
-						);
-					}
-
-					const isBookmarked = this.bookmarked.includes(resourceId);
-
-					if (
-						(method === 'PUT' && isBookmarked) ||
-						(method === 'DELETE' && !isBookmarked)
-					) {
-						return new Response('Conflict', { status: 409 });
-					}
-
-					if (method === 'PUT') {
-						this.bookmarked.unshift(resourceId);
-					} else {
-						this.bookmarked = this.bookmarked.filter((id) => id !== resourceId);
-					}
-
-					this.state.storage.put('bookmarked', this.bookmarked);
-
-					response = new Response('OK', { status: 200 });
-					break;
-				}
-			}
-
-			if (!response) {
-				response = new Response('Not found', { status: 404 });
+				response = new Response('OK', { status: 200 });
 			}
 		} catch (e) {
-			logger.error(e);
-			logger.log(
-				`UserStore failed while handling a fetch call - ${request.url}; Received message: ${e.message}`,
-			);
+			if (e instanceof Error) {
+				logger.error(e);
+				logger.log(
+					`UserStore failed while handling a fetch call - ${request.url}; Received message: ${e.message}`,
+				);
+			}
 
 			response = new Response('Internal Server Error', { status: 500 });
 		} finally {

@@ -15,6 +15,7 @@ import type {
 	ResourceSummary,
 	ResourceMetadata,
 	SubmissionStatus,
+	AsyncReturnType,
 } from '../types';
 
 /**
@@ -25,14 +26,6 @@ const generateId = customAlphabet(
 	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
 	12,
 );
-
-type Unwrap<T> = T extends Promise<infer U>
-	? U
-	: T extends (...args: any) => Promise<infer U>
-	? U
-	: T extends (...args: any) => infer U
-	? U
-	: T;
 
 async function createResourceStore(state: DurableObjectState, env: Env) {
 	const { PAGE, CONTENT, GOOGLE_API_KEY } = env;
@@ -330,7 +323,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 export class ResourcesStore {
 	env: Env;
 	state: DurableObjectState;
-	store: Unwrap<typeof createResourceStore> | null;
+	store: AsyncReturnType<typeof createResourceStore> | null;
 
 	constructor(state: DurableObjectState, env: Env) {
 		this.env = env;
