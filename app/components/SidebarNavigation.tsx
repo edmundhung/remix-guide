@@ -87,6 +87,34 @@ function SearchLink({
 	);
 }
 
+interface MenuLinkProps {
+	to: string;
+	children: string;
+}
+
+function MenuLink({ to, children }: MenuLinkProps): ReactElement {
+	const firstSpace = children.indexOf(' ');
+
+	return (
+		<NavLink
+			to={to}
+			className={({ isActive }) =>
+				clsx(
+					'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg',
+					isActive
+						? 'text-gray-200 bg-gray-700'
+						: 'text-gray-400 hover:text-gray-200 hover:bg-gray-800',
+				)
+			}
+		>
+			<span className="flex items-center justify-center w-4 h-4">
+				{children.slice(0, firstSpace)}
+			</span>{' '}
+			{children.slice(firstSpace)}
+		</NavLink>
+	);
+}
+
 interface SidebarNavigationProps {
 	profile: UserProfile | null;
 }
@@ -178,20 +206,8 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 					</List>
 					{profile && administrators.includes(profile.name) ? (
 						<List title="Administrator">
-							<NavLink
-								to="/admin"
-								className={({ isActive }) =>
-									clsx(
-										'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg',
-										isActive
-											? 'text-gray-200 bg-gray-700'
-											: 'text-gray-400 hover:text-gray-200 hover:bg-gray-800',
-									)
-								}
-							>
-								<SvgIcon className="w-4 h-4" href={toolsIcon} /> Backup /
-								Restore
-							</NavLink>
+							<MenuLink to="/admin/users">👥 Users</MenuLink>
+							<MenuLink to="/admin/resources">🗃 Backup / Restore</MenuLink>
 						</List>
 					) : null}
 				</div>

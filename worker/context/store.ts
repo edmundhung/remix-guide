@@ -5,6 +5,7 @@ import type {
 	ResourceMetadata,
 	SearchOptions,
 	SubmissionStatus,
+	UserProfile,
 } from '../types';
 import { matchCache, updateCache, removeCache } from '../cache';
 
@@ -48,6 +49,22 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 			list = result.keys.flatMap((key) => key.metadata ?? []);
 
 			ctx.waitUntil(updateCache('resources', list, 300));
+		}
+
+		return list;
+	}
+
+	async function listUserProfiles(): Promise<UserProfile[]> {
+		let list = await matchCache<UserProfile[]>('users');
+
+		if (!list) {
+			const result = await env.CONTENT.list<UserProfile>({
+				prefix: 'user/',
+			});
+
+			list = result.keys.flatMap((key) => key.metadata ?? []);
+
+			ctx.waitUntil(updateCache('users', list, 60));
 		}
 
 		return list;
@@ -402,6 +419,14 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 						`Restore resources failed; ResourcesStore rejected with ${response.status} ${response.statusText}`,
 					);
 				}
+			} catch (e) {
+				env.LOGGER?.error(e);
+				throw e;
+			}
+		},
+		async listUsers(): Promise<UserProfile[]> {
+			try {
+				return await listUserProfiles();
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
