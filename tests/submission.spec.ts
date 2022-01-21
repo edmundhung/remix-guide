@@ -299,25 +299,17 @@ test.describe.parallel('Scraping', () => {
 		});
 	});
 
-	test('revalidate the URL if it is different from the canonical URL', async ({
+	test('ignores the canonical URL if it is treated as site URL', async ({
 		page,
 		mf,
 		mockAgent,
 	}) => {
-		const url = 'http://example.com/revalidate';
-		const homepage = 'http://example.com';
+		const url = 'http://example.com/non-site-url';
 
 		mockPage(mockAgent, url, {
 			head: `
-        <title>Revalidate Page</title>
-        <link rel="canonical" href="${homepage}" />
-      `,
-		});
-
-		mockPage(mockAgent, homepage, {
-			head: `
-        <title>Homepage</title>
-        <link rel="canonical" href="${homepage}" />
+        <title>Some Page</title>
+        <link rel="canonical" href="http://example.com" />
       `,
 		});
 
@@ -327,8 +319,41 @@ test.describe.parallel('Scraping', () => {
 		const resource = await getResource(mf, resourceId);
 
 		expect(resource).toMatchObject({
-			title: 'Homepage',
-			url: new URL(homepage).toString(),
+			title: 'Some Page',
+			url,
+		});
+	});
+
+	test('revalidates the canonical URL if the hostname is different', async ({
+		page,
+		mf,
+		mockAgent,
+	}) => {
+		const url = 'http://proxy.com/revalidate';
+		const canonical = 'http://example.com/revalidate';
+
+		mockPage(mockAgent, url, {
+			head: `
+        <title>Proxy Page</title>
+        <link rel="canonical" href="${canonical}" />
+      `,
+		});
+
+		mockPage(mockAgent, canonical, {
+			head: `
+        <title>Actual Page</title>
+        <link rel="canonical" href="${canonical}" />
+      `,
+		});
+
+		await submitURL(page, url);
+
+		const resourceId = getPageResourceId(page);
+		const resource = await getResource(mf, resourceId);
+
+		expect(resource).toMatchObject({
+			title: 'Actual Page',
+			url: canonical,
 		});
 	});
 

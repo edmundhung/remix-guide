@@ -94,6 +94,19 @@ async function isURLReachable(url: string): Promise<boolean> {
 	}
 }
 
+function isValidCanonicalURL(responseURL: URL, pageURL: URL | null): boolean {
+	if (!pageURL) {
+		return false;
+	}
+
+	// In case the website mistakenly treat canonical url as site URL
+	if (responseURL.pathname !== '/' && pageURL.pathname === '/') {
+		return false;
+	}
+
+	return true;
+}
+
 async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
 	const response = await fetch(url, {
 		headers: {
@@ -147,19 +160,22 @@ async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
 		),
 	});
 
-	// Revalidate the canonical URL to ensure everything looks ok
-	if (
-		page.url &&
-		new URL(page.url).toString() !== new URL(response.url).toString()
-	) {
-		return await scrapeHTML(page.url, userAgent);
+	const responseURL = new URL(response.url);
+	const pageURL = page.url ? new URL(page.url) : responseURL;
+
+	if (pageURL.hostname !== responseURL.hostname) {
+		// This might be casued by a proxy. Scrape again and redriect user to the actual URL
+		return await scrapeHTML(pageURL.toString(), userAgent);
 	}
 
 	return {
 		...page,
 		category: 'tutorials',
 		image: page.image && (await isURLReachable(page.image)) ? page.image : null,
-		url: response.url,
+		url:
+			page.url && isValidCanonicalURL(responseURL, pageURL)
+				? page.url
+				: response.url,
 	};
 }
 
