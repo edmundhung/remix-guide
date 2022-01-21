@@ -1,5 +1,5 @@
 import type { LoaderFunction } from 'remix';
-import { useLoaderData, json } from 'remix';
+import { Link, useLoaderData, json } from 'remix';
 import { administrators } from '~/config';
 import { notFound } from '~/helpers';
 import type { Context, UserProfile } from '~/types';
@@ -36,6 +36,9 @@ export default function ListUsers() {
 							<th className="px-4 py-2 text-left border border-gray-700">
 								Email
 							</th>
+							<th className="px-4 py-2 text-left border border-gray-700">
+								Action
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -47,6 +50,11 @@ export default function ListUsers() {
 								</td>
 								<td className="px-4 py-2 border border-gray-700">
 									{user.email ?? 'n/a'}
+								</td>
+								<td className="px-4 py-2 border border-gray-700">
+									<Link to={`${user.id}/backup`} className="hover:underline">
+										Backup
+									</Link>
 								</td>
 							</tr>
 						))}

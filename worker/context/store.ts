@@ -432,5 +432,45 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 				throw e;
 			}
 		},
+		async backupUser(userId: string): Promise<any> {
+			try {
+				const userStore = getUserStore(userId);
+				const response = await userStore.fetch('http://user/backup', {
+					method: 'POST',
+				});
+
+				if (!response.ok) {
+					throw new Error(
+						`Backup user(${userId}) failed; UserStore rejected with ${response.status} ${response.statusText}`,
+					);
+				}
+
+				return await response.json();
+			} catch (e) {
+				env.LOGGER?.error(e);
+				throw e;
+			}
+		},
+		async restoreUser(
+			userId: string,
+			data: Record<string, any>,
+		): Promise<void> {
+			try {
+				const userStore = getUserStore(userId);
+				const response = await userStore.fetch('http://user/restore', {
+					method: 'POST',
+					body: JSON.stringify(data),
+				});
+
+				if (!response.ok) {
+					throw new Error(
+						`Restore user(${userId}) failed; UserStore rejected with ${response.status} ${response.statusText}`,
+					);
+				}
+			} catch (e) {
+				env.LOGGER?.error(e);
+				throw e;
+			}
+		},
 	};
 }

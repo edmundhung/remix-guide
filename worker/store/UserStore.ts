@@ -143,6 +143,19 @@ export class UserStore {
 				await this.store.unbookmark(userId, resourceId);
 
 				response = new Response('OK', { status: 200 });
+			} else if (url.pathname === '/backup' && method === 'POST') {
+				const data = await this.state.storage.list();
+
+				response = json(Object.fromEntries(data));
+			} else if (url.pathname === '/restore' && method === 'POST') {
+				const data = await request.json();
+
+				await this.state.storage.put(data as Record<string, any>);
+
+				// Re-initialise everything again
+				this.store = await createUserStore(this.state, this.env);
+
+				response = new Response('OK', { status: 200 });
 			}
 		} catch (e) {
 			if (e instanceof Error) {

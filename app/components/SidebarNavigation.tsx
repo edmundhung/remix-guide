@@ -15,7 +15,6 @@ import tutorialscon from '~/icons/chalkboard-teacher.svg';
 import packagesIcon from '~/icons/box-open.svg';
 import examplesIcon from '~/icons/map-signs.svg';
 import othersIcon from '~/icons/mail-bulk.svg';
-import toolsIcon from '~/icons/tools.svg';
 import type { UserProfile } from '~/types';
 import {
 	PaneContainer,
