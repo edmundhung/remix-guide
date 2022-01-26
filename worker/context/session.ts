@@ -2,6 +2,7 @@ import { Authenticator } from 'remix-auth';
 import { GitHubStrategy } from 'remix-auth-github';
 import { createCookieSessionStorage, redirect } from 'remix';
 import type { Env, MessageType, UserProfile } from '../types';
+import { getUserStore } from '../store/UserStore';
 
 export type Session = ReturnType<typeof createSession>;
 
@@ -48,22 +49,14 @@ export function createSession(
 				userAgent: 'remix-guide',
 			},
 			async ({ profile }) => {
+				const userStore = getUserStore(env, profile.id);
 				const userProfile: UserProfile = {
 					id: profile.id,
 					name: profile.displayName,
 					email: profile.emails[0].value,
 				};
 
-				const id = env.USER_STORE.idFromName(profile.id);
-				const store = env.USER_STORE.get(id);
-				const response = await store.fetch('http://user/profile', {
-					method: 'PUT',
-					body: JSON.stringify(userProfile),
-				});
-
-				if (!response.ok) {
-					throw new Error('Update user profile failed');
-				}
+				await userStore.updateProfile(userProfile);
 
 				return userProfile;
 			},

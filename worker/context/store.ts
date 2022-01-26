@@ -8,6 +8,7 @@ import type {
 	UserProfile,
 } from '../types';
 import { matchCache, updateCache, removeCache } from '../cache';
+import { getUserStore } from '../store/UserStore';
 
 export type Store = ReturnType<typeof createStore>;
 
@@ -15,24 +16,17 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 	const id = env.RESOURCES_STORE.idFromName('');
 	const resourcesStore = env.RESOURCES_STORE.get(id);
 
-	function getUserStore(userId: string) {
-		const id = env.USER_STORE.idFromName(userId);
-		const store = env.USER_STORE.get(id);
-
-		return store;
-	}
-
 	async function getUser(userId: string): Promise<User | null> {
 		let user = await matchCache<User>(`users/${userId}`);
 
 		if (!user) {
-			const userStore = getUserStore(userId);
-			const response = await userStore.fetch('http://user/', { method: 'GET' });
-			const result = await response.json();
+			const userStore = getUserStore(env, userId);
 
-			user = result.user;
+			user = await userStore.getUser();
 
-			ctx.waitUntil(updateCache(`users/${userId}`, user, 10800));
+			if (user) {
+				ctx.waitUntil(updateCache(`users/${userId}`, user, 10800));
+			}
 		}
 
 		return user;
@@ -295,17 +289,9 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		async view(userId: string | null, resourceId: string): Promise<void> {
 			try {
 				if (userId) {
-					const userStore = getUserStore(userId);
-					const response = await userStore.fetch('http://user/view', {
-						method: 'PUT',
-						body: JSON.stringify({ userId, resourceId }),
-					});
+					const userStore = getUserStore(env, userId);
 
-					if (!response.ok) {
-						throw new Error(
-							'View failed; Resource is not marked as viewed on the UserStore',
-						);
-					}
+					await userStore.view(userId, resourceId);
 				}
 
 				ctx.waitUntil(removeCache(`users/${userId}`));
@@ -322,26 +308,9 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		},
 		async bookmark(userId: string, resourceId: string): Promise<void> {
 			try {
-				const userStore = getUserStore(userId);
-				const response = await userStore.fetch('http://user/bookmark', {
-					method: 'PUT',
-					body: JSON.stringify({ userId, resourceId }),
-				});
+				const userStore = getUserStore(env, userId);
 
-				if (response.status === 409) {
-					/**
-					 * If the action is conflicting with the current status
-					 * It is very likely a tempoary problem with data consistency
-					 * There is no need to let the user know as the result fulfills the original intention anyway
-					 */
-					return;
-				}
-
-				if (!response.ok) {
-					throw new Error(
-						'Bookmark failed; Resource is not bookmarked on the UserStore',
-					);
-				}
+				await userStore.bookmark(userId, resourceId);
 
 				ctx.waitUntil(removeCache(`users/${userId}`));
 				ctx.waitUntil(
@@ -357,17 +326,9 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		},
 		async unbookmark(userId: string, resourceId: string): Promise<void> {
 			try {
-				const userStore = getUserStore(userId);
-				const response = await userStore.fetch('http://user/bookmark', {
-					method: 'DELETE',
-					body: JSON.stringify({ userId, resourceId }),
-				});
+				const userStore = getUserStore(env, userId);
 
-				if (!response.ok) {
-					throw new Error(
-						'Unbookmark failed; Resource is not unbookmarked on the UserStore',
-					);
-				}
+				await userStore.unbookmark(userId, resourceId);
 
 				ctx.waitUntil(removeCache(`users/${userId}`));
 				ctx.waitUntil(
@@ -429,18 +390,9 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		},
 		async backupUser(userId: string): Promise<any> {
 			try {
-				const userStore = getUserStore(userId);
-				const response = await userStore.fetch('http://user/backup', {
-					method: 'POST',
-				});
+				const userStore = getUserStore(env, userId);
 
-				if (!response.ok) {
-					throw new Error(
-						`Backup user(${userId}) failed; UserStore rejected with ${response.status} ${response.statusText}`,
-					);
-				}
-
-				return await response.json();
+				return await userStore.backup();
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
@@ -451,17 +403,9 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 			data: Record<string, any>,
 		): Promise<void> {
 			try {
-				const userStore = getUserStore(userId);
-				const response = await userStore.fetch('http://user/restore', {
-					method: 'POST',
-					body: JSON.stringify(data),
-				});
+				const userStore = getUserStore(env, userId);
 
-				if (!response.ok) {
-					throw new Error(
-						`Restore user(${userId}) failed; UserStore rejected with ${response.status} ${response.statusText}`,
-					);
-				}
+				await userStore.restore(data);
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
