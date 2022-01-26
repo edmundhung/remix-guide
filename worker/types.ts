@@ -17,6 +17,7 @@ export interface Env {
 	GOOGLE_API_KEY?: string;
 	SESSION_SECERTS?: string;
 	SENTRY_DSN?: string;
+	USER_AGENT?: string;
 	DEBUG?: string;
 	LOGGER_NAME?: string;
 	LOGGER?: Tracker;

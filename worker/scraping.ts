@@ -107,12 +107,18 @@ function isValidCanonicalURL(responseURL: URL, pageURL: URL | null): boolean {
 	return true;
 }
 
-async function scrapeHTML(url: string, userAgent: string): Promise<Page> {
+async function scrapeHTML(
+	url: string,
+	userAgent: string | undefined,
+): Promise<Page> {
+	const headers = new Headers({ Accept: 'text/html' });
+
+	if (userAgent) {
+		headers.set('User-Agent', userAgent);
+	}
+
 	const response = await fetch(url, {
-		headers: {
-			Accept: 'text/html',
-			'User-Agent': userAgent, //'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36',
-		},
+		headers,
 		redirect: 'follow',
 	});
 

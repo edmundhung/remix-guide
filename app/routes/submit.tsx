@@ -84,7 +84,6 @@ export let action: ActionFunction = async ({ request, context }) => {
 	const formData = await request.formData();
 	const url = formData.get('url');
 	const category = formData.get('category');
-	const userAgent = request.headers.get('User-Agent');
 
 	if (!category || !isValidCategory(category.toString())) {
 		return redirect('/submit', {
@@ -104,20 +103,10 @@ export let action: ActionFunction = async ({ request, context }) => {
 		});
 	}
 
-	if (!userAgent) {
-		return redirect('/submit', {
-			headers: await session.commitWithFlashMessage(
-				'User-Agent is missing from the request header',
-				'error',
-			),
-		});
-	}
-
 	try {
 		const { id, status } = await store.submit(
 			url.toString(),
 			category.toString(),
-			userAgent.toString(),
 			profile.id,
 		);
 

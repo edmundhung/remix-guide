@@ -243,13 +243,12 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		async submit(
 			url: string,
 			category: string,
-			userAgent: string,
 			userId: string,
 		): Promise<{ id: string; status: SubmissionStatus }> {
 			try {
 				const response = await resourcesStore.fetch('http://resources/submit', {
 					method: 'POST',
-					body: JSON.stringify({ url, category, userAgent, userId }),
+					body: JSON.stringify({ url, category, userId }),
 				});
 
 				if (!response.ok) {
@@ -271,17 +270,13 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 				throw e;
 			}
 		},
-		async refresh(
-			userId: string,
-			resourceId: string,
-			userAgent: string,
-		): Promise<void> {
+		async refresh(userId: string, resourceId: string): Promise<void> {
 			try {
 				const response = await resourcesStore.fetch(
 					'http://resources/refresh',
 					{
 						method: 'POST',
-						body: JSON.stringify({ resourceId, userId, userAgent }),
+						body: JSON.stringify({ resourceId, userId }),
 					},
 				);
 

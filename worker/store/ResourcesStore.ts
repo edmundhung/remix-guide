@@ -155,17 +155,12 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	}
 
 	return {
-		async submit(
-			userId: string,
-			url: string,
-			userAgent: string,
-			category: string,
-		) {
+		async submit(userId: string, url: string, category: string) {
 			let status: SubmissionStatus | null = null;
 			let page = await PAGE.get<Page>(url, 'json');
 
 			if (!page) {
-				page = await scrapeHTML(url, userAgent);
+				page = await scrapeHTML(url, env.USER_AGENT);
 
 				const [pageMetadata, isSafe] = await Promise.all([
 					getPageMetadata(page.url, env),
@@ -208,7 +203,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 			return { id, status };
 		},
-		async refresh(userId: string, resourceId: string, userAgent: string) {
+		async refresh(userId: string, resourceId: string) {
 			let resource = await getResource(resourceId);
 
 			if (!resource) {
@@ -218,7 +213,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			const [currentPage, updatedPage, pageMetadata, isSafe] =
 				await Promise.all([
 					PAGE.get<Page>(resource.url, 'json'),
-					scrapeHTML(resource.url, userAgent),
+					scrapeHTML(resource.url, env.USER_AGENT),
 					getPageMetadata(resource.url, env),
 					GOOGLE_API_KEY
 						? checkSafeBrowsingAPI([resource.url], GOOGLE_API_KEY)
@@ -349,18 +344,13 @@ export class ResourcesStore {
 			if (!this.store) {
 				throw new Error('');
 			} else if (url.pathname === '/submit' && method === 'POST') {
-				const { url, category, userAgent, userId } = await request.json();
-				const result = await this.store.submit(
-					userId,
-					url,
-					userAgent,
-					category,
-				);
+				const { url, category, userId } = await request.json();
+				const result = await this.store.submit(userId, url, category);
 
 				response = json(result, 201);
 			} else if (url.pathname === '/refresh' && method === 'POST') {
-				const { userId, resourceId, userAgent } = await request.json();
-				const success = await this.store.refresh(userId, resourceId, userAgent);
+				const { userId, resourceId } = await request.json();
+				const success = await this.store.refresh(userId, resourceId);
 
 				if (success) {
 					response = new Response('OK', { status: 200 });
