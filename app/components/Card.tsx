@@ -19,7 +19,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 						? 'bg-gray-700 text-gray-300'
 						: 'hover:bg-gray-800 text-gray-400'
 				}`}
-				title={entry.title ?? getSite(entry.url)}
+				title={entry.title}
 				to={getResourceURL(searchOptions, entry.id)}
 				prefetch="intent"
 			>
@@ -32,7 +32,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 						<span>{entry.createdAt.substr(0, 10)}</span>
 					</div>
 					<h2 className="text-gray-100 break-words line-clamp-2">
-						{entry.title}
+						{entry.title ?? entry.url}
 					</h2>
 					{!entry.description ? null : (
 						<p className="line-clamp-1 break-all">{entry.description}</p>
