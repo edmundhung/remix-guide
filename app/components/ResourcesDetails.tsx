@@ -122,7 +122,7 @@ function ResourcesDetails({
 										rel="noopener noreferrer"
 									>
 										<h2 className="inline-block text-xl break-words">
-											{resource.title}
+											{resource.title ?? resource.url}
 										</h2>
 									</a>
 								</div>
