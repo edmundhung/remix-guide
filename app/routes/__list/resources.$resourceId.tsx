@@ -29,7 +29,9 @@ interface LoaderData {
 
 export let meta: MetaFunction = ({ data }: { data?: LoaderData }) => {
 	return formatMeta({
-		title: `${capitalize(data?.resource.category)} - ${data?.resource.title}`,
+		title: `${capitalize(data?.resource.category)} - ${
+			data?.resource.title ?? data?.resource.url
+		}`,
 		description: data?.resource.description ?? '',
 		'og:url': `https://remix.guide/resources/${data?.resource.id}`,
 	});

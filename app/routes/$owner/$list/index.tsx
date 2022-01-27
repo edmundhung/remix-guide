@@ -35,9 +35,7 @@ export let meta: MetaFunction = ({ data, params }) => {
 	}
 
 	return formatMeta({
-		title: `${capitalize(list)}${
-			data?.resource ? ` - ${data?.resource?.title}` : ''
-		}`,
+		title: capitalize(list),
 		description: data?.resource?.description ?? '',
 		'og:url': `https://remix.guide/${owner}/${list}`,
 	});
