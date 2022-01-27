@@ -176,7 +176,7 @@ async function scrapeHTML(
 
 	return {
 		...page,
-		category: 'tutorials',
+		category: 'others',
 		image: page.image && (await isURLReachable(page.image)) ? page.image : null,
 		url:
 			page.url && isValidCanonicalURL(responseURL, pageURL)
@@ -406,7 +406,7 @@ async function parseGithubRepository(
 
 	return {
 		title: metadata['full_name'],
-		category: 'examples',
+		category: 'repository',
 		description: metadata['description'],
 		author: metadata['owner']?.['login'],
 		dependencies: {
@@ -441,7 +441,7 @@ async function parseNpmPackage(
 
 	return {
 		...details,
-		category: 'packages',
+		category: 'package',
 		title: info.name,
 		description: info.description,
 	};

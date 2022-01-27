@@ -84,20 +84,16 @@ export async function login(
 	await loginButton.click();
 }
 
-export async function submitURL(page: Page, url: string, category = 'others') {
+export async function submitURL(page: Page, url: string) {
 	const $form = await page.$('form[action="/submit"]');
 
 	if (!$form) {
 		throw new Error('Fail to locate the submission form');
 	}
 
-	const option = await queries.findByText($form, category, { exact: false });
-
-	await option.click();
-
 	const input = await queries.findByLabelText(
 		$form,
-		/Then, paste the URL here/i,
+		/Please paste the URL here/i,
 	);
 
 	await input.fill(url);

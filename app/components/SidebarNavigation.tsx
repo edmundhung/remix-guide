@@ -11,9 +11,8 @@ import githubIcon from '~/icons/github.svg';
 import discordIcon from '~/icons/discord.svg';
 import timesIcon from '~/icons/times.svg';
 import remixIcon from '~/icons/remix.svg';
-import tutorialscon from '~/icons/chalkboard-teacher.svg';
-import packagesIcon from '~/icons/box-open.svg';
-import examplesIcon from '~/icons/map-signs.svg';
+import packageIcon from '~/icons/box-open.svg';
+import repositoryIcon from '~/icons/map-signs.svg';
 import othersIcon from '~/icons/mail-bulk.svg';
 import type { UserProfile } from '~/types';
 import {
@@ -23,7 +22,11 @@ import {
 	PaneContent,
 	List,
 } from '~/layout';
-import { getResourceURL, getSearchOptions } from '~/search';
+import {
+	getCategoryListName,
+	getResourceURL,
+	getSearchOptions,
+} from '~/search';
 import { SearchOptions } from '~/types';
 import { administrators, maintainers } from '~/config';
 
@@ -190,17 +193,17 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 						</List>
 					) : null}
 					<List title="Discover">
-						<SearchLink owner={null} list={null} category="tutorials">
-							<SvgIcon className="w-4 h-4" href={tutorialscon} /> Tutorial
+						<SearchLink owner={null} list={null} category="package">
+							<SvgIcon className="w-4 h-4" href={packageIcon} />{' '}
+							{getCategoryListName('package')}
 						</SearchLink>
-						<SearchLink owner={null} list={null} category="packages">
-							<SvgIcon className="w-4 h-4" href={packagesIcon} /> Packages
-						</SearchLink>
-						<SearchLink owner={null} list={null} category="examples">
-							<SvgIcon className="w-4 h-4" href={examplesIcon} /> Examples
+						<SearchLink owner={null} list={null} category="repository">
+							<SvgIcon className="w-4 h-4" href={repositoryIcon} />{' '}
+							{getCategoryListName('repository')}
 						</SearchLink>
 						<SearchLink owner={null} list={null} category="others">
-							<SvgIcon className="w-4 h-4" href={othersIcon} /> Others
+							<SvgIcon className="w-4 h-4" href={othersIcon} />{' '}
+							{getCategoryListName('others')}
 						</SearchLink>
 					</List>
 					{profile && administrators.includes(profile.name) ? (

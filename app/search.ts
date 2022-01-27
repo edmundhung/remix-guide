@@ -1,4 +1,4 @@
-import { SearchOptions } from '~/types';
+import { Category, SearchOptions } from '~/types';
 import { platforms } from '~/config';
 import { capitalize } from '~/helpers';
 
@@ -151,6 +151,19 @@ export function toggleSearchList(searchParams: URLSearchParams): string {
 	return search.toString();
 }
 
+export function getCategoryListName(category: string): string {
+	switch (category as Category) {
+		case 'package':
+			return 'Packages';
+		case 'repository':
+			return 'Examples';
+		case 'others':
+			return 'Others';
+		default:
+			return capitalize(category);
+	}
+}
+
 export function getTitleBySearchOptions(searchOptions: SearchOptions): string {
 	const options = Object.keys(searchOptions).reduce((result, key) => {
 		switch (key as keyof SearchOptions) {
@@ -161,7 +174,7 @@ export function getTitleBySearchOptions(searchOptions: SearchOptions): string {
 				break;
 			case 'category':
 				if (searchOptions.category) {
-					result.push(capitalize(searchOptions.category));
+					result.push(getCategoryListName(searchOptions.category));
 				}
 				break;
 			case 'keyword':

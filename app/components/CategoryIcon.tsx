@@ -1,30 +1,22 @@
 import { ReactElement } from 'react';
 import SvgIcon from '~/components/SvgIcon';
-import tutorialscon from '~/icons/chalkboard-teacher.svg';
-import packagesIcon from '~/icons/box-open.svg';
-import examplesIcon from '~/icons/map-signs.svg';
+import packageIcon from '~/icons/box-open.svg';
+import repositoryIcon from '~/icons/map-signs.svg';
 import othersIcon from '~/icons/mail-bulk.svg';
 
 interface CategoryIconProps {
 	category: string;
-	fallback?: boolean;
 }
 
-function CategoryIcon({
-	category,
-	fallback,
-}: CategoryIconProps): ReactElement | null {
+function CategoryIcon({ category }: CategoryIconProps): ReactElement | null {
 	let iconUrl: string | null = null;
 
 	switch (category) {
-		case 'tutorials':
-			iconUrl = tutorialscon;
+		case 'package':
+			iconUrl = packageIcon;
 			break;
-		case 'packages':
-			iconUrl = packagesIcon;
-			break;
-		case 'examples':
-			iconUrl = examplesIcon;
+		case 'repository':
+			iconUrl = repositoryIcon;
 			break;
 		case 'others':
 			iconUrl = othersIcon;

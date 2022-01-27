@@ -40,13 +40,12 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 	async function createResource(
 		page: Page,
-		category: string,
 		userId: string,
 	): Promise<{
 		id: string | null;
 		status: SubmissionStatus;
 	}> {
-		if (page.category !== category || !page.isSafe) {
+		if (!page.isSafe) {
 			return {
 				id: null,
 				status: 'INVALID',
@@ -70,7 +69,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			page,
 		);
 
-		if (category === 'packages') {
+		if (page.category === 'package') {
 			resourceIdByPackageName[page.title] = id;
 			state.storage.put('index/PackageName', resourceIdByPackageName);
 		}
@@ -120,7 +119,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 		const packages = Object.keys(resourceIdByPackageName);
 		const integrations =
-			page.category === 'packages' || page.category === 'examples'
+			page.category === 'package' || page.category === 'repository'
 				? getIntegrations(page.configs ?? [], packages, page.dependencies ?? {})
 				: getIntegrationsFromPage(page, packages);
 		const resource: Resource = {
@@ -155,7 +154,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	}
 
 	return {
-		async submit(userId: string, url: string, category: string) {
+		async submit(userId: string, url: string) {
 			let status: SubmissionStatus | null = null;
 			let page = await PAGE.get<Page>(url, 'json');
 
@@ -178,17 +177,13 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 					updatedAt: now,
 				};
 
-				if (category === 'others') {
-					page.category = category;
-				}
-
 				PAGE.put(page.url, JSON.stringify(page));
 			}
 
 			let id = resourceIdByURL[page.url] ?? null;
 
 			if (!id) {
-				const result = await createResource(page, category, userId);
+				const result = await createResource(page, userId);
 
 				id = result.id;
 				status = result.status;
@@ -344,8 +339,8 @@ export class ResourcesStore {
 			if (!this.store) {
 				throw new Error('');
 			} else if (url.pathname === '/submit' && method === 'POST') {
-				const { url, category, userId } = await request.json();
-				const result = await this.store.submit(userId, url, category);
+				const { url, userId } = await request.json();
+				const result = await this.store.submit(userId, url);
 
 				response = json(result, 201);
 			} else if (url.pathname === '/refresh' && method === 'POST') {

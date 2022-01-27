@@ -1,11 +1,6 @@
 import { Category } from '~/types';
 
-export const categories: Category[] = [
-	'tutorials',
-	'packages',
-	'examples',
-	'others',
-];
+export const categories: Category[] = ['package', 'repository', 'others'];
 
 export const platforms = [
 	'aws',

@@ -39,7 +39,7 @@ export interface User {
 	bookmarked: string[];
 }
 
-export type Category = 'tutorials' | 'packages' | 'examples' | 'others';
+export type Category = 'package' | 'repository' | 'others';
 
 export interface Page {
 	url: string;

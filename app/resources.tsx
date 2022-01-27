@@ -14,7 +14,7 @@ export async function getSuggestions(
 ) {
 	const suggestions: SearchOptions[] = [];
 
-	if (resource.category === 'packages') {
+	if (resource.category === 'package') {
 		suggestions.push({ integrations: [resource.title] });
 	}
 
@@ -22,7 +22,7 @@ export async function getSuggestions(
 		suggestions.push({ author: resource.author });
 	}
 
-	if (['concepts', 'tutorials', 'others'].includes(resource.category ?? '')) {
+	if (resource.category === 'others') {
 		suggestions.push({ site: getSite(resource.url) });
 	}
 

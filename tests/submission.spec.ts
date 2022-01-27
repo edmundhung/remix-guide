@@ -216,13 +216,13 @@ test.describe.parallel('Scraping', () => {
 			},
 		});
 
-		await submitURL(page, url, 'examples');
+		await submitURL(page, url);
 
 		const pageData = await getPage(mf, url);
 
 		expect(pageData).toMatchObject({
 			url,
-			category: 'examples',
+			category: 'repository',
 			title: 'random/repository',
 			description: 'Testing description',
 			author: 'tester',
@@ -255,13 +255,13 @@ test.describe.parallel('Scraping', () => {
 			},
 		});
 
-		await submitURL(page, url, 'packages');
+		await submitURL(page, url);
 
 		const pageData = await getPage(mf, url);
 
 		expect(pageData).toMatchObject({
 			url,
-			category: 'packages',
+			category: 'package',
 			title: '@someone/example-package',
 			description: 'Package description',
 			author: 'someone',
@@ -378,7 +378,7 @@ test.describe.parallel('Scraping', () => {
 			status: 200,
 		});
 
-		await submitURL(page, url, 'others');
+		await submitURL(page, url);
 
 		expect(
 			await queries.findByText(/The submitted resource is now published/i),
