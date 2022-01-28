@@ -1,6 +1,6 @@
 import { decode } from 'html-entities';
 import { integrations, platforms } from '~/config';
-import type { Category, Env, Page } from './types';
+import type { Env, Page } from './types';
 
 interface Parser {
 	setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
@@ -110,7 +110,7 @@ function isValidCanonicalURL(responseURL: URL, pageURL: URL | null): boolean {
 async function scrapeHTML(
 	url: string,
 	userAgent: string | undefined,
-): Promise<Page> {
+): Promise<Partial<Page>> {
 	const headers = new Headers({ Accept: 'text/html' });
 
 	if (userAgent) {
@@ -475,7 +475,7 @@ async function parseYouTubeVideo(videoId: string, apiKey: string | undefined) {
 
 function getIntegrationsFromPage(page: Page, packages: string[]): string[] {
 	const result = new Set<string>();
-	const tokens = []
+	const tokens = ([] as string[])
 		.concat(page.title ?? [], page.description ?? [])
 		.join(' ')
 		.toLowerCase()
