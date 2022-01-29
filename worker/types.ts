@@ -45,13 +45,13 @@ export interface Page {
 	url: string;
 	author?: string;
 	category?: string;
-	title: string;
-	description?: string;
+	title?: string | null;
+	description?: string | null;
 	dependencies?: Record<string, string>;
 	configs?: string[];
-	image?: string;
-	video?: string;
-	isSafe: boolean;
+	image?: string | null;
+	video?: string | null;
+	isSafe?: boolean;
 	createdAt: string;
 	updatedAt: string;
 }

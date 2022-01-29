@@ -110,7 +110,7 @@ function isValidCanonicalURL(responseURL: URL, pageURL: URL | null): boolean {
 async function scrapeHTML(
 	url: string,
 	userAgent: string | undefined,
-): Promise<Partial<Page>> {
+): Promise<Page> {
 	const headers = new Headers({ Accept: 'text/html' });
 
 	if (userAgent) {
@@ -166,6 +166,7 @@ async function scrapeHTML(
 		),
 	});
 
+	const now = new Date().toISOString();
 	const responseURL = new URL(response.url);
 	const pageURL = page.url ? new URL(page.url) : responseURL;
 
@@ -182,6 +183,8 @@ async function scrapeHTML(
 			page.url && isValidCanonicalURL(responseURL, pageURL)
 				? page.url
 				: response.url,
+		createdAt: now,
+		updatedAt: now,
 	};
 }
 

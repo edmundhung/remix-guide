@@ -19,7 +19,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 						? 'bg-gray-700 text-gray-300'
 						: 'hover:bg-gray-800 text-gray-400'
 				}`}
-				title={entry.title}
+				title={entry.title ?? entry.url}
 				to={getResourceURL(searchOptions, entry.id)}
 				prefetch="intent"
 			>
