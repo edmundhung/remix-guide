@@ -1,10 +1,5 @@
-import type {
-	LoaderFunction,
-	ActionFunction,
-	ShouldReloadFunction,
-	MetaFunction,
-} from 'remix';
-import { json, redirect, useLoaderData } from 'remix';
+import type { LoaderFunction, ShouldReloadFunction, MetaFunction } from 'remix';
+import { json, useLoaderData } from 'remix';
 import { capitalize, formatMeta, notFound } from '~/helpers';
 import type {
 	Context,
@@ -35,39 +30,6 @@ export let meta: MetaFunction = ({ data }: { data?: LoaderData }) => {
 		description: data?.resource.description ?? '',
 		'og:url': `https://remix.guide/resources/${data?.resource.id}`,
 	});
-};
-
-export let action: ActionFunction = async ({ context, params, request }) => {
-	const { session, store } = context as Context;
-	const profile = await session.isAuthenticated();
-	const formData = await request.formData();
-	const type = formData.get('type');
-
-	if (type === 'view') {
-		await store.view(profile?.id ?? null, params.resourceId ?? '');
-		return new Response('OK', { status: 200 });
-	}
-
-	if (!profile) {
-		return new Response('Unauthorized', { status: 401 });
-	}
-
-	switch (type) {
-		case 'bookmark':
-			await store.bookmark(profile.id, params.resourceId ?? '');
-			break;
-		case 'unbookmark':
-			await store.unbookmark(profile.id, params.resourceId ?? '');
-			break;
-		default:
-			return new Response('Bad Request', { status: 400 });
-	}
-
-	return redirect(
-		formData.get('referer')?.toString() ??
-			request.headers.get('referer') ??
-			request.url,
-	);
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {

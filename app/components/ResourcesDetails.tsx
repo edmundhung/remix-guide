@@ -45,8 +45,8 @@ function ResourcesDetails({
 
 	useEffect(() => {
 		submit(
-			{ type: 'view' },
-			{ method: 'post', action: `/resources/${resource.id}` },
+			{ type: 'view', resourceId: resource.id },
+			{ method: 'post', action: '/api/view' },
 		);
 	}, [submit, resource.id]);
 
@@ -73,7 +73,7 @@ function ResourcesDetails({
 				<Form
 					className="flex flex-row items-center"
 					method="post"
-					action={`/resources/${resource.id}?${search}`}
+					action="/api/bookmark"
 				>
 					<input
 						type="hidden"
@@ -85,6 +85,7 @@ function ResourcesDetails({
 						name="type"
 						value={bookmarked ? 'unbookmark' : 'bookmark'}
 					/>
+					<input type="hidden" name="resourceId" value={resource.id} />
 					<button
 						type="submit"
 						className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${
