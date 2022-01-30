@@ -2,15 +2,16 @@ import { json } from 'remix';
 import { matchCache, removeCache, updateCache } from '../cache';
 import { createLogger } from '../logging';
 import { checkSafeBrowsingAPI, getPageDetails, scrapeHTML } from '../scraping';
-import type { Env, Page, AsyncReturnType } from '../types';
+import type { Env, Page, PageMetadata, AsyncReturnType } from '../types';
+import { createStoreFetch } from '../utils';
 
 type PageStatistics = Required<Pick<Page, 'bookmarkUsers' | 'viewCount'>>;
 
-function getPageMetadata(page: Page) {
+function getPageMetadata(page: Page): PageMetadata {
 	return {
 		url: page.url,
 		title: page.title,
-		description: page.description?.slice(0, 700),
+		description: page.description?.slice(0, 100),
 		isSafe: page.isSafe,
 		createdAt: page.createdAt,
 		updatedAt: page.updatedAt,
@@ -66,7 +67,6 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 			...page,
 			...update,
 			createdAt: page.createdAt,
-			updatedAt: new Date().toISOString(),
 		};
 
 		await PAGE.put(url, JSON.stringify(updatedPage), {
@@ -81,6 +81,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 			updatePage(url, {
 				...data,
 				...statistics,
+				updatedAt: new Date().toISOString(),
 			});
 		},
 		async view(url: string) {
@@ -126,54 +127,20 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 	};
 }
 
-export function getPageStore(env: Env): AsyncReturnType<
-	typeof createPageStore
-> & {
+export function getPageStore(
+	request: Request,
+	env: Env,
+	ctx: ExecutionContext,
+): AsyncReturnType<typeof createPageStore> & {
 	getOrCreatePage: (url: string) => Promise<Page>;
 	getPage: (url: string) => Promise<Page | null>;
+	listPageMetadata: () => Promise<PageMetadata[]>;
 	deleteCache: (url: string) => Promise<void>;
 	refresh: (url: string) => Promise<void>;
 } {
 	const { PAGE, PAGE_STORE, GOOGLE_API_KEY, USER_AGENT } = env;
-
-	const name = 'global';
-	const id = PAGE_STORE.idFromName(name);
-	const store = PAGE_STORE.get(id);
-
-	async function request(
-		pathname: string,
-		method: string,
-		data?: Record<string, any>,
-	) {
-		const searchParams =
-			method === 'GET' && data
-				? new URLSearchParams(
-						Object.entries(data).filter(
-							([_, value]) => value !== null && typeof value !== 'undefined',
-						),
-				  )
-				: null;
-		const body = method !== 'GET' && data ? JSON.stringify(data) : null;
-		const response = await store.fetch(
-			`http://${name}.page${pathname}?${searchParams?.toString()}`,
-			{
-				method,
-				body,
-			},
-		);
-
-		if (response.status === 204) {
-			return;
-		}
-
-		if (!response.ok) {
-			throw new Error(
-				`Request ${method} ${pathname} failed; Received response with status ${response.status}`,
-			);
-		}
-
-		return await response.json<any>();
-	}
+	const fetchStore = createStoreFetch(PAGE_STORE, 'page');
+	const storeName = 'global';
 
 	return {
 		async getPage(url: string) {
@@ -188,6 +155,18 @@ export function getPageStore(env: Env): AsyncReturnType<
 			}
 
 			return page;
+		},
+		async listPageMetadata() {
+			const result = await PAGE.list<PageMetadata>();
+			const list = result.keys
+				.flatMap((key) => key.metadata ?? [])
+				.sort(
+					(prev, next) =>
+						new Date(next.createdAt).valueOf() -
+						new Date(prev.createdAt).valueOf(),
+				);
+
+			return list;
 		},
 		async deleteCache(url: string) {
 			await removeCache(url);
@@ -225,7 +204,7 @@ export function getPageStore(env: Env): AsyncReturnType<
 				GOOGLE_API_KEY ? checkSafeBrowsingAPI([url], GOOGLE_API_KEY) : false,
 			]);
 
-			return await request('/refresh', 'POST', {
+			return await fetchStore(storeName, '/refresh', 'POST', {
 				url,
 				page: {
 					...page,
@@ -235,19 +214,22 @@ export function getPageStore(env: Env): AsyncReturnType<
 			});
 		},
 		async view(url: string) {
-			return await request('/view', 'POST', { url });
+			return await fetchStore(storeName, '/view', 'POST', { url });
 		},
 		async bookmark(userId: string, url: string) {
-			return await request('/bookmark', 'POST', { userId, url });
+			return await fetchStore(storeName, '/bookmark', 'POST', { userId, url });
 		},
 		async unbookmark(userId: string, url: string) {
-			return await request('/unbookmark', 'POST', { userId, url });
+			return await fetchStore(storeName, '/unbookmark', 'POST', {
+				userId,
+				url,
+			});
 		},
 		async backup() {
-			return await request('/backup', 'POST');
+			return await fetchStore(storeName, '/backup', 'POST');
 		},
 		async restore(data: Record<string, any>) {
-			return await request('/restore', 'POST', data);
+			return await fetchStore(storeName, '/restore', 'POST', data);
 		},
 	};
 }

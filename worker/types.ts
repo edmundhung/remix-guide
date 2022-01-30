@@ -66,6 +66,15 @@ export interface Page {
 	updatedAt: string;
 }
 
+export interface PageMetadata
+	extends Pick<
+		Page,
+		'url' | 'title' | 'description' | 'isSafe' | 'createdAt' | 'updatedAt'
+	> {
+	viewCount: number;
+	bookmarkCount: number;
+}
+
 export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID';
 
 export type MessageType = 'success' | 'error' | 'warning' | 'info';

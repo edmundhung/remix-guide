@@ -13,7 +13,7 @@ import { getPageStore } from '../store/PageStore';
 export type Store = ReturnType<typeof createStore>;
 
 export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
-	const pageStore = getPageStore(env);
+	const pageStore = getPageStore(request, env, ctx);
 
 	async function getUser(userId: string): Promise<User | null> {
 		let user = await matchCache<User>(`users/${userId}`);
@@ -61,7 +61,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 			if (!bookmarks) {
 				const store = getGuideStore(env, guide);
 
-				bookmarks = await store.getBookmarks(null);
+				bookmarks = await store.getBookmarks();
 
 				if (bookmarks) {
 					await env.CONTENT.put(
@@ -124,16 +124,6 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 					bookmarkId,
 					status,
 				};
-			} catch (e) {
-				env.LOGGER?.error(e);
-				throw e;
-			}
-		},
-		async refresh(url: string): Promise<void> {
-			try {
-				await pageStore.refresh(url);
-
-				ctx.waitUntil(pageStore.deleteCache(url));
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
@@ -211,24 +201,6 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 				const guideStore = getGuideStore(env, guide);
 
 				await guideStore.restore(data);
-			} catch (e) {
-				env.LOGGER?.error(e);
-				throw e;
-			}
-		},
-		async backupPageStatistics(): Promise<any> {
-			try {
-				const data = await pageStore.backup();
-
-				return data;
-			} catch (e) {
-				env.LOGGER?.error(e);
-				throw e;
-			}
-		},
-		async restorePageStatistics(data: Record<string, any>): Promise<void> {
-			try {
-				await pageStore.restore(data);
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
