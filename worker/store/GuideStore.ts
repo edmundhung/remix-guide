@@ -12,6 +12,7 @@ import type {
 } from '../types';
 import { getIntegrations, getIntegrationsFromPage } from '../scraping';
 import { getPageStore } from './PageStore';
+import { getUserStore } from './UserStore';
 
 async function createGuideStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
@@ -275,11 +276,36 @@ export function getGuideStore(
 	env: Env,
 	ctx: ExecutionContext | DurableObjectState,
 ) {
+	const userStore = getUserStore(env, ctx);
 	const fetchStore = createStoreFetch(env.GUIDE_STORE, 'guide');
 
 	return {
 		async getGuide(guide: string): Promise<Guide> {
 			return await fetchStore(guide, '/', 'GET');
+		},
+		async getList(
+			userId: string | undefined,
+			guide: string | null | undefined,
+			list: string | null | undefined,
+		): Promise<string[] | null> {
+			if (!list) {
+				return null;
+			}
+
+			if (!guide && userId) {
+				const user = await userStore.getUser(userId);
+
+				switch (list) {
+					case 'bookmarks':
+						return user?.bookmarked ?? [];
+					case 'history':
+						return user?.viewed ?? [];
+					default:
+						return [];
+				}
+			}
+
+			return null;
 		},
 		async getBookmarks(guide: string): Promise<Bookmark[]> {
 			let bookmarks = await env.CONTENT.get<Bookmark[]>(
