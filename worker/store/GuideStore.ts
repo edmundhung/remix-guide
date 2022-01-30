@@ -1,6 +1,6 @@
 import { json } from 'remix';
 import { createLogger } from '../logging';
-import { generateId } from '../utils';
+import { createStoreFetch, generateId } from '../utils';
 import type {
 	Env,
 	AsyncReturnType,
@@ -273,76 +273,81 @@ async function createGuideStore(state: DurableObjectState, env: Env) {
 
 export function getGuideStore(
 	env: Env,
-	name: string,
-): AsyncReturnType<typeof createGuideStore> {
-	const id = env.GUIDE_STORE.idFromName(name);
-	const store = env.GUIDE_STORE.get(id);
-
-	async function request(
-		pathname: string,
-		method: string,
-		data?: Record<string, any>,
-	) {
-		const searchParams =
-			method === 'GET' && data
-				? new URLSearchParams(
-						Object.entries(data).filter(
-							([_, value]) => value !== null && typeof value !== 'undefined',
-						),
-				  )
-				: null;
-		const body = method !== 'GET' && data ? JSON.stringify(data) : null;
-		const response = await store.fetch(
-			`http://${name}.guide${pathname}?${searchParams?.toString()}`,
-			{
-				method,
-				body,
-			},
-		);
-
-		if (response.status === 204) {
-			return;
-		}
-
-		if (!response.ok) {
-			throw new Error(
-				`Request ${method} ${pathname} failed; Received response with status ${response.status}`,
-			);
-		}
-
-		return await response.json<any>();
-	}
+	ctx: ExecutionContext | DurableObjectState,
+) {
+	const fetchStore = createStoreFetch(env.GUIDE_STORE, 'guide');
 
 	return {
-		async getGuide() {
-			return await request('/', 'GET');
+		async getGuide(guide: string): Promise<Guide> {
+			return await fetchStore(guide, '/', 'GET');
 		},
-		async getBookmarks() {
-			return await request('/bookmarks', 'GET');
+		async getBookmarks(guide: string): Promise<Bookmark[]> {
+			let bookmarks = await env.CONTENT.get<Bookmark[]>(
+				`bookmarks/${guide}`,
+				'json',
+			);
+
+			if (!bookmarks) {
+				bookmarks = await fetchStore(guide, '/bookmarks', 'GET');
+
+				if (bookmarks) {
+					await env.CONTENT.put(
+						`bookmarks/${guide}`,
+						JSON.stringify(bookmarks),
+						{
+							expirationTtl: 86400,
+						},
+					);
+				}
+			}
+
+			return bookmarks ?? [];
 		},
-		async createBookmark(url: string) {
-			return await request('/bookmarks', 'POST', { url });
+		async createBookmark(
+			guide: string,
+			url: string,
+		): Promise<{ bookmarkId: string | null; status: SubmissionStatus }> {
+			const result = await fetchStore(guide, '/bookmarks', 'POST', { url });
+
+			if (result.status === 'PUBLISHED') {
+				ctx.waitUntil(env.CONTENT.delete(`bookmarks/${guide}`));
+			}
+
+			return result;
 		},
-		async updateBookmark(bookmarkId: string, list: string) {
-			return await request('/bookmarks', 'PUT', { bookmarkId, list });
+		async updateBookmark(
+			guide: string,
+			bookmarkId: string,
+			list: string,
+		): Promise<void> {
+			return await fetchStore(guide, '/bookmarks', 'PUT', { bookmarkId, list });
 		},
-		async deleteBookmark(bookmarkId: string) {
-			return await request('/bookmarks', 'DELETE', { bookmarkId });
+		async deleteBookmark(guide: string, bookmarkId: string): Promise<void> {
+			return await fetchStore(guide, '/bookmarks', 'DELETE', { bookmarkId });
 		},
-		async createList(slug: string) {
-			return await request('/lists', 'POST', { slug });
+		async createList(guide: string, slug: string): Promise<void> {
+			return await fetchStore(guide, '/lists', 'POST', { slug });
 		},
-		async updateList(list: string, title: string, description: string) {
-			return await request('/lists', 'PUT', { list, title, description });
+		async updateList(
+			guide: string,
+			list: string,
+			title: string,
+			description: string,
+		): Promise<void> {
+			return await fetchStore(guide, '/lists', 'PUT', {
+				list,
+				title,
+				description,
+			});
 		},
-		async deleteList(list: string) {
-			return await request('/lists', 'DELETE', { list });
+		async deleteList(guide: string, list: string): Promise<void> {
+			return await fetchStore(guide, '/lists', 'DELETE', { list });
 		},
-		async backup() {
-			return await request('/backup', 'POST');
+		async backup(guide: string): Promise<Record<string, any>> {
+			return await fetchStore(guide, '/backup', 'POST');
 		},
-		async restore(data: Record<string, any>) {
-			return await request('/restore', 'POST', data);
+		async restore(guide: string, data: Record<string, any>): Promise<void> {
+			return await fetchStore(guide, '/restore', 'POST', data);
 		},
 	};
 }

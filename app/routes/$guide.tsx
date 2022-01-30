@@ -8,7 +8,7 @@ import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { Context, Bookmark } from '~/types';
 
 export let loader: LoaderFunction = async ({ context, request, params }) => {
-	const { session, store } = context as Context;
+	const { session, guideStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
 	if (params.guide === profile?.name) {
@@ -18,7 +18,7 @@ export let loader: LoaderFunction = async ({ context, request, params }) => {
 	}
 
 	const searchOptions = getSearchOptions(request.url);
-	const bookmarks = await store.getBookmarks(params.guide);
+	const bookmarks = await guideStore.getBookmarks(params.guide);
 	const entries = search(bookmarks, searchOptions);
 
 	return json({

@@ -1,3 +1,4 @@
+import { getGuideStore } from '../store/GuideStore';
 import { getPageStore } from '../store/PageStore';
 import type { Env } from '../types';
 import { createSession } from './session';
@@ -14,5 +15,6 @@ export function createContext(
 		session: createSession(request, env, ctx),
 		store: createStore(request, env, ctx),
 		pageStore: getPageStore(env, ctx),
+		guideStore: getGuideStore(env, ctx),
 	};
 }

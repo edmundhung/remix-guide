@@ -28,7 +28,7 @@ function isValidURL(text: string): boolean {
 }
 
 export let action: ActionFunction = async ({ request, context }) => {
-	const { session, store } = context as Context;
+	const { session, guideStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
 	if (!profile) {
@@ -60,9 +60,9 @@ export let action: ActionFunction = async ({ request, context }) => {
 	}
 
 	try {
-		const { bookmarkId, status } = await store.submit(
+		const { bookmarkId, status } = await guideStore.createBookmark(
+			'news',
 			url.toString(),
-			profile.id,
 		);
 
 		let setCookieHeader = {};

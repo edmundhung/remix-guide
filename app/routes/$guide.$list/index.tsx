@@ -48,9 +48,9 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 		return json({});
 	}
 
-	const { session, store } = context as Context;
+	const { session, store, guideStore } = context as Context;
 	const [bookmarks, [message, setCookieHeader], user] = await Promise.all([
-		store.getBookmarks('news'),
+		guideStore.getBookmarks('news'),
 		session.getFlashMessage(),
 		(async () => {
 			const profile = await session.isAuthenticated();

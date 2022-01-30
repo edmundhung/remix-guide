@@ -7,13 +7,12 @@ import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { Bookmark, Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
-	const { session, store } = context as Context;
+	const { session, store, guideStore } = context as Context;
 	const profile = await session.isAuthenticated();
 	const searchOptions = getSearchOptions(request.url);
-	const guide =
-		params.guide && params.guide !== profile?.name ? params.guide : null;
+	const guide = params.guide && params.guide === 'news' ? params.guide : null;
 	const [bookmarks, includes] = await Promise.all([
-		store.getBookmarks(guide ?? 'news'),
+		guideStore.getBookmarks('news'),
 		store.getList(profile?.id, guide, params.list),
 	]);
 	const entries = search(bookmarks, {

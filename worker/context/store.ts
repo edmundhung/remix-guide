@@ -1,13 +1,6 @@
-import type {
-	Env,
-	User,
-	SubmissionStatus,
-	UserProfile,
-	Bookmark,
-} from '../types';
+import type { Env, User, UserProfile } from '../types';
 import { matchCache, updateCache, removeCache } from '../cache';
 import { getUserStore } from '../store/UserStore';
-import { getGuideStore } from '../store/GuideStore';
 import { getPageStore } from '../store/PageStore';
 
 export type Store = ReturnType<typeof createStore>;
@@ -48,34 +41,6 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 	}
 
 	return {
-		async getBookmarks(guide: string | null | undefined): Promise<Bookmark[]> {
-			if (!guide) {
-				return [];
-			}
-
-			let bookmarks = await env.CONTENT.get<Bookmark[]>(
-				`bookmarks/${guide}`,
-				'json',
-			);
-
-			if (!bookmarks) {
-				const store = getGuideStore(env, guide);
-
-				bookmarks = await store.getBookmarks();
-
-				if (bookmarks) {
-					await env.CONTENT.put(
-						`bookmarks/${guide}`,
-						JSON.stringify(bookmarks),
-						{
-							expirationTtl: 86400,
-						},
-					);
-				}
-			}
-
-			return bookmarks;
-		},
 		async getList(
 			userId: string | undefined,
 			guide: string | null | undefined,
@@ -103,27 +68,6 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		async getUser(userId: string) {
 			try {
 				return await getUser(userId);
-			} catch (e) {
-				env.LOGGER?.error(e);
-				throw e;
-			}
-		},
-		async submit(
-			url: string,
-			userId: string,
-		): Promise<{ bookmarkId: string | null; status: SubmissionStatus }> {
-			try {
-				const guideStore = getGuideStore(env, 'news');
-				const { bookmarkId, status } = await guideStore.createBookmark(url);
-
-				if (status === 'PUBLISHED') {
-					ctx.waitUntil(env.CONTENT.delete('bookmarks/news'));
-				}
-
-				return {
-					bookmarkId,
-					status,
-				};
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
@@ -177,30 +121,6 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 
 				ctx.waitUntil(removeCache(`users/${userId}`));
 				ctx.waitUntil(pageStore.unbookmark(userId, url));
-			} catch (e) {
-				env.LOGGER?.error(e);
-				throw e;
-			}
-		},
-		async backupGuide(guide: string): Promise<any> {
-			try {
-				const guideStore = getGuideStore(env, guide);
-				const data = await guideStore.backup();
-
-				return data;
-			} catch (e) {
-				env.LOGGER?.error(e);
-				throw e;
-			}
-		},
-		async restoreGuide(
-			guide: string,
-			data: Record<string, any>,
-		): Promise<void> {
-			try {
-				const guideStore = getGuideStore(env, guide);
-
-				await guideStore.restore(data);
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
