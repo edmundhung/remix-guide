@@ -6,38 +6,32 @@ import {
 } from 'remix';
 import { json } from 'remix';
 import About from '~/components/About';
-import ResourcesDetails from '~/components/ResourcesDetails';
-import SuggestedResources from '~/components/SuggestedResources';
+import BookmarkDetails from '~/components/BookmarkDetails';
+import SuggestedBookmarks from '~/components/SuggestedBookmarks';
 import { capitalize, formatMeta, notFound } from '~/helpers';
-import { getSuggestions, patchResource } from '~/resources';
-import {
-	Context,
-	Resource,
-	ResourceMetadata,
-	SearchOptions,
-	User,
-} from '~/types';
+import { getSuggestions } from '~/bookmarks';
+import { Bookmark, Context, SearchOptions, User } from '~/types';
 
 interface LoaderData {
-	resource: Resource;
+	bookmark: Bookmark;
 	user: User | null;
 	suggestions: Array<{
-		entries: ResourceMetadata[];
+		bookmarks: Bookmark[];
 		searchOptions: SearchOptions;
 	}>;
 }
 
 export let meta: MetaFunction = ({ data, params }) => {
-	const { list, owner } = params;
+	const { list, guide } = params;
 
-	if (!list || !owner) {
+	if (!list || !guide) {
 		return {};
 	}
 
 	return formatMeta({
 		title: capitalize(list),
 		description: data?.resource?.description ?? '',
-		'og:url': `https://remix.guide/${owner}/${list}`,
+		'og:url': `https://remix.guide/${guide}/${list}`,
 	});
 };
 
@@ -47,31 +41,35 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 	}
 
 	const url = new URL(request.url);
-	const resourceId = url.searchParams.get('resourceId');
+	const bookmarkId = url.searchParams.get('bookmarkId');
 
-	if (!resourceId) {
+	if (!bookmarkId) {
 		return json({});
 	}
 
 	const { session, store } = context as Context;
-	const [resource, profile] = await Promise.all([
-		store.query(resourceId),
-		session.isAuthenticated(),
-	]);
+	const [bookmarks, user] = await Promise.all([
+		store.getBookmarks('news'),
+		(async () => {
+			const profile = await session.isAuthenticated();
 
-	if (!resource) {
+			if (!profile) {
+				return null;
+			}
+
+			return await store.getUser(profile.id);
+		})(),
+	]);
+	const bookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkId);
+
+	if (!bookmark) {
 		throw notFound();
 	}
 
-	const [user, suggestions] = await Promise.all([
-		profile?.id ? store.getUser(profile.id) : null,
-		getSuggestions(store, resource, profile?.id ?? null),
-	]);
-
 	return json({
 		user,
-		resource: user ? patchResource(resource, user) : resource,
-		suggestions,
+		bookmark,
+		suggestions: getSuggestions(bookmarks, bookmark),
 	});
 };
 
@@ -81,8 +79,8 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 	submission,
 }) => {
 	if (
-		prevUrl.searchParams.get('resourceId') !==
-		url.searchParams.get('resourceId')
+		prevUrl.searchParams.get('bookmarkId') !==
+		url.searchParams.get('bookmarkId')
 	) {
 		return true;
 	}
@@ -93,21 +91,21 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function UserProfile() {
-	const { resource, user, suggestions } = useLoaderData<LoaderData>();
+	const { bookmark, user, suggestions } = useLoaderData<LoaderData>();
 
-	if (!resource) {
+	if (!bookmark) {
 		return <About />;
 	}
 
 	return (
-		<ResourcesDetails resource={resource} user={user}>
-			{suggestions.map(({ entries, searchOptions }) => (
-				<SuggestedResources
+		<BookmarkDetails bookmark={bookmark} user={user}>
+			{suggestions.map(({ bookmarks, searchOptions }) => (
+				<SuggestedBookmarks
 					key={JSON.stringify(searchOptions)}
-					entries={entries}
+					bookmarks={bookmarks}
 					searchOptions={searchOptions}
 				/>
 			))}
-		</ResourcesDetails>
+		</BookmarkDetails>
 	);
 }

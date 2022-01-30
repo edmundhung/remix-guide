@@ -25,12 +25,20 @@ export interface Env {
 	PAGE: KVNamespace;
 	RESOURCES_STORE: DurableObjectNamespace;
 	USER_STORE: DurableObjectNamespace;
+	GUIDE_STORE: DurableObjectNamespace;
+	PAGE_STORE: DurableObjectNamespace;
 }
 
 export interface UserProfile {
 	id: string;
+	github: string;
 	name: string;
-	email: string;
+	guides: string[];
+	picture: string;
+	email: string | null;
+	description: string | null;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface User {
@@ -52,6 +60,8 @@ export interface Page {
 	image?: string | null;
 	video?: string | null;
 	isSafe?: boolean;
+	viewCount?: number;
+	bookmarkUsers?: string[];
 	createdAt: string;
 	updatedAt: string;
 }
@@ -94,13 +104,50 @@ export interface Resource extends Page, ResourceSummary {
 export interface SearchOptions {
 	keyword?: string | null;
 	list?: string | null;
-	owner?: string | null;
+	guide?: string | null;
 	author?: string | null;
 	site?: string | null;
 	category?: Category | null;
 	platform?: string | null;
 	integrations?: string[] | null;
+	includes?: string[] | null;
 	excludes?: string[] | null;
 	limit?: number;
 	sortBy?: 'hotness' | null;
+}
+
+export interface Guide {
+	lists: BookmarkList[];
+}
+
+export interface BookmarkList {
+	slug: string;
+	title: string;
+	bookmarkIds: string[];
+	createdAt: string;
+	updatedAt: string;
+}
+
+export interface BookmarkMetadata {
+	id: string;
+	url: string;
+	lists: string[];
+	timestamp: string;
+}
+
+export interface Bookmark
+	extends BookmarkMetadata,
+		Pick<
+			Page,
+			| 'title'
+			| 'description'
+			| 'author'
+			| 'category'
+			| 'image'
+			| 'video'
+			| 'isSafe'
+		> {
+	viewCount: number;
+	bookmarkCount: number;
+	integrations: string[];
 }

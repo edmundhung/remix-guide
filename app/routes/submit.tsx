@@ -60,7 +60,10 @@ export let action: ActionFunction = async ({ request, context }) => {
 	}
 
 	try {
-		const { id, status } = await store.submit(url.toString(), profile.id);
+		const { bookmarkId, status } = await store.submit(
+			url.toString(),
+			profile.id,
+		);
 
 		let setCookieHeader = {};
 
@@ -85,13 +88,13 @@ export let action: ActionFunction = async ({ request, context }) => {
 				break;
 		}
 
-		if (!id) {
+		if (!bookmarkId) {
 			return redirect('/submit', {
 				headers: setCookieHeader,
 			});
 		}
 
-		return redirect(`/resources/${id}`, {
+		return redirect(`/news?bookmarkId=${bookmarkId}`, {
 			headers: setCookieHeader,
 		});
 	} catch (error) {

@@ -5,11 +5,11 @@ import { notFound } from '~/helpers';
 import type { Context } from '~/types';
 import { administrators } from '~/config';
 
-export let action: ActionFunction = async ({ request, context }) => {
+export let action: ActionFunction = async ({ request, params, context }) => {
 	const { session, store } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!administrators.includes(profile?.name ?? '')) {
+	if (!params.guide || !administrators.includes(profile?.name ?? '')) {
 		throw notFound();
 	}
 
@@ -18,7 +18,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 
 	switch (type) {
 		case 'backup': {
-			const data = await store.backupResources();
+			const data = await store.backupGuide(params.guide);
 
 			return json(data);
 		}
@@ -35,7 +35,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 				});
 			}
 
-			await store.restoreResources(JSON.parse(data.trim()));
+			await store.restoreGuide(params.guide, JSON.parse(data.trim()));
 
 			return redirect('/admin/resources', {
 				headers: await session.commitWithFlashMessage(
@@ -54,12 +54,12 @@ export let action: ActionFunction = async ({ request, context }) => {
 	}
 };
 
-export default function AdminResources() {
+export default function BackupGuide() {
 	const data = useActionData();
 
 	return (
 		<section className="flex flex-col flex-1 px-2.5 pt-2">
-			<h3 className="pb-4">Resources backup / restore</h3>
+			<h3 className="pb-4">Backup / restore guide</h3>
 			<BackupForm data={data} />
 		</section>
 	);

@@ -26,31 +26,18 @@ export function getRelatedSearchParams(search: string): URLSearchParams {
 
 export function getSearchOptions(url: string): SearchOptions {
 	const { pathname, searchParams } = new URL(url, 'https://remix.guide');
+	const [_, guide, list] =
+		pathname.match(/^\/([a-z-0-9]+)(?:\/([a-z-0-9]+))*$/i) ?? [];
 	const options: SearchOptions = {
 		keyword: searchParams.get('q'),
 		author: searchParams.get('author'),
-		owner: null,
-		list: null,
+		guide: guide ?? null,
+		list: list ?? null,
 		site: searchParams.get('site'),
 		category: searchParams.get('category'),
 		platform: searchParams.get('platform'),
 		integrations: searchParams.getAll('integration'),
 	};
-
-	if (
-		pathname !== '/' &&
-		pathname !== '/resources' &&
-		!pathname.startsWith('/resources/')
-	) {
-		const [_, owner, list] =
-			pathname.match(/^\/([a-z-0-9]+)(?:\/([a-z-0-9]+))*$/i) ?? [];
-
-		if (owner) {
-			options.owner = owner;
-		}
-
-		options.list = list ?? 'bookmarks';
-	}
 
 	return Object.fromEntries(
 		Object.entries(options).map(([key, value]) => [key, value ? value : null]),
@@ -74,7 +61,13 @@ export function createIntegrationSearch(value: string): string {
 }
 
 export function getResourcePathname(options: SearchOptions): string {
-	return options.owner ? `/${options.owner}/${options.list}` : '/resources';
+	let base = `/${options.guide}`;
+
+	if (options.list) {
+		base += `/${options.list}`;
+	}
+
+	return base;
 }
 
 export function getResourceSearchParams(
@@ -108,17 +101,13 @@ export function getResourceSearchParams(
 
 export function getResourceURL(
 	options: SearchOptions,
-	resourceId?: string | null,
+	bookmarkId?: string | null,
 ): string {
 	const searchParams = getResourceSearchParams(options);
-	let pathname = getResourcePathname(options);
+	const pathname = getResourcePathname(options);
 
-	if (resourceId) {
-		if (pathname === '/resources') {
-			pathname = `${pathname}/${resourceId}`;
-		} else {
-			searchParams.set('resourceId', resourceId);
-		}
+	if (bookmarkId) {
+		searchParams.set('bookmarkId', bookmarkId);
 	}
 
 	const search = searchParams.toString();
@@ -128,12 +117,12 @@ export function getResourceURL(
 
 export function getAction(
 	options: SearchOptions,
-	resourceId?: string | null,
+	bookmarkId?: string | null,
 ): string {
 	let action = getResourcePathname(options);
 
-	if (options.list && resourceId) {
-		action = `${action}?resourceId=${resourceId}`;
+	if (options.list && bookmarkId) {
+		action = `${action}?bookmarkId=${bookmarkId}`;
 	}
 
 	return action;
@@ -211,5 +200,5 @@ export function getTitleBySearchOptions(searchOptions: SearchOptions): string {
 		return 'Search Result';
 	}
 
-	return options[0] ?? 'Discover';
+	return options[0] ?? searchOptions.guide;
 }

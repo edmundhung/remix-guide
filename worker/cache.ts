@@ -33,7 +33,7 @@ export async function updateCache<T>(
 	await cache.put(cacheRequest, cacheResponse);
 }
 
-export async function removeCache(key: string): Pormise<void> {
+export async function removeCache(key: string): Promise<void> {
 	const cacheRequest = createCacheRequest(key);
 
 	await cache.delete(cacheRequest);

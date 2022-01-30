@@ -3,12 +3,12 @@ import { useMemo } from 'react';
 import { useLocation } from 'remix';
 import clsx from 'clsx';
 import SearchList from '~/components/SearchList';
-import ResourcesList from '~/components/ResourcesList';
+import BookmarkList from '~/components/BookmarkList';
 import { getSearchOptions } from '~/search';
-import type { ResourceMetadata } from '~/types';
+import type { Bookmark } from '~/types';
 
 interface ListProps {
-	entries: ResourceMetadata[];
+	entries: Bookmark[];
 	selectedId: string | null | undefined;
 	children: ReactNode;
 }
@@ -33,15 +33,12 @@ function Feed({ entries, selectedId, children }: ListProps) {
 				})}
 			>
 				{isSearching ? (
-					<SearchList
-						searchOptions={searchOptions}
-						selectedResourceId={selectedId}
-					/>
+					<SearchList searchOptions={searchOptions} selectedId={selectedId} />
 				) : (
-					<ResourcesList
+					<BookmarkList
 						entries={entries}
 						searchOptions={searchOptions}
-						selectedResourceId={selectedId}
+						selectedId={selectedId}
 					/>
 				)}
 			</div>

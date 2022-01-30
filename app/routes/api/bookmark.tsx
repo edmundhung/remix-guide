@@ -9,22 +9,23 @@ export let action: ActionFunction = async ({ context, request }) => {
 		request.formData(),
 	]);
 	const type = formData.get('type');
-	const resourceId = formData.get('resourceId')?.toString();
+	const url = formData.get('url')?.toString();
+	const bookmarkId = formData.get('bookmarkId')?.toString();
 
 	if (!profile) {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	if (!resourceId) {
+	if (!url || !bookmarkId) {
 		return new Response('Bad Request', { status: 400 });
 	}
 
 	switch (type) {
 		case 'bookmark':
-			await store.bookmark(profile.id, resourceId);
+			await store.bookmark(profile.id, bookmarkId, url);
 			break;
 		case 'unbookmark':
-			await store.unbookmark(profile.id, resourceId);
+			await store.unbookmark(profile.id, bookmarkId, url);
 			break;
 		default:
 			return new Response('Bad Request', { status: 400 });

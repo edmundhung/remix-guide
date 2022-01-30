@@ -22,6 +22,8 @@ entry-point = "."
 bindings = [
   { name = "RESOURCES_STORE", class_name = "ResourcesStore" },
   { name = "USER_STORE", class_name = "UserStore" },
+  { name = "PAGE_STORE", class_name = "PageStore" },
+  { name = "GUIDE_STORE", class_name = "GuideStore" },
 ]
 
 [[migrations]]
@@ -32,6 +34,10 @@ new_classes = ["Counter"]
 tag = "v1.0"
 new_classes = ["ResourcesStore", "UserStore"]
 deleted_classes = ["Counter"]
+
+[[migrations]]
+tag = "v1.1"
+new_classes = ["PageStore", "GuideStore"]
 
 [build]
 command = "npm run build"

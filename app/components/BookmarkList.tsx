@@ -4,7 +4,7 @@ import SvgIcon from '~/components/SvgIcon';
 import searchIcon from '~/icons/search.svg';
 import pencilIcon from '~/icons/pencil.svg';
 import timesIcon from '~/icons/times.svg';
-import type { ResourceMetadata } from '~/types';
+import type { Bookmark } from '~/types';
 import MenuLink from '~/components/MenuLink';
 import { PaneContainer, PaneHeader, PaneContent } from '~/layout';
 import {
@@ -15,39 +15,32 @@ import {
 import type { SearchOptions } from '~/types';
 import { useMemo } from 'react';
 
-interface ResourcesListProps {
-	entries: ResourceMetadata[];
-	selectedResourceId: string | null | undefined;
+interface BookmarkListProps {
+	entries: Bookmark[];
+	selectedId: string | null | undefined;
 	searchOptions: SearchOptions;
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['list', 'owner'].concat(
-		!searchOptions.list ? ['category'] : [],
-	);
-
 	return Object.entries(searchOptions).some(
 		([key, value]) =>
-			!keys.includes(key) &&
+			!['guide', 'list'].includes(key) &&
 			(Array.isArray(value) ? value.length > 0 : value !== null),
 	);
 }
 
-export default function ResourcesList({
+export default function BookmarkList({
 	entries,
-	selectedResourceId,
+	selectedId,
 	searchOptions,
-}: ResourcesListProps) {
+}: BookmarkListProps) {
 	const location = useLocation();
 	const toggleSearchURL = useMemo(() => {
 		const searchParams = getRelatedSearchParams(location.search);
+		const search = toggleSearchList(searchParams);
 
-		if (searchOptions.list && selectedResourceId) {
-			searchParams.set('resourceId', selectedResourceId);
-		}
-
-		return `?${toggleSearchList(searchParams)}`;
-	}, [location.search, searchOptions.list, selectedResourceId]);
+		return `?${search}`;
+	}, [location.search]);
 
 	return (
 		<PaneContainer>
@@ -79,15 +72,7 @@ export default function ResourcesList({
 					</div>
 					<Link
 						className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-						to={
-							searchOptions.list
-								? selectedResourceId
-									? `?resourceId=${selectedResourceId}`
-									: '?'
-								: selectedResourceId
-								? `/resources/${selectedResourceId}`
-								: '/'
-						}
+						to={selectedId ? `?bookmarkId=${selectedId}` : '?'}
 					>
 						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={timesIcon} />
 					</Link>
@@ -96,7 +81,7 @@ export default function ResourcesList({
 			<PaneContent>
 				{entries.length === 0 ? (
 					<div className="text-center py-16 text-gray-500">
-						No resources found at the moment
+						No bookmarks found at the moment
 					</div>
 				) : (
 					<div>
@@ -105,7 +90,7 @@ export default function ResourcesList({
 								key={entry.id}
 								entry={entry}
 								searchOptions={searchOptions}
-								selected={entry.id === selectedResourceId}
+								selected={entry.id === selectedId}
 							/>
 						))}
 					</div>

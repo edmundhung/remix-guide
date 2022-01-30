@@ -3,7 +3,7 @@ import { json } from 'remix';
 import { createLogger } from '../logging';
 import {
 	scrapeHTML,
-	getPageMetadata,
+	getPageDetails,
 	checkSafeBrowsingAPI,
 	getIntegrations,
 	getIntegrationsFromPage,
@@ -161,8 +161,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			if (!page) {
 				page = await scrapeHTML(url, env.USER_AGENT);
 
-				const [pageMetadata, isSafe] = await Promise.all([
-					getPageMetadata(page.url, env),
+				const [pageDetails, isSafe] = await Promise.all([
+					getPageDetails(page.url, env),
 					GOOGLE_API_KEY
 						? checkSafeBrowsingAPI([page.url], GOOGLE_API_KEY)
 						: true,
@@ -171,7 +171,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 				page = {
 					...page,
-					...pageMetadata,
+					...pageDetails,
 					isSafe,
 					createdAt: now,
 					updatedAt: now,
@@ -209,7 +209,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				await Promise.all([
 					PAGE.get<Page>(resource.url, 'json'),
 					scrapeHTML(resource.url, env.USER_AGENT),
-					getPageMetadata(resource.url, env),
+					getPageDetails(resource.url, env),
 					GOOGLE_API_KEY
 						? checkSafeBrowsingAPI([resource.url], GOOGLE_API_KEY)
 						: true,

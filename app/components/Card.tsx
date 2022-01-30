@@ -1,11 +1,11 @@
 import { Link } from 'remix';
 import type { ReactElement } from 'react';
-import type { ResourceMetadata } from '~/types';
+import type { Bookmark } from '~/types';
 import { getSite, getResourceURL } from '~/search';
 import type { SearchOptions } from '~/types';
 
 interface CardProps {
-	entry: ResourceMetadata;
+	entry: Bookmark;
 	searchOptions: SearchOptions;
 	selected?: boolean;
 }
@@ -29,7 +29,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 							<span className="capitalize">{entry.category}</span> /{' '}
 							{getSite(entry.url)}
 						</span>
-						<span>{entry.createdAt.substr(0, 10)}</span>
+						<span>{entry.timestamp.slice(0, 10)}</span>
 					</div>
 					<h2 className="text-gray-100 break-words line-clamp-2">
 						{entry.title ?? entry.url}

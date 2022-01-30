@@ -336,7 +336,7 @@ function getIntegrations(
 
 		switch (packageName) {
 			case '@remix-run/architect':
-				integrations.add('architect');
+				integrations.add('aws');
 				break;
 			case '@azure/functions':
 				integrations.add('azure');
@@ -495,16 +495,16 @@ function getIntegrationsFromPage(page: Page, packages: string[]): string[] {
 	return Array.from(result);
 }
 
-async function getPageMetadata(
+async function getPageDetails(
 	url: string,
 	env: Env,
 ): Promise<Partial<Page> | null> {
 	const { hostname, pathname, searchParams } = new URL(url);
 
-	let metadata: Partial<Page> | null = null;
+	let details: Partial<Page> | null = null;
 
 	if (hostname === 'www.npmjs.com' && pathname.startsWith('/package/')) {
-		metadata = await parseNpmPackage(
+		details = await parseNpmPackage(
 			pathname.replace('/package/', ''),
 			env.GITHUB_TOKEN,
 		);
@@ -512,35 +512,35 @@ async function getPageMetadata(
 		hostname === 'github.com' &&
 		pathname.slice(1).split('/').length === 2
 	) {
-		metadata = await parseGithubRepository(pathname.slice(1), env.GITHUB_TOKEN);
+		details = await parseGithubRepository(pathname.slice(1), env.GITHUB_TOKEN);
 	} else if (hostname === 'gist.github.com') {
 		const [author] = pathname.slice(1).split('/');
 
-		metadata = {
+		details = {
 			author,
 			description: '',
 		};
 	} else if (hostname === 'www.youtube.com' && searchParams.has('v')) {
-		metadata = await parseYouTubeVideo(
+		details = await parseYouTubeVideo(
 			searchParams.get('v') as string,
 			env.GOOGLE_API_KEY,
 		);
 	}
 
-	if (metadata !== null) {
-		metadata = Object.fromEntries(
-			Object.entries(metadata).filter(
+	if (details !== null) {
+		details = Object.fromEntries(
+			Object.entries(details).filter(
 				([, value]) => typeof value !== 'undefined',
 			),
 		);
 	}
 
-	return metadata;
+	return details;
 }
 
 export {
 	scrapeHTML,
-	getPageMetadata,
+	getPageDetails,
 	getIntegrations,
 	getIntegrationsFromPage,
 	checkSafeBrowsingAPI,
