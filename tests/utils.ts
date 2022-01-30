@@ -4,7 +4,12 @@ import type { MockAgent } from 'undici';
 import { createCookie } from '@remix-run/server-runtime';
 import { sign, unsign } from '@remix-run/node/cookieSigning';
 import { queries, getDocument } from '@playwright-testing-library/test';
-import type { Resource, ResourceMetadata } from '../worker/types';
+import type {
+	Bookmark,
+	PageMetadata,
+	Resource,
+	ResourceMetadata,
+} from '../worker/types';
 
 /**
  * Simulate installGlobals from remix
@@ -259,19 +264,34 @@ export async function getPage(mf: Miniflare, url: string) {
 	return page;
 }
 
-export async function listResourcesMetadata(mf: Miniflare) {
+export async function listBookmarks(
+	mf: Miniflare,
+	guide: string | null,
+): Promise<Bookmark[]> {
+	if (!guide) {
+		return [];
+	}
+
 	const content = await mf.getKVNamespace('CONTENT');
-	const resources = await content.list<ResourceMetadata>({
-		prefix: 'resources/',
-	});
+	const bookmarks = await content.get<Bookmark[]>(`bookmarks/${guide}`, 'json');
 
-	return resources.keys.flatMap((key) => key.metadata ?? []);
-}
-
-export function getPageResourceId(page: Page): string {
-	return new URL(page.url()).pathname.replace('/resources/', '');
+	return bookmarks ?? [];
 }
 
 export function getPageURL(page: Page): URL {
 	return new URL(page.url());
+}
+
+export function getPageGuide(page: Page): string | null {
+	const { pathname } = getPageURL(page);
+
+	if (pathname.startsWith('/admin') || pathname.startsWith('/submit')) {
+		return null;
+	}
+
+	return pathname.slice(1).split('/')[0];
+}
+
+export function getPageBookmarkId(page: Page): string | null {
+	return getPageURL(page).searchParams.get('bookmarkId');
 }

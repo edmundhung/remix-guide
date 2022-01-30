@@ -14,6 +14,7 @@ import { Bookmark, Context, SearchOptions, User } from '~/types';
 
 interface LoaderData {
 	bookmark: Bookmark;
+	message: string;
 	user: User | null;
 	suggestions: Array<{
 		bookmarks: Bookmark[];
@@ -48,8 +49,9 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 	}
 
 	const { session, store } = context as Context;
-	const [bookmarks, user] = await Promise.all([
+	const [bookmarks, [message, setCookieHeader], user] = await Promise.all([
 		store.getBookmarks('news'),
+		session.getFlashMessage(),
 		(async () => {
 			const profile = await session.isAuthenticated();
 
@@ -66,11 +68,17 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 		throw notFound();
 	}
 
-	return json({
-		user,
-		bookmark,
-		suggestions: getSuggestions(bookmarks, bookmark),
-	});
+	return json(
+		{
+			user,
+			message,
+			bookmark,
+			suggestions: getSuggestions(bookmarks, bookmark),
+		},
+		{
+			headers: setCookieHeader,
+		},
+	);
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
@@ -91,14 +99,14 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function UserProfile() {
-	const { bookmark, user, suggestions } = useLoaderData<LoaderData>();
+	const { bookmark, message, user, suggestions } = useLoaderData<LoaderData>();
 
 	if (!bookmark) {
 		return <About />;
 	}
 
 	return (
-		<BookmarkDetails bookmark={bookmark} user={user}>
+		<BookmarkDetails bookmark={bookmark} user={user} message={message}>
 			{suggestions.map(({ bookmarks, searchOptions }) => (
 				<SuggestedBookmarks
 					key={JSON.stringify(searchOptions)}

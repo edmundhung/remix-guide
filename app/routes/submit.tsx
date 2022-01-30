@@ -70,19 +70,19 @@ export let action: ActionFunction = async ({ request, context }) => {
 		switch (status) {
 			case 'PUBLISHED':
 				setCookieHeader = await session.commitWithFlashMessage(
-					'The submitted resource is now published',
+					'The submitted URL is now published',
 					'success',
 				);
 				break;
 			case 'RESUBMITTED':
 				setCookieHeader = await session.commitWithFlashMessage(
-					'A resource with the same url is found',
+					'A bookmark with the same url is found',
 					'info',
 				);
 				break;
 			case 'INVALID':
 				setCookieHeader = await session.commitWithFlashMessage(
-					'The provided data looks invalid; Please make sure a proper category is selected',
+					'The submitted URL is considered not safe by our upstream provider',
 					'error',
 				);
 				break;
@@ -98,7 +98,6 @@ export let action: ActionFunction = async ({ request, context }) => {
 			headers: setCookieHeader,
 		});
 	} catch (error) {
-		console.log('Error while submitting new url; Received', error);
 		return redirect('/submit', {
 			headers: await session.commitWithFlashMessage(
 				'Something wrong with the URL; Please try again later',

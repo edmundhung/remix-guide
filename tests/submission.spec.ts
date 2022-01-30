@@ -9,6 +9,9 @@ import {
 	mockNpmMetadata,
 	getPageURL,
 	getPage,
+	getPageBookmarkId,
+	listBookmarks,
+	getPageGuide,
 } from './utils';
 
 test.describe.parallel('Permission', () => {
@@ -58,7 +61,7 @@ test.describe.parallel('Permission', () => {
 		await submitURL(page, url);
 
 		expect(
-			await queries.findByText(/The submitted resource is now published/i),
+			await queries.findByText(/The submitted URL is now published/i),
 		).toBeDefined();
 	});
 });
@@ -114,7 +117,7 @@ test.describe.parallel('Workflow', () => {
 		expect(getPageURL(page).pathname).toBe('/submit');
 	});
 
-	test('redirects user to the resources page if success', async ({
+	test('redirects user to the bookmark page if success', async ({
 		page,
 		queries,
 		mockAgent,
@@ -129,12 +132,12 @@ test.describe.parallel('Workflow', () => {
 		await submitURL(page, url);
 
 		expect(
-			await queries.findByText(/The submitted resource is now published/i),
+			await queries.findByText(/The submitted URL is now published/i),
 		).toBeDefined();
 		expect(getPageURL(page).pathname).not.toBe('/submit');
 	});
 
-	test('redirects user to the resources page if the URL is already submitted', async ({
+	test('redirects user to the bookmark page if the URL is already submitted', async ({
 		page,
 		queries,
 		mockAgent,
@@ -151,7 +154,7 @@ test.describe.parallel('Workflow', () => {
 		await submitURL(page, url);
 
 		expect(
-			await queries.findByText(/A resource with the same url is found/i),
+			await queries.findByText(/A bookmark with the same url is found/i),
 		).toBeDefined();
 		expect(getPageURL(page).pathname).not.toBe('/submit');
 	});
@@ -291,10 +294,12 @@ test.describe.parallel('Scraping', () => {
 
 		await submitURL(page, url);
 
-		const resourceId = getPageResourceId(page);
-		const resource = await getResource(mf, resourceId);
+		const guide = getPageGuide(page);
+		const bookmarkId = getPageBookmarkId(page);
+		const bookmarks = await listBookmarks(mf, guide);
+		const bookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkId);
 
-		expect(resource).toMatchObject({
+		expect(bookmark).toMatchObject({
 			url: target,
 		});
 	});
@@ -315,10 +320,12 @@ test.describe.parallel('Scraping', () => {
 
 		await submitURL(page, url);
 
-		const resourceId = getPageResourceId(page);
-		const resource = await getResource(mf, resourceId);
+		const guide = getPageGuide(page);
+		const bookmarkId = getPageBookmarkId(page);
+		const bookmarks = await listBookmarks(mf, guide);
+		const bookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkId);
 
-		expect(resource).toMatchObject({
+		expect(bookmark).toMatchObject({
 			title: 'Some Page',
 			url,
 		});
@@ -348,10 +355,12 @@ test.describe.parallel('Scraping', () => {
 
 		await submitURL(page, url);
 
-		const resourceId = getPageResourceId(page);
-		const resource = await getResource(mf, resourceId);
+		const guide = getPageGuide(page);
+		const bookmarkId = getPageBookmarkId(page);
+		const bookmarks = await listBookmarks(mf, guide);
+		const bookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkId);
 
-		expect(resource).toMatchObject({
+		expect(bookmark).toMatchObject({
 			title: 'Actual Page',
 			url: canonical,
 		});
@@ -381,7 +390,7 @@ test.describe.parallel('Scraping', () => {
 		await submitURL(page, url);
 
 		expect(
-			await queries.findByText(/The submitted resource is now published/i),
+			await queries.findByText(/The submitted URL is now published/i),
 		).toBeDefined();
 		expect(getPageURL(page).pathname).not.toBe('/submit');
 	});

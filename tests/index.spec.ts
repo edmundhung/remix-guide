@@ -1,10 +1,11 @@
 import { test, expect } from './setup';
 import {
-	getPageURL,
-	listResourcesMetadata,
+	listBookmarks,
 	mockPage,
 	submitURL,
 	login,
+	getPageBookmarkId,
+	getPageGuide,
 } from './utils';
 
 test.describe('Index', () => {
@@ -27,11 +28,12 @@ test.describe('Index', () => {
 		await page.goto('/');
 	});
 
-	test('shows all resources submitted', async ({ page, mf, queries }) => {
-		const resources = await listResourcesMetadata(mf);
+	test('shows all pages submitted', async ({ page, mf, queries }) => {
+		const guide = getPageGuide(page);
+		const bookmarks = await listBookmarks(mf, guide);
 		const links = await Promise.all(
-			resources.map((resource) =>
-				resource.title ? queries.queryByTitle(resource.title) : null,
+			bookmarks.map((bookmark) =>
+				bookmark.title ? queries.queryByTitle(bookmark.title) : null,
 			),
 		);
 
@@ -41,7 +43,7 @@ test.describe('Index', () => {
 		for (let i = 0; i < links.length; i++) {
 			await links[i]?.click();
 
-			expect(getPageURL(page).pathname).toBe(`/resources/${resources[i].id}`);
+			expect(getPageBookmarkId(page)).toBe(bookmarks[i].id);
 		}
 	});
 });
