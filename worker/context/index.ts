@@ -13,6 +13,6 @@ export function createContext(
 	return {
 		session: createSession(request, env, ctx),
 		store: createStore(request, env, ctx),
-		pageStore: getPageStore(request, env, ctx),
+		pageStore: getPageStore(env, ctx),
 	};
 }

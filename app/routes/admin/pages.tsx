@@ -1,4 +1,4 @@
-import type { LoaderFunction, ActionFunction } from 'remix';
+import { LoaderFunction, ActionFunction, Link } from 'remix';
 import { Form, useLoaderData, useLocation, json, redirect } from 'remix';
 import { administrators } from '~/config';
 import { notFound } from '~/helpers';
@@ -55,7 +55,15 @@ export default function ListUsers() {
 
 	return (
 		<section className="px-2.5 pt-2">
-			<h3 className="pb-4">Pages ({entries.length})</h3>
+			<div className="flex flex-row gap-4">
+				<h3 className="pb-4">Pages ({entries.length})</h3>
+				<div>/</div>
+				<div>
+					<Link to="statistics" className="hover:underline">
+						Statistics
+					</Link>
+				</div>
+			</div>
 			<div>
 				<table className="w-full border-collapse">
 					<thead className="bg-gray-800">

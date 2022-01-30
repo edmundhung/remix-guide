@@ -128,9 +128,8 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 }
 
 export function getPageStore(
-	request: Request,
 	env: Env,
-	ctx: ExecutionContext,
+	ctx: ExecutionContext | DurableObjectState,
 ): AsyncReturnType<typeof createPageStore> & {
 	getOrCreatePage: (url: string) => Promise<Page>;
 	getPage: (url: string) => Promise<Page | null>;

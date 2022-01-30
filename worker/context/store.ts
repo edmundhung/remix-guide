@@ -13,7 +13,7 @@ import { getPageStore } from '../store/PageStore';
 export type Store = ReturnType<typeof createStore>;
 
 export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
-	const pageStore = getPageStore(request, env, ctx);
+	const pageStore = getPageStore(env, ctx);
 
 	async function getUser(userId: string): Promise<User | null> {
 		let user = await matchCache<User>(`users/${userId}`);

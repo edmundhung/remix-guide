@@ -5,11 +5,11 @@ import { notFound } from '~/helpers';
 import type { Context } from '~/types';
 import { administrators } from '~/config';
 
-export let action: ActionFunction = async ({ request, params, context }) => {
-	const { session, store } = context as Context;
+export let action: ActionFunction = async ({ request, context }) => {
+	const { session, pageStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!params.guide || !administrators.includes(profile?.name ?? '')) {
+	if (!administrators.includes(profile?.name ?? '')) {
 		throw notFound();
 	}
 
@@ -18,7 +18,7 @@ export let action: ActionFunction = async ({ request, params, context }) => {
 
 	switch (type) {
 		case 'backup': {
-			const data = await store.backupGuide(params.guide);
+			const data = await pageStore.backup();
 
 			return json(data);
 		}
@@ -35,7 +35,7 @@ export let action: ActionFunction = async ({ request, params, context }) => {
 				});
 			}
 
-			await store.restoreGuide(params.guide, JSON.parse(data.trim()));
+			await pageStore.restore(JSON.parse(data.trim()));
 
 			return redirect(request.url, {
 				headers: await session.commitWithFlashMessage(
@@ -54,12 +54,12 @@ export let action: ActionFunction = async ({ request, params, context }) => {
 	}
 };
 
-export default function BackupGuide() {
+export default function PageStatistics() {
 	const data = useActionData();
 
 	return (
 		<section className="flex flex-col flex-1 px-2.5 pt-2">
-			<h3 className="pb-4">Guide (news)</h3>
+			<h3 className="pb-4">Page Statistics</h3>
 			<BackupForm data={data} />
 		</section>
 	);

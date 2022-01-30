@@ -210,9 +210,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 						<List title="Administrator">
 							<MenuLink to="/admin/pages">🌐 Pages</MenuLink>
 							<MenuLink to="/admin/users">👥 Users</MenuLink>
-							<MenuLink to="/admin/guides/news/backup">
-								🗃 Backup / Restore
-							</MenuLink>
+							<MenuLink to="/admin/guides/news/backup">🗃 Guides</MenuLink>
 						</List>
 					) : null}
 				</div>

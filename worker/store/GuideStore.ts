@@ -15,8 +15,7 @@ import { getPageStore } from './PageStore';
 
 async function createGuideStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
-
-	const pageStore = getPageStore(env);
+	const pageStore = getPageStore(env, state);
 
 	async function getBookmark(
 		metadata: BookmarkMetadata,
