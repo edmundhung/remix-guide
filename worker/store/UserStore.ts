@@ -1,6 +1,9 @@
 import { json } from 'remix';
+import { matchCache, removeCache, updateCache } from '../cache';
 import { createLogger } from '../logging';
 import type { Env, UserProfile, User, AsyncReturnType } from '../types';
+import { createStoreFetch } from '../utils';
+import { getPageStore } from './PageStore';
 
 async function createUserStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
@@ -97,56 +100,87 @@ async function createUserStore(state: DurableObjectState, env: Env) {
 
 export function getUserStore(
 	env: Env,
-	name: string,
-): AsyncReturnType<typeof createUserStore> {
-	const id = env.USER_STORE.idFromName(name);
-	const store = env.USER_STORE.get(id);
-
-	async function request(
-		pathname: string,
-		method: string,
-		data?: Record<string, any>,
-	) {
-		const body = data ? JSON.stringify(data) : null;
-		const response = await store.fetch(`http://${name}.user${pathname}`, {
-			method,
-			body,
-		});
-
-		if (response.status === 204) {
-			return;
-		}
-
-		if (!response.ok) {
-			throw new Error(
-				`Request ${method} ${pathname} failed; Received response with status ${response.status}`,
-			);
-		}
-
-		return await response.json<any>();
-	}
+	ctx: ExecutionContext | DurableObjectState,
+) {
+	const pageStore = getPageStore(env, ctx);
+	const fetchStore = createStoreFetch(env.USER_STORE, 'guide');
 
 	return {
-		async getUser() {
-			return await request('/', 'GET');
+		async getUser(userId: string): Promise<User | null> {
+			let user = await matchCache<User>(`users/${userId}`);
+
+			if (!user) {
+				user = await fetchStore(userId, '/', 'GET');
+
+				if (user) {
+					ctx.waitUntil(updateCache(`users/${userId}`, user, 10800));
+				}
+			}
+
+			return user;
 		},
-		async updateProfile(profile: UserProfile) {
-			return await request('/profile', 'PUT', { profile });
+		async listUserProfiles(): Promise<UserProfile[]> {
+			let list = await matchCache<UserProfile[]>('users');
+
+			if (!list) {
+				const result = await env.CONTENT.list<UserProfile>({
+					prefix: 'user/',
+				});
+
+				list = result.keys.flatMap((key) => key.metadata ?? []);
+
+				ctx.waitUntil(updateCache('users', list, 60));
+			}
+
+			return list;
 		},
-		async view(userId: string, resourceId: string) {
-			return await request('/view', 'PUT', { userId, resourceId });
+		async updateProfile(profile: UserProfile): Promise<void> {
+			return await fetchStore(profile.id, '/profile', 'PUT', { profile });
 		},
-		async bookmark(userId: string, resourceId: string) {
-			return await request('/bookmark', 'PUT', { userId, resourceId });
+		async view(
+			userId: string | null,
+			bookmarkId: string,
+			url: string,
+		): Promise<void> {
+			if (userId) {
+				await fetchStore(userId, '/view', 'PUT', {
+					userId,
+					resourceId: bookmarkId,
+				});
+
+				ctx.waitUntil(removeCache(`users/${userId}`));
+			}
+
+			ctx.waitUntil(pageStore.view(url));
 		},
-		async unbookmark(userId: string, resourceId: string) {
-			return await request('/bookmark', 'DELETE', { userId, resourceId });
+		async bookmark(
+			userId: string,
+			bookmarkId: string,
+			url: string,
+		): Promise<void> {
+			await fetchStore(userId, '/bookmark', 'PUT', {
+				userId,
+				resourceId: bookmarkId,
+			});
+
+			ctx.waitUntil(removeCache(`users/${userId}`));
+			ctx.waitUntil(pageStore.bookmark(userId, url));
 		},
-		async backup() {
-			return await request('/backup', 'POST');
+		async unbookmark(
+			userId: string,
+			resourceId: string,
+			url: string,
+		): Promise<void> {
+			await fetchStore(userId, '/bookmark', 'DELETE', { userId, resourceId });
+
+			ctx.waitUntil(removeCache(`users/${userId}`));
+			ctx.waitUntil(pageStore.unbookmark(userId, url));
 		},
-		async restore(data: Record<string, any>) {
-			return await request('/restore', 'POST', data);
+		async backup(userId: string): Promise<Record<string, any>> {
+			return await fetchStore(userId, '/backup', 'POST');
+		},
+		async restore(userId: string, data: Record<string, any>): Promise<void> {
+			return await fetchStore(userId, '/restore', 'POST', data);
 		},
 	};
 }

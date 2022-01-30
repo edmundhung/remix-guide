@@ -3,7 +3,7 @@ import { redirect } from 'remix';
 import { Context } from '~/types';
 
 export let action: ActionFunction = async ({ context, request }) => {
-	const { session, store } = context as Context;
+	const { session, userStore } = context as Context;
 	const [profile, formData] = await Promise.all([
 		session.isAuthenticated(),
 		request.formData(),
@@ -15,7 +15,7 @@ export let action: ActionFunction = async ({ context, request }) => {
 		return new Response('Bad Request', { status: 400 });
 	}
 
-	await store.view(profile?.id ?? null, bookmarkId, url);
+	await userStore.view(profile?.id ?? null, bookmarkId, url);
 
 	return redirect(
 		formData.get('referer')?.toString() ??

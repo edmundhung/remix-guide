@@ -6,7 +6,7 @@ import type { Context } from '~/types';
 import { administrators } from '~/config';
 
 export let action: ActionFunction = async ({ params, request, context }) => {
-	const { session, store } = context as Context;
+	const { session, userStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
 	if (!administrators.includes(profile?.name ?? '') || !params.userId) {
@@ -18,7 +18,7 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 
 	switch (type) {
 		case 'backup': {
-			const data = await store.backupUser(params.userId);
+			const data = await userStore.backup(params.userId);
 
 			return json(data);
 		}
@@ -35,7 +35,7 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 				});
 			}
 
-			await store.restoreUser(params.userId, JSON.parse(data.trim()));
+			await userStore.restore(params.userId, JSON.parse(data.trim()));
 
 			return redirect('/admin/users', {
 				headers: await session.commitWithFlashMessage(

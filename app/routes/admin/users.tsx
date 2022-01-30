@@ -5,14 +5,14 @@ import { notFound } from '~/helpers';
 import type { Context, UserProfile } from '~/types';
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { store, session } = context as Context;
+	const { userStore, session } = context as Context;
 	const profile = await session.isAuthenticated();
 
 	if (!administrators.includes(profile?.name ?? '')) {
 		throw notFound();
 	}
 
-	const users = await store.listUsers();
+	const users = await userStore.listUserProfiles();
 
 	return json({
 		users,

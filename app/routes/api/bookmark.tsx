@@ -3,7 +3,7 @@ import { redirect } from 'remix';
 import { Context } from '~/types';
 
 export let action: ActionFunction = async ({ context, request }) => {
-	const { session, store } = context as Context;
+	const { session, userStore } = context as Context;
 	const [profile, formData] = await Promise.all([
 		session.isAuthenticated(),
 		request.formData(),
@@ -22,10 +22,10 @@ export let action: ActionFunction = async ({ context, request }) => {
 
 	switch (type) {
 		case 'bookmark':
-			await store.bookmark(profile.id, bookmarkId, url);
+			await userStore.bookmark(profile.id, bookmarkId, url);
 			break;
 		case 'unbookmark':
-			await store.unbookmark(profile.id, bookmarkId, url);
+			await userStore.unbookmark(profile.id, bookmarkId, url);
 			break;
 		default:
 			return new Response('Bad Request', { status: 400 });

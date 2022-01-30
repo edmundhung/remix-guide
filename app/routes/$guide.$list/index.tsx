@@ -48,7 +48,7 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 		return json({});
 	}
 
-	const { session, store, guideStore } = context as Context;
+	const { session, userStore, guideStore } = context as Context;
 	const [bookmarks, [message, setCookieHeader], user] = await Promise.all([
 		guideStore.getBookmarks('news'),
 		session.getFlashMessage(),
@@ -59,7 +59,7 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 				return null;
 			}
 
-			return await store.getUser(profile.id);
+			return await userStore.getUser(profile.id);
 		})(),
 	]);
 	const bookmark = bookmarks.find((bookmark) => bookmark.id === bookmarkId);
