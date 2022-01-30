@@ -1,7 +1,7 @@
 import { Link } from 'remix';
 import type { ReactElement } from 'react';
 import type { Bookmark } from '~/types';
-import { getSite, getResourceURL } from '~/search';
+import { getSite, getBookmarkURL } from '~/search';
 import type { SearchOptions } from '~/types';
 
 interface CardProps {
@@ -20,7 +20,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 						: 'hover:bg-gray-800 text-gray-400'
 				}`}
 				title={entry.title ?? entry.url}
-				to={getResourceURL(searchOptions, entry.id)}
+				to={getBookmarkURL(searchOptions, entry.id)}
 				prefetch="intent"
 			>
 				<section className="px-2.5 py-2.5 text-sm">

@@ -36,7 +36,9 @@ export default function BookmarkList({
 }: BookmarkListProps) {
 	const location = useLocation();
 	const toggleSearchURL = useMemo(() => {
-		const searchParams = getRelatedSearchParams(location.search);
+		const searchParams = getRelatedSearchParams(location.search, [
+			'bookmarkId',
+		]);
 		const search = toggleSearchList(searchParams);
 
 		return `?${search}`;

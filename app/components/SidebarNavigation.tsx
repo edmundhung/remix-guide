@@ -24,7 +24,7 @@ import {
 } from '~/layout';
 import {
 	getCategoryListName,
-	getResourceURL,
+	getBookmarkURL,
 	getSearchOptions,
 } from '~/search';
 import { SearchOptions } from '~/types';
@@ -61,7 +61,7 @@ function SearchLink({
 }: SearchLinkProps): ReactElement {
 	const location = useLocation();
 	const [to, isActive] = useMemo(() => {
-		const to = getResourceURL({ guide, list, category });
+		const to = getBookmarkURL({ guide, list, category });
 		const currentOptions = getSearchOptions(
 			`${location.pathname}${location.search}`,
 		);

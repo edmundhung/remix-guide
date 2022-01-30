@@ -13,7 +13,7 @@ import {
 	PaneFooter,
 } from '~/layout';
 import { SearchOptions } from '~/types';
-import { getAction } from '~/search';
+import { getResourcePathname } from '~/search';
 
 interface SearchListProps {
 	searchOptions: SearchOptions;
@@ -54,13 +54,13 @@ function SearchList({ searchOptions, selectedId }: SearchListProps) {
 	const [keyword, setKeyword] = useState(searchOptions.keyword ?? '');
 
 	return (
-		<Form action={getAction(searchOptions, selectedId)}>
+		<Form action={getResourcePathname(searchOptions)}>
 			<PaneContainer>
 				<PaneHeader padding="minimum">
 					<div className="relative w-full flex items-center">
 						<Link
 							className="z-10 absolute left-2"
-							to={selectedId ? `?resourceId=${selectedId}` : '?'}
+							to={selectedId ? `?bookmarkId=${selectedId}` : '?'}
 						>
 							<span className="flex items-center justify-center w-6 h-6">
 								<SvgIcon className="w-4 h-4" href={backIcon} />

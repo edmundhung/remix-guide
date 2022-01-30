@@ -2,7 +2,10 @@ import { Category, SearchOptions } from '~/types';
 import { platforms } from '~/config';
 import { capitalize } from '~/helpers';
 
-export function getRelatedSearchParams(search: string): URLSearchParams {
+export function getRelatedSearchParams(
+	search: string,
+	additionalKeys: string[] = [],
+): URLSearchParams {
 	const searchParams = new URLSearchParams(search);
 	const supported = [
 		'list',
@@ -13,6 +16,7 @@ export function getRelatedSearchParams(search: string): URLSearchParams {
 		'author',
 		'site',
 		'open', // For dialog
+		...additionalKeys,
 	];
 
 	for (const [key, value] of Array.from(searchParams.entries())) {
@@ -99,7 +103,7 @@ export function getResourceSearchParams(
 	);
 }
 
-export function getResourceURL(
+export function getBookmarkURL(
 	options: SearchOptions,
 	bookmarkId?: string | null,
 ): string {
@@ -113,19 +117,6 @@ export function getResourceURL(
 	const search = searchParams.toString();
 
 	return search ? `${pathname}?${search}` : pathname;
-}
-
-export function getAction(
-	options: SearchOptions,
-	bookmarkId?: string | null,
-): string {
-	let action = getResourcePathname(options);
-
-	if (options.list && bookmarkId) {
-		action = `${action}?bookmarkId=${bookmarkId}`;
-	}
-
-	return action;
 }
 
 export function toggleSearchList(searchParams: URLSearchParams): string {
