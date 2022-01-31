@@ -47,7 +47,8 @@ export async function getSuggestions(
 
 export function patchResource(resource: Resource, user: User): Resource {
 	const isUserBookmarked = user.bookmarked.includes(resource.id) ?? false;
-	const isResourceBookmarked = resource.bookmarked.includes(user.profile.id);
+	const isResourceBookmarked =
+		resource.bookmarkUsers?.includes(user.profile.id) ?? false;
 
 	if (isUserBookmarked === isResourceBookmarked) {
 		return resource;
@@ -55,8 +56,8 @@ export function patchResource(resource: Resource, user: User): Resource {
 
 	return {
 		...resource,
-		bookmarked: isUserBookmarked
-			? resource.bookmarked.concat(user.profile.id)
-			: resource.bookmarked.filter((id) => id !== user.profile.id),
+		bookmarkUsers: isUserBookmarked
+			? [...(resource.bookmarkUsers ?? []), user.profile.id]
+			: resource.bookmarkUsers?.filter((id) => id !== user.profile.id),
 	};
 }

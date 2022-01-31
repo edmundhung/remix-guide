@@ -4,7 +4,7 @@ import { createContext } from './context';
 import { createLogger } from './logging.js';
 
 // Setup Durable Objects
-export { ResourcesStore, UserStore } from './store';
+export * from './store';
 
 const handleFetch = createFetchHandler({
 	build,

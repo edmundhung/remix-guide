@@ -102,7 +102,7 @@ function ResourcesDetails({
 						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
 					</button>
 					<label className="px-2 w-10 text-right">
-						{resource.bookmarked.length}
+						{resource.bookmarkUsers?.length ?? 0}
 					</label>
 				</Form>
 			</PaneHeader>

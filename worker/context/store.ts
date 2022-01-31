@@ -144,11 +144,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 							case 'hotness': {
 								let diff;
 
-								for (const key of [
-									'bookmarkCounts',
-									'viewCounts',
-									'createdAt',
-								]) {
+								for (const key of ['bookmarkCount', 'viewCount', 'createdAt']) {
 									switch (key) {
 										case 'createdAt':
 											diff =
@@ -157,10 +153,10 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 											break;
 										case 'bookmarkCounts':
 											diff =
-												(next.bookmarkCounts ?? 0) - (prev.bookmarkCounts ?? 0);
+												(next.bookmarkCount ?? 0) - (prev.bookmarkCount ?? 0);
 											break;
-										case 'viewCounts':
-											diff = next.viewCounts - prev.viewCounts;
+										case 'viewCount':
+											diff = next.viewCount - prev.viewCount;
 											break;
 									}
 

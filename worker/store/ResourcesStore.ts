@@ -1,13 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { json } from 'remix';
 import { createLogger } from '../logging';
-import {
-	scrapeHTML,
-	getPageMetadata,
-	checkSafeBrowsingAPI,
-	getIntegrations,
-	getIntegrationsFromPage,
-} from '../scraping';
+import { getIntegrations, getIntegrationsFromPage } from '../scraping';
 import type {
 	Env,
 	Page,
@@ -17,6 +11,7 @@ import type {
 	SubmissionStatus,
 	AsyncReturnType,
 } from '../types';
+import { getPageStore } from './PageStore';
 
 /**
  * ID Generator based on nanoid
@@ -28,7 +23,9 @@ const generateId = customAlphabet(
 );
 
 async function createResourceStore(state: DurableObjectState, env: Env) {
-	const { PAGE, CONTENT, GOOGLE_API_KEY } = env;
+	const { CONTENT } = env;
+	const pageStore = getPageStore(env, state);
+
 	const resourceIdByURL =
 		(await state.storage.get<Record<string, string | undefined>>(
 			'index/URL',
@@ -45,13 +42,6 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		id: string | null;
 		status: SubmissionStatus;
 	}> {
-		if (!page.isSafe) {
-			return {
-				id: null,
-				status: 'INVALID',
-			};
-		}
-
 		const id = generateId();
 		const now = new Date().toISOString();
 
@@ -59,8 +49,6 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			{
 				id,
 				url: page.url,
-				bookmarked: [],
-				viewCounts: 0,
 				createdAt: now,
 				createdBy: userId,
 				updatedAt: now,
@@ -90,8 +78,6 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		return {
 			id: resource.id,
 			url: resource.url,
-			bookmarked: resource.bookmarked,
-			viewCounts: resource.viewCounts,
 			createdAt: resource.createdAt,
 			createdBy: resource.createdBy,
 			updatedAt: resource.updatedAt,
@@ -111,7 +97,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		summary: ResourceSummary,
 		pageData?: Page,
 	): Promise<void> {
-		const page = pageData ?? (await PAGE.get<Page>(summary.url, 'json'));
+		const page = pageData ?? (await pageStore.getPage(summary.url));
 
 		if (!page) {
 			throw new Error('No page data found for the corresponding URL');
@@ -133,6 +119,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			isSafe: page.isSafe,
 			dependencies: page.dependencies,
 			configs: page.configs,
+			viewCount: page.viewCount,
+			bookmarkUsers: page.bookmarkUsers,
 			integrations,
 		};
 		const metadata: ResourceMetadata = {
@@ -142,8 +130,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			author: resource.author,
 			title: resource.title,
 			description: resource.description?.slice(0, 80),
-			viewCounts: resource.viewCounts,
-			bookmarkCounts: resource.bookmarked.length,
+			viewCount: resource.viewCount ?? 0,
+			bookmarkCount: resource.bookmarkUsers?.length ?? 0,
 			integrations: resource.integrations,
 			createdAt: resource.createdAt,
 		};
@@ -156,28 +144,13 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	return {
 		async submit(userId: string, url: string) {
 			let status: SubmissionStatus | null = null;
-			let page = await PAGE.get<Page>(url, 'json');
+			let page = await pageStore.getOrCreatePage(url);
 
-			if (!page) {
-				page = await scrapeHTML(url, env.USER_AGENT);
-
-				const [pageMetadata, isSafe] = await Promise.all([
-					getPageMetadata(page.url, env),
-					GOOGLE_API_KEY
-						? checkSafeBrowsingAPI([page.url], GOOGLE_API_KEY)
-						: true,
-				]);
-				const now = new Date().toISOString();
-
-				page = {
-					...page,
-					...pageMetadata,
-					isSafe,
-					createdAt: now,
-					updatedAt: now,
+			if (!page.isSafe) {
+				return {
+					id: null,
+					status: 'INVALID',
 				};
-
-				PAGE.put(page.url, JSON.stringify(page));
 			}
 
 			let id = resourceIdByURL[page.url] ?? null;
@@ -205,39 +178,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				return false;
 			}
 
-			const [currentPage, updatedPage, pageMetadata, isSafe] =
-				await Promise.all([
-					PAGE.get<Page>(resource.url, 'json'),
-					scrapeHTML(resource.url, env.USER_AGENT),
-					getPageMetadata(resource.url, env),
-					GOOGLE_API_KEY
-						? checkSafeBrowsingAPI([resource.url], GOOGLE_API_KEY)
-						: true,
-				]);
-
-			const now = new Date().toISOString();
-			const page = {
-				...updatedPage,
-				...pageMetadata,
-				isSafe,
-				createdAt: currentPage?.createdAt ?? resource.createdAt ?? now,
-				updatedAt: now,
-			};
-
-			PAGE.put(page.url, JSON.stringify(page));
-
-			if (resource.url !== page.url) {
-				PAGE.put(resource.url, JSON.stringify(page));
-
-				resource = {
-					...resource,
-					url: page.url,
-					updatedAt: now,
-					updatedBy: userId,
-				};
-			}
-
-			await updateResource(resource, page);
+			await pageStore.refresh(resource.url);
+			await updateResource(resource);
 
 			return true;
 		},
@@ -259,10 +201,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				return false;
 			}
 
-			updateResource({
-				...resource,
-				viewCounts: resource.viewCounts + 1,
-			});
+			await pageStore.view(resource.url);
+			await updateResourceCache(resource);
 
 			return true;
 		},
@@ -273,15 +213,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				return false;
 			}
 
-			let bookmarked = resource.bookmarked ?? [];
-
-			if (!bookmarked.includes(userId)) {
-				bookmarked = bookmarked.concat(userId);
-			}
-
-			if (bookmarked !== resource.bookmarked) {
-				updateResource({ ...resource, bookmarked });
-			}
+			await pageStore.bookmark(userId, resource.url);
+			await updateResourceCache(resource);
 
 			return true;
 		},
@@ -292,15 +225,8 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				return false;
 			}
 
-			let bookmarked = resource.bookmarked ?? [];
-
-			if (bookmarked.includes(userId)) {
-				bookmarked = bookmarked.filter((id) => id !== userId);
-			}
-
-			if (bookmarked !== resource.bookmarked) {
-				updateResource({ ...resource, bookmarked });
-			}
+			await pageStore.unbookmark(userId, resource.url);
+			await updateResourceCache(resource);
 
 			return true;
 		},
@@ -337,7 +263,9 @@ export class ResourcesStore {
 			let method = request.method.toUpperCase();
 
 			if (!this.store) {
-				throw new Error('');
+				throw new Error(
+					'The store object is unavailable; Please check if the store is initialised properly',
+				);
 			} else if (url.pathname === '/submit' && method === 'POST') {
 				const { url, userId } = await request.json();
 				const result = await this.store.submit(userId, url);
@@ -393,6 +321,7 @@ export class ResourcesStore {
 				response = new Response('OK', { status: 200 });
 			}
 		} catch (e) {
+			console.log('error', e);
 			if (e instanceof Error) {
 				logger.error(e);
 				logger.log(

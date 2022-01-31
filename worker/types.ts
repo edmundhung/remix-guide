@@ -24,6 +24,7 @@ export interface Env {
 	CONTENT: KVNamespace;
 	PAGE: KVNamespace;
 	RESOURCES_STORE: DurableObjectNamespace;
+	PAGE_STORE: DurableObjectNamespace;
 	USER_STORE: DurableObjectNamespace;
 }
 
@@ -52,8 +53,19 @@ export interface Page {
 	image?: string | null;
 	video?: string | null;
 	isSafe?: boolean;
+	viewCount?: number;
+	bookmarkUsers?: string[];
 	createdAt: string;
 	updatedAt: string;
+}
+
+export interface PageMetadata
+	extends Pick<
+		Page,
+		'url' | 'title' | 'description' | 'isSafe' | 'createdAt' | 'updatedAt'
+	> {
+	viewCount: number;
+	bookmarkCount: number;
 }
 
 export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID';
@@ -70,17 +82,15 @@ export interface ResourceMetadata
 		| 'title'
 		| 'description'
 		| 'integrations'
-		| 'viewCounts'
 		| 'createdAt'
 	> {
-	bookmarkCounts?: number;
+	viewCount: number;
+	bookmarkCount: number;
 }
 
 export interface ResourceSummary {
 	id: string;
 	url: string;
-	viewCounts: number;
-	bookmarked: string[];
 	createdAt: string;
 	createdBy: string;
 	updatedAt: string;
