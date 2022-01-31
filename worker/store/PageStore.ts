@@ -69,6 +69,8 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 			createdAt: page.createdAt,
 		};
 
+		pageMap.set(url, updatedPage);
+
 		await PAGE.put(url, JSON.stringify(updatedPage), {
 			metadata: getPageMetadata(updatedPage),
 		});
