@@ -110,6 +110,7 @@ export interface SearchOptions {
 	category?: Category | null;
 	platform?: string | null;
 	integrations?: string[] | null;
+	includes?: string[] | null;
 	excludes?: string[] | null;
 	limit?: number;
 	sortBy?: 'hotness' | null;

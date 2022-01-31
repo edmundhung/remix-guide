@@ -43,10 +43,10 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 		throw notFound();
 	}
 
-	const [[message, setCookieHeader], user, suggestions] = await Promise.all([
+	const [list, [message, setCookieHeader], user] = await Promise.all([
+		store.search(),
 		session.getFlashMessage(),
 		profile?.id ? store.getUser(profile.id) : null,
-		getSuggestions(store, resource, profile?.id ?? null),
 	]);
 
 	return json(
@@ -54,7 +54,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 			user,
 			resource: user ? patchResource(resource, user) : resource,
 			message,
-			suggestions,
+			suggestions: getSuggestions(list, resource),
 		},
 		{
 			headers: setCookieHeader,

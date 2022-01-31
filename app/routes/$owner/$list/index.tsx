@@ -63,15 +63,15 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 		throw notFound();
 	}
 
-	const [user, suggestions] = await Promise.all([
+	const [list, user] = await Promise.all([
+		store.search(),
 		profile?.id ? store.getUser(profile.id) : null,
-		getSuggestions(store, resource, profile?.id ?? null),
 	]);
 
 	return json({
 		user,
 		resource: user ? patchResource(resource, user) : resource,
-		suggestions,
+		suggestions: getSuggestions(list, resource),
 	});
 };
 

@@ -9,6 +9,7 @@ import type {
 } from '../types';
 import { matchCache, updateCache, removeCache } from '../cache';
 import { getUserStore } from '../store/UserStore';
+import { search } from '~/resources';
 
 export type Store = ReturnType<typeof createStore>;
 
@@ -64,28 +65,12 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 		return list;
 	}
 
-	function match(
-		wanted: string[],
-		value: string | string[],
-		partialMatch = false,
-	) {
-		if (wanted.length === 0) {
-			return true;
-		}
-
-		if (partialMatch || Array.isArray(value)) {
-			return wanted.every((item) => value.includes(item));
-		}
-
-		return wanted.includes(value);
-	}
-
 	return {
-		async search(userId: string | null, options: SearchOptions) {
+		async search(userId?: string | null, options?: SearchOptions) {
 			try {
 				const [list, includes] = await Promise.all([
 					listResources(),
-					options.list !== null
+					options && options.list !== null
 						? (async () => {
 								const user = userId ? await getUser(userId) : null;
 
@@ -101,90 +86,7 @@ export function createStore(request: Request, env: Env, ctx: ExecutionContext) {
 						: null,
 				]);
 
-				const entries = list
-					.filter((metadata) => {
-						if (!metadata) {
-							return false;
-						}
-
-						if (includes && !includes.includes(metadata.id)) {
-							return false;
-						}
-
-						if (options.excludes && options.excludes.includes(metadata.id)) {
-							return false;
-						}
-
-						const isMatching =
-							match(
-								options?.keyword
-									? options.keyword.toLowerCase().split(' ')
-									: [],
-								`${metadata.title} ${metadata.description}`.toLowerCase(),
-								true,
-							) &&
-							match(options.author ? [options.author] : [], metadata.author) &&
-							match(
-								options.category ? [options.category] : [],
-								metadata.category,
-							) &&
-							match(
-								options.site ? [options.site] : [],
-								new URL(metadata.url).hostname,
-							) &&
-							match(
-								[].concat(options.platform ?? [], options.integrations ?? []),
-								metadata.integrations ?? [],
-							);
-
-						return isMatching;
-					})
-					.sort((prev, next) => {
-						switch (options.sortBy) {
-							case 'hotness': {
-								let diff;
-
-								for (const key of ['bookmarkCount', 'viewCount', 'createdAt']) {
-									switch (key) {
-										case 'createdAt':
-											diff =
-												new Date(next.createdAt).valueOf() -
-												new Date(prev.createdAt).valueOf();
-											break;
-										case 'bookmarkCounts':
-											diff =
-												(next.bookmarkCount ?? 0) - (prev.bookmarkCount ?? 0);
-											break;
-										case 'viewCount':
-											diff = next.viewCount - prev.viewCount;
-											break;
-									}
-
-									if (diff !== 0) {
-										break;
-									}
-								}
-
-								return diff;
-							}
-							default: {
-								if (includes) {
-									return includes.indexOf(prev.id) - includes.indexOf(next.id);
-								} else {
-									return (
-										new Date(next.createdAt).valueOf() -
-										new Date(prev.createdAt).valueOf()
-									);
-								}
-							}
-						}
-					});
-
-				if (options.limit) {
-					return entries.slice(0, options.limit);
-				}
-
-				return entries;
+				return search(list, { ...options, includes });
 			} catch (e) {
 				env.LOGGER?.error(e);
 				throw e;
