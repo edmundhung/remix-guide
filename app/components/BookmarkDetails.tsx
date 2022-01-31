@@ -1,19 +1,14 @@
 import { Form, Link, useLocation, useTransition, useFetcher } from 'remix';
 import type { ReactElement, ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
-import type { Bookmark } from '~/types';
 import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import backIcon from '~/icons/back.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
-import {
-	getSite,
-	createIntegrationSearch,
-	getRelatedSearchParams,
-} from '~/search';
+import { getSite, createIntegrationSearch, excludeSearch } from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
-import { User } from '~/types';
+import type { Bookmark, User } from '~/types';
 
 interface BookmarksDetailsProps {
 	bookmark: Bookmark;
@@ -38,10 +33,12 @@ function BookmarksDetails({
 	const transition = useTransition();
 	const { submit } = useFetcher();
 	const location = useLocation();
-	const search = useMemo(
-		() => getRelatedSearchParams(location.search).toString(),
-		[location.search],
-	);
+	const backURL = useMemo(() => {
+		const searchParams = new URLSearchParams(location.search);
+		const backURL = `?${excludeSearch('bookmarkId', searchParams)}`;
+
+		return backURL;
+	}, [location.search]);
 
 	useEffect(() => {
 		submit(
@@ -52,15 +49,13 @@ function BookmarksDetails({
 
 	const authenticated = user !== null;
 	const bookmarked = user?.bookmarked.includes(bookmark.id) ?? false;
-	const backUrl =
-		search === '' ? location.pathname : `${location.pathname}?${search}`;
 
 	return (
 		<PaneContainer>
 			<PaneHeader>
 				<Link
 					className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-					to={backUrl}
+					to={backURL}
 				>
 					<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={backIcon} />
 				</Link>

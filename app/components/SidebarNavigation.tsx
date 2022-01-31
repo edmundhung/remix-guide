@@ -26,6 +26,7 @@ import {
 	getCategoryListName,
 	getBookmarkURL,
 	getSearchOptions,
+	toggleModal,
 } from '~/search';
 import { SearchOptions } from '~/types';
 import { administrators, maintainers } from '~/config';
@@ -126,13 +127,9 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 	const navigate = useNavigate();
 	const search = useMemo(() => {
 		const searchPararms = new URLSearchParams(location.search);
-		const hasMenu = searchPararms.get('open') === 'menu';
+		const search = toggleModal('menu', searchPararms);
 
-		if (hasMenu) {
-			searchPararms.delete('open');
-		}
-
-		return searchPararms.toString();
+		return search;
 	}, [location.search]);
 
 	return (

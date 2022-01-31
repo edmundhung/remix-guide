@@ -10,7 +10,7 @@ import { PaneContainer, PaneHeader, PaneContent } from '~/layout';
 import {
 	getRelatedSearchParams,
 	getTitleBySearchOptions,
-	toggleSearchList,
+	toggleModal,
 } from '~/search';
 import type { SearchOptions } from '~/types';
 import { useMemo } from 'react';
@@ -39,7 +39,7 @@ export default function BookmarkList({
 		const searchParams = getRelatedSearchParams(location.search, [
 			'bookmarkId',
 		]);
-		const search = toggleSearchList(searchParams);
+		const search = toggleModal('search', searchParams);
 
 		return `?${search}`;
 	}, [location.search]);

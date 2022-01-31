@@ -15,7 +15,6 @@ export function getRelatedSearchParams(
 		'integration',
 		'author',
 		'site',
-		'open', // For dialog
 		...additionalKeys,
 	];
 
@@ -119,13 +118,29 @@ export function getBookmarkURL(
 	return search ? `${pathname}?${search}` : pathname;
 }
 
-export function toggleSearchList(searchParams: URLSearchParams): string {
+export function toggleModal(
+	key: string,
+	searchParams: URLSearchParams,
+): string {
 	const search = new URLSearchParams(searchParams);
 
-	if (search.get('open') === 'search') {
+	if (search.get('open') === key) {
 		search.delete('open');
 	} else {
-		search.set('open', 'search');
+		search.set('open', key);
+	}
+
+	return search.toString();
+}
+
+export function excludeSearch(
+	key: string,
+	searchParams: URLSearchParams,
+): string {
+	const search = new URLSearchParams(searchParams);
+
+	if (search.has(key)) {
+		search.delete(key);
 	}
 
 	return search.toString();
