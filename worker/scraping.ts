@@ -177,7 +177,6 @@ async function scrapeHTML(
 
 	return {
 		...page,
-		category: 'others',
 		image: page.image && (await isURLReachable(page.image)) ? page.image : null,
 		url:
 			page.url && isValidCanonicalURL(responseURL, pageURL)
@@ -535,7 +534,10 @@ async function getPageDetails(
 		);
 	}
 
-	return details;
+	return {
+		...details,
+		category: details?.category ?? 'others',
+	};
 }
 
 export {
