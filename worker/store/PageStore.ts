@@ -77,7 +77,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 		async refresh(url: string, page: Page) {
 			const statistics = getStatistics(url);
 
-			updatePage(url, {
+			await updatePage(url, {
 				...page,
 				...statistics,
 				updatedAt: new Date().toISOString(),
@@ -86,7 +86,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 		async view(url: string) {
 			const statistics = getStatistics(url);
 
-			updateStatistics(url, {
+			await updateStatistics(url, {
 				...statistics,
 				viewCount: statistics.viewCount + 1,
 			});
@@ -98,7 +98,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 				return;
 			}
 
-			updateStatistics(url, {
+			await updateStatistics(url, {
 				...statistics,
 				bookmarkUsers: statistics.bookmarkUsers.concat(userId),
 			});
@@ -110,7 +110,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 				return;
 			}
 
-			updateStatistics(url, {
+			await updateStatistics(url, {
 				...statistics,
 				bookmarkUsers: statistics.bookmarkUsers.filter((id) => id !== userId),
 			});
@@ -261,7 +261,7 @@ export class PageStore {
 					case '/refresh': {
 						const { url, page } = await request.json();
 
-						this.store.refresh(url, page);
+						await this.store.refresh(url, page);
 
 						response = new Response(null, { status: 204 });
 						break;
@@ -269,7 +269,7 @@ export class PageStore {
 					case '/view': {
 						const { url } = await request.json();
 
-						this.store.view(url);
+						await this.store.view(url);
 
 						response = new Response(null, { status: 204 });
 						break;
@@ -277,7 +277,7 @@ export class PageStore {
 					case '/bookmark': {
 						const { userId, url } = await request.json();
 
-						this.store.bookmark(userId, url);
+						await this.store.bookmark(userId, url);
 
 						response = new Response(null, { status: 204 });
 						break;
@@ -285,7 +285,7 @@ export class PageStore {
 					case '/unbookmark': {
 						const { userId, url } = await request.json();
 
-						this.store.unbookmark(userId, url);
+						await this.store.unbookmark(userId, url);
 
 						response = new Response(null, { status: 204 });
 						break;
