@@ -2,6 +2,7 @@ import { LoaderFunction, ActionFunction, Link } from 'remix';
 import { Form, useLoaderData, useLocation, json, redirect } from 'remix';
 import { administrators } from '~/config';
 import { notFound } from '~/helpers';
+import { getSite } from '~/search';
 import type { Context, PageMetadata } from '~/types';
 
 export let action: ActionFunction = async ({ context, request }) => {
@@ -69,7 +70,13 @@ export default function ListUsers() {
 					<thead className="bg-gray-800">
 						<tr>
 							<th className="px-4 py-2 text-left border border-gray-700">
+								Site
+							</th>
+							<th className="px-4 py-2 text-left border border-gray-700">
 								Title
+							</th>
+							<th className="px-4 py-2 text-left border border-gray-700">
+								Category
 							</th>
 							<th className="px-4 py-2 text-left border border-gray-700">
 								URL
@@ -79,9 +86,6 @@ export default function ListUsers() {
 							</th>
 							<th className="px-4 py-2 text-left border border-gray-700">
 								Bookmarks
-							</th>
-							<th className="px-4 py-2 text-left border border-gray-700">
-								Created
 							</th>
 							<th className="px-4 py-2 text-left border border-gray-700">
 								Last Updated
@@ -95,7 +99,13 @@ export default function ListUsers() {
 						{entries.map((entry) => (
 							<tr key={entry.url}>
 								<td className="px-4 py-2 border border-gray-700">
-									{entry.title ?? entry.url}
+									{getSite(entry.url)}
+								</td>
+								<td className="px-4 py-2 border border-gray-700">
+									{entry.title ?? 'n/a'}
+								</td>
+								<td className="px-4 py-2 border border-gray-700">
+									{entry.category}
 								</td>
 								<td className="px-4 py-2 border border-gray-700">
 									<a

@@ -9,6 +9,7 @@ type PageStatistics = Required<Pick<Page, 'bookmarkUsers' | 'viewCount'>>;
 function getPageMetadata(page: Page): PageMetadata {
 	return {
 		url: page.url,
+		category: page.category,
 		title: page.title,
 		description: page.description?.slice(0, 100),
 		isSafe: page.isSafe,

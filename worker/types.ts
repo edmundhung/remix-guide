@@ -62,7 +62,13 @@ export interface Page {
 export interface PageMetadata
 	extends Pick<
 		Page,
-		'url' | 'title' | 'description' | 'isSafe' | 'createdAt' | 'updatedAt'
+		| 'url'
+		| 'title'
+		| 'description'
+		| 'category'
+		| 'isSafe'
+		| 'createdAt'
+		| 'updatedAt'
 	> {
 	viewCount: number;
 	bookmarkCount: number;
