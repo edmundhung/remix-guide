@@ -178,7 +178,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				return false;
 			}
 
-			await pageStore.refresh(resource.url);
+			// Only refresh the cache
 			await updateResource(resource);
 
 			return true;
