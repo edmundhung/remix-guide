@@ -113,5 +113,5 @@ export interface SearchOptions {
 	includes?: string[] | null;
 	excludes?: string[] | null;
 	limit?: number;
-	sortBy?: 'hotness' | null;
+	sort?: string | null;
 }

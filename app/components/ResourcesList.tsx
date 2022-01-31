@@ -4,16 +4,21 @@ import SvgIcon from '~/components/SvgIcon';
 import searchIcon from '~/icons/search.svg';
 import pencilIcon from '~/icons/pencil.svg';
 import timesIcon from '~/icons/times.svg';
+import newIcon from '~/icons/satellite-dish.svg';
+import hotIcon from '~/icons/fire-alt.svg';
+import topIcon from '~/icons/badge-check.svg';
 import type { ResourceMetadata } from '~/types';
 import MenuLink from '~/components/MenuLink';
-import { PaneContainer, PaneHeader, PaneContent } from '~/layout';
+import { PaneContainer, PaneHeader, PaneContent, PaneFooter } from '~/layout';
 import {
 	getRelatedSearchParams,
+	getResourceURL,
 	getTitleBySearchOptions,
 	toggleSearchList,
 } from '~/search';
 import type { SearchOptions } from '~/types';
 import { useMemo } from 'react';
+import clsx from 'clsx';
 
 interface ResourcesListProps {
 	entries: ResourceMetadata[];
@@ -22,7 +27,7 @@ interface ResourcesListProps {
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['list', 'owner'].concat(
+	const keys = ['list', 'owner', 'sort'].concat(
 		!searchOptions.list ? ['category'] : [],
 	);
 
@@ -111,6 +116,52 @@ export default function ResourcesList({
 					</div>
 				)}
 			</PaneContent>
+			<PaneFooter>
+				<div className="flex flex-row text-xs">
+					<Link
+						className={clsx(
+							'flex flex-col justify-center items-center gap-1 flex-auto py-3 border-t capitalize',
+							searchOptions.sort === 'new'
+								? 'border-white'
+								: 'hover:border-gray-600',
+						)}
+						to={getResourceURL(
+							{ ...searchOptions, sort: 'new' },
+							selectedResourceId,
+						)}
+					>
+						<SvgIcon href={newIcon} className="w-3 h-3" /> New
+					</Link>
+					<Link
+						className={clsx(
+							'flex flex-col justify-center items-center gap-1 flex-auto py-3 border-t capitalize',
+							searchOptions.sort === 'hot'
+								? 'border-white'
+								: 'hover:border-gray-600',
+						)}
+						to={getResourceURL(
+							{ ...searchOptions, sort: 'hot' },
+							selectedResourceId,
+						)}
+					>
+						<SvgIcon href={hotIcon} className="w-3 h-3" /> Hot
+					</Link>
+					<Link
+						className={clsx(
+							'flex flex-col justify-center items-center gap-1 flex-auto py-3 border-t capitalize',
+							searchOptions.sort === 'top'
+								? 'border-white'
+								: 'hover:border-gray-600',
+						)}
+						to={getResourceURL(
+							{ ...searchOptions, sort: 'top' },
+							selectedResourceId,
+						)}
+					>
+						<SvgIcon href={topIcon} className="w-3 h-3" /> Top
+					</Link>
+				</div>
+			</PaneFooter>
 		</PaneContainer>
 	);
 }

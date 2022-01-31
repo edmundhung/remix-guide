@@ -12,6 +12,7 @@ export function getRelatedSearchParams(search: string): URLSearchParams {
 		'integration',
 		'author',
 		'site',
+		'sort',
 		'open', // For dialog
 	];
 
@@ -35,6 +36,7 @@ export function getSearchOptions(url: string): SearchOptions {
 		category: searchParams.get('category'),
 		platform: searchParams.get('platform'),
 		integrations: searchParams.getAll('integration'),
+		sort: searchParams.get('sort') ?? 'new',
 	};
 
 	if (
@@ -88,6 +90,7 @@ export function getResourceSearchParams(
 				case 'platform':
 				case 'site':
 				case 'keyword':
+				case 'sort':
 					if (value) {
 						return [[key === 'keyword' ? 'q' : key, value]];
 					}

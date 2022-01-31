@@ -1,6 +1,43 @@
 import { getSite } from '~/search';
 import { ResourceMetadata, SearchOptions, Resource, User } from '~/types';
 
+function calculateScore(resource: ResourceMetadata): number {
+	const timeScore =
+		(new Date(resource.createdAt).valueOf() -
+			new Date('2021-12-24T00:00:00.000Z').valueOf()) /
+		1000 /
+		3600 /
+		24;
+	const bookmarkScore =
+		resource.bookmarkCount > 0 ? Math.log10(resource.bookmarkCount) + 1 : 0;
+	const viewScore = Math.log10(resource.viewCount);
+
+	return 1 * timeScore + 10 * bookmarkScore + 1.5 * viewScore;
+}
+
+function compareResources(
+	key: string,
+	prev: ResourceMetadata,
+	next: ResourceMetadata,
+): number {
+	let diff = 0;
+
+	switch (key) {
+		case 'timestamp':
+			diff =
+				new Date(next.createdAt).valueOf() - new Date(prev.createdAt).valueOf();
+			break;
+		case 'bookmarkCount':
+			diff = next.bookmarkCount - prev.bookmarkCount;
+			break;
+		case 'viewCount':
+			diff = next.viewCount - prev.viewCount;
+			break;
+	}
+
+	return diff;
+}
+
 export function search(
 	resources: ResourceMetadata[],
 	options: SearchOptions,
@@ -57,41 +94,28 @@ export function search(
 			return isMatching;
 		})
 		.sort((prev, next) => {
-			let keys;
-
-			switch (options.sortBy) {
-				case 'hotness':
-					keys = ['bookmarkCount', 'viewCount', 'timestamp'];
-					break;
-				default:
-					keys = options.includes ? ['includes'] : ['timestamp'];
-					break;
-			}
-
 			let diff = 0;
 
-			for (const key of keys) {
-				switch (key) {
-					case 'timestamp':
-						diff =
-							new Date(next.createdAt).valueOf() -
-							new Date(prev.createdAt).valueOf();
-						break;
-					case 'bookmarkCount':
-						diff = next.bookmarkCount - prev.bookmarkCount;
-						break;
-					case 'viewCount':
-						diff = next.viewCount - prev.viewCount;
-						break;
-					default:
-						diff =
-							(options.includes ?? []).indexOf(prev.id) -
-							(options.includes ?? []).indexOf(next.id);
-				}
+			switch (options.sort) {
+				case 'top':
+					for (const key of ['bookmarkCount', 'viewCount', 'timestamp']) {
+						diff = compareResources(key, prev, next);
 
-				if (diff !== 0) {
+						if (diff !== 0) {
+							break;
+						}
+					}
 					break;
-				}
+				case 'hot':
+					diff = calculateScore(next) - calculateScore(prev);
+					break;
+				case 'new':
+				default:
+					diff = options.includes
+						? options.includes.indexOf(prev.id) -
+						  options.includes.indexOf(next.id)
+						: compareResources('timestamp', prev, next);
+					break;
 			}
 
 			return diff;
@@ -111,21 +135,20 @@ export function getSuggestions(
 	const suggestions: SearchOptions[] = [];
 
 	if (resource.category === 'package' && resource.title) {
-		suggestions.push({ integrations: [resource.title] });
+		suggestions.push({ integrations: [resource.title], sort: 'top' });
 	}
 
 	if (resource.author) {
-		suggestions.push({ author: resource.author });
+		suggestions.push({ author: resource.author, sort: 'top' });
 	}
 
 	if (resource.category === 'others') {
-		suggestions.push({ site: getSite(resource.url) });
+		suggestions.push({ site: getSite(resource.url), sort: 'top' });
 	}
 
 	const result = suggestions.map((searchOptions) => ({
 		entries: search(resources, {
 			...searchOptions,
-			sortBy: 'hotness',
 			excludes: [resource.id],
 			limit: 6,
 		}),
