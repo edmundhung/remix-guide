@@ -95,7 +95,7 @@ export default function ListUsers() {
 						{entries.map((entry) => (
 							<tr key={entry.url}>
 								<td className="px-4 py-2 border border-gray-700">
-									{entry.title}
+									{entry.title ?? entry.url}
 								</td>
 								<td className="px-4 py-2 border border-gray-700">
 									<a
