@@ -1,3 +1,5 @@
+import { getPageStore } from '../store/PageStore';
+import type { Env } from '../types';
 import { createSession } from './session';
 import { createStore } from './store';
 
@@ -11,5 +13,6 @@ export function createContext(
 	return {
 		session: createSession(request, env, ctx),
 		store: createStore(request, env, ctx),
+		pageStore: getPageStore(env, ctx),
 	};
 }

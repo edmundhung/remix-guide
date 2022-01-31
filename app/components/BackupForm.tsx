@@ -28,7 +28,7 @@ function BackupForm({ data }: BackupFormProps): ReactElement {
 					name="type"
 					value="backup"
 				>
-					Show backup
+					Show data
 				</button>
 				<button
 					type="submit"
