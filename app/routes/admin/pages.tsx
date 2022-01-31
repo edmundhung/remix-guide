@@ -130,9 +130,6 @@ export default function ListUsers() {
 									{entry.bookmarkCount}
 								</td>
 								<td className="px-4 py-2 border border-gray-700">
-									{entry.createdAt}
-								</td>
-								<td className="px-4 py-2 border border-gray-700">
 									{entry.updatedAt}
 								</td>
 								<td className="px-4 py-2 border border-gray-700">
