@@ -73,7 +73,7 @@ export function PaneContent({
 	return (
 		<div
 			className={clsx('flex flex-col flex-1', {
-				'px-2.5 xl:px-5': padding !== 'none',
+				'px-2.5 xl:px-5 lg:pb-16': padding !== 'none',
 			})}
 		>
 			<div
