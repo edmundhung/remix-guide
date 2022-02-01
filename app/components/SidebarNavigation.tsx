@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useMemo } from 'react';
-import { Form, Link, NavLink, useLocation, useNavigate } from 'remix';
+import { Form, Link, NavLink, useLocation } from 'remix';
 import clsx from 'clsx';
 import SvgIcon from '~/components/SvgIcon';
 import logo from '~/icons/logo.svg';
@@ -26,6 +26,7 @@ import {
 	getCategoryListName,
 	getResourceURL,
 	getSearchOptions,
+	toggleSearchParams,
 } from '~/search';
 import { SearchOptions } from '~/types';
 import { administrators, maintainers } from '~/config';
@@ -123,17 +124,10 @@ interface SidebarNavigationProps {
 
 function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 	const location = useLocation();
-	const navigate = useNavigate();
-	const search = useMemo(() => {
-		const searchPararms = new URLSearchParams(location.search);
-		const hasMenu = searchPararms.get('open') === 'menu';
-
-		if (hasMenu) {
-			searchPararms.delete('open');
-		}
-
-		return searchPararms.toString();
-	}, [location.search]);
+	const toggleMenuURL = useMemo(
+		() => `?${toggleSearchParams(location.search, 'menu')}`,
+		[location.search],
+	);
 
 	return (
 		<PaneContainer>
@@ -150,14 +144,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 				</h1>
 				<Link
 					className="flex xl:hidden items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-					to={
-						search === '' ? location.pathname : `${location.pathname}?${search}`
-					}
-					onClick={(e) => {
-						navigate(-1);
-						e.preventDefault();
-					}}
-					replace
+					to={toggleMenuURL}
 				>
 					<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={timesIcon} />
 				</Link>

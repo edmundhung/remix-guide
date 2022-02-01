@@ -1,11 +1,20 @@
-import type { LoaderFunction, MetaFunction, ActionFunction } from 'remix';
+import {
+	LoaderFunction,
+	MetaFunction,
+	ActionFunction,
+	Link,
+	useLocation,
+} from 'remix';
 import { Form, redirect, json, useLoaderData } from 'remix';
+import { useMemo } from 'react';
+import menuIcon from '~/icons/menu.svg';
+import FlashMessage from '~/components/FlashMessage';
+import SvgIcon from '~/components/SvgIcon';
+import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import { maintainers } from '~/config';
 import { Context } from '~/types';
 import { formatMeta } from '~/helpers';
-import MenuLink from '~/components/MenuLink';
-import FlashMessage from '~/components/FlashMessage';
-import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
+import { toggleSearchParams } from '~/search';
 
 export let meta: MetaFunction = () => {
 	return formatMeta({
@@ -121,11 +130,21 @@ export let loader: LoaderFunction = async ({ context }) => {
 
 export default function Submit() {
 	const { message } = useLoaderData();
+	const location = useLocation();
+	const toggleMenuURL = useMemo(
+		() => `?${toggleSearchParams(location.search, 'menu')}`,
+		[location.search],
+	);
 
 	return (
 		<PaneContainer>
 			<PaneHeader>
-				<MenuLink />
+				<Link
+					className="flex xl:hidden items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+					to={toggleMenuURL}
+				>
+					<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={menuIcon} />
+				</Link>
 				<div className="flex-1 leading-8 line-clamp-1">
 					Submit a new Resource
 				</div>

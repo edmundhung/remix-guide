@@ -142,16 +142,16 @@ export function getAction(
 	return action;
 }
 
-export function toggleSearchList(searchParams: URLSearchParams): string {
-	const search = new URLSearchParams(searchParams);
+export function toggleSearchParams(search: string, key: string): string {
+	const searchParams = new URLSearchParams(search);
 
-	if (search.get('open') === 'search') {
-		search.delete('open');
+	if (searchParams.get('open') === key) {
+		searchParams.delete('open');
 	} else {
-		search.set('open', 'search');
+		searchParams.set('open', key);
 	}
 
-	return search.toString();
+	return searchParams.toString();
 }
 
 export function getCategoryListName(category: string): string {

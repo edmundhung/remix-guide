@@ -7,14 +7,13 @@ import timesIcon from '~/icons/times.svg';
 import newIcon from '~/icons/satellite-dish.svg';
 import hotIcon from '~/icons/fire-alt.svg';
 import topIcon from '~/icons/badge-check.svg';
+import menuIcon from '~/icons/menu.svg';
 import type { ResourceMetadata } from '~/types';
-import MenuLink from '~/components/MenuLink';
 import { PaneContainer, PaneHeader, PaneContent, PaneFooter } from '~/layout';
 import {
-	getRelatedSearchParams,
 	getResourceURL,
 	getTitleBySearchOptions,
-	toggleSearchList,
+	toggleSearchParams,
 } from '~/search';
 import type { SearchOptions } from '~/types';
 import { useMemo } from 'react';
@@ -44,21 +43,24 @@ export default function ResourcesList({
 	searchOptions,
 }: ResourcesListProps) {
 	const location = useLocation();
-	const toggleSearchURL = useMemo(() => {
-		const searchParams = getRelatedSearchParams(location.search);
-
-		if (searchOptions.list && selectedResourceId) {
-			searchParams.set('resourceId', selectedResourceId);
-		}
-
-		return `?${toggleSearchList(searchParams)}`;
-	}, [location.search, searchOptions.list, selectedResourceId]);
+	const [toggleSearchURL, toggleMenuURL] = useMemo(
+		() => [
+			`?${toggleSearchParams(location.search, 'search')}`,
+			`?${toggleSearchParams(location.search, 'menu')}`,
+		],
+		[location.search],
+	);
 
 	return (
 		<PaneContainer>
 			{!isSearching(searchOptions) ? (
 				<PaneHeader>
-					<MenuLink />
+					<Link
+						className="flex xl:hidden items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+						to={toggleMenuURL}
+					>
+						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={menuIcon} />
+					</Link>
 					<div className="flex-1 line-clamp-1 text-center lg:text-left">
 						{getTitleBySearchOptions(searchOptions)}
 					</div>
