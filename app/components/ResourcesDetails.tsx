@@ -14,6 +14,7 @@ import {
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
 import { User } from '~/types';
+import IconLink from '~/components/IconLink';
 
 interface ResourcesDetailsProps {
 	resource: Resource;
@@ -63,12 +64,7 @@ function ResourcesDetails({
 	return (
 		<PaneContainer>
 			<PaneHeader>
-				<Link
-					className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-					to={backUrl}
-				>
-					<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={backIcon} />
-				</Link>
+				<IconLink icon={backIcon} to={backUrl} />
 				<div className="flex-1" />
 				<Form
 					className="flex flex-row items-center"

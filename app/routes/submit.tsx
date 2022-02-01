@@ -1,20 +1,14 @@
-import {
-	LoaderFunction,
-	MetaFunction,
-	ActionFunction,
-	Link,
-	useLocation,
-} from 'remix';
-import { Form, redirect, json, useLoaderData } from 'remix';
+import type { LoaderFunction, MetaFunction, ActionFunction } from 'remix';
+import { Form, redirect, json, useLoaderData, useLocation } from 'remix';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
-import SvgIcon from '~/components/SvgIcon';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import { maintainers } from '~/config';
 import { Context } from '~/types';
 import { formatMeta } from '~/helpers';
 import { toggleSearchParams } from '~/search';
+import IconLink from '~/components/IconLink';
 
 export let meta: MetaFunction = () => {
 	return formatMeta({
@@ -139,12 +133,7 @@ export default function Submit() {
 	return (
 		<PaneContainer>
 			<PaneHeader>
-				<Link
-					className="flex xl:hidden items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-					to={toggleMenuURL}
-				>
-					<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={menuIcon} />
-				</Link>
+				<IconLink icon={menuIcon} to={toggleMenuURL} mobileOnly />
 				<div className="flex-1 leading-8 line-clamp-1">
 					Submit a new Resource
 				</div>

@@ -30,6 +30,7 @@ import {
 } from '~/search';
 import { SearchOptions } from '~/types';
 import { administrators, maintainers } from '~/config';
+import IconLink from '~/components/IconLink';
 
 interface ExternalLinkProps {
 	href: string;
@@ -142,12 +143,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 						Remix Guide
 					</Link>
 				</h1>
-				<Link
-					className="flex xl:hidden items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-					to={toggleMenuURL}
-				>
-					<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={timesIcon} />
-				</Link>
+				<IconLink icon={timesIcon} to={toggleMenuURL} mobileOnly />
 			</PaneHeader>
 			<PaneContent>
 				<div className="lg:flex-1 divide-y">

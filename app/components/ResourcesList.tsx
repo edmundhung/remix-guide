@@ -18,6 +18,7 @@ import {
 import type { SearchOptions } from '~/types';
 import { useMemo } from 'react';
 import clsx from 'clsx';
+import IconLink from '~/components/IconLink';
 
 interface ResourcesListProps {
 	entries: ResourceMetadata[];
@@ -55,37 +56,22 @@ export default function ResourcesList({
 		<PaneContainer>
 			{!isSearching(searchOptions) ? (
 				<PaneHeader>
-					<Link
-						className="flex xl:hidden items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-						to={toggleMenuURL}
-					>
-						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={menuIcon} />
-					</Link>
+					<IconLink icon={menuIcon} to={toggleMenuURL} mobileOnly />
 					<div className="flex-1 line-clamp-1 text-center lg:text-left">
 						{getTitleBySearchOptions(searchOptions)}
 					</div>
-					<Link
-						className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-						to={toggleSearchURL}
-					>
-						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={searchIcon} />
-					</Link>
+					<IconLink icon={searchIcon} to={toggleSearchURL} />
 				</PaneHeader>
 			) : (
 				<PaneHeader>
 					<div className="flex-1 flex flex-row lg:flex-row-reverse items-center justify-center gap-4">
-						<Link
-							className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
-							to={toggleSearchURL}
-						>
-							<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={pencilIcon} />
-						</Link>
+						<IconLink icon={pencilIcon} to={toggleSearchURL} />
 						<div className="flex-1 line-clamp-1 text-center lg:text-left">
 							{getTitleBySearchOptions(searchOptions)}
 						</div>
 					</div>
-					<Link
-						className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 hover:rounded-full hover:bg-gray-200 hover:text-black"
+					<IconLink
+						icon={timesIcon}
 						to={
 							searchOptions.list
 								? selectedResourceId
@@ -95,9 +81,7 @@ export default function ResourcesList({
 								? `/resources/${selectedResourceId}`
 								: '/'
 						}
-					>
-						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={timesIcon} />
-					</Link>
+					/>
 				</PaneHeader>
 			)}
 			<PaneContent>
