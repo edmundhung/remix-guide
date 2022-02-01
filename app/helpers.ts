@@ -51,23 +51,3 @@ export function capitalize(text: string | null | undefined): string | null {
 
 	return text[0].toUpperCase() + text.slice(1).toLowerCase();
 }
-
-export function throttle<Arguments extends any[]>(
-	callback: (...args: Arguments) => void,
-	limit: number,
-) {
-	let lastArgs = [] as unknown as Arguments;
-	let waiting = false;
-
-	return function (...args: Arguments): void {
-		lastArgs = Array.from(args) as Arguments;
-
-		if (!waiting) {
-			waiting = true;
-			setTimeout(function () {
-				waiting = false;
-				callback(...lastArgs);
-			}, limit);
-		}
-	};
-}
