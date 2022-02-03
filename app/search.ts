@@ -64,7 +64,7 @@ export function getSite(url: string): string {
 }
 
 export function createIntegrationSearch(value: string): string {
-	const searchParams = new URLSearchParams();
+	const searchParams = new URLSearchParams({ sort: 'top' });
 
 	if (platforms.includes(value)) {
 		searchParams.set('platform', value);
