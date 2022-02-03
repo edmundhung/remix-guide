@@ -102,6 +102,7 @@ function SearchList({ searchOptions, selectedResourceId }: SearchListProps) {
 					</div>
 				</PaneHeader>
 				<PaneContent>
+					<input type="hidden" name="sort" value="top" />
 					<List title="Category">
 						<div className="grid grid-cols-2 gap-1 capitalize">
 							<div className="col-span-2 normal-case">
