@@ -81,7 +81,7 @@ function Document({
 						src="https://cdn.remix.guide/script.js"
 						data-spa="history"
 						data-excluded-domains="localhost"
-						data-site="TICFDBXO"
+						data-site="AVOQUSXG"
 						defer
 					/>
 				)}
