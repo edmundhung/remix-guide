@@ -74,7 +74,16 @@ function Document({
 				{children}
 				<ScrollRestoration />
 				<Scripts />
-				{process.env.NODE_ENV === 'development' && <LiveReload />}
+				{process.env.NODE_ENV === 'development' ? (
+					<LiveReload />
+				) : (
+					<script
+						src="https://cdn.usefathom.com/script.js"
+						data-spa="auto"
+						data-site="TICFDBXO"
+						defer
+					/>
+				)}
 			</body>
 		</html>
 	);
