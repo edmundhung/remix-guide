@@ -74,17 +74,7 @@ function Document({
 				{children}
 				<ScrollRestoration />
 				<Scripts />
-				{process.env.NODE_ENV === 'development' ? (
-					<LiveReload />
-				) : (
-					<script
-						src="https://cdn.remix.guide/script.js"
-						data-spa="history"
-						data-excluded-domains="localhost"
-						data-site="AVOQUSXG"
-						defer
-					/>
-				)}
+				{process.env.NODE_ENV === 'development' ? <LiveReload /> : null}
 			</body>
 		</html>
 	);
