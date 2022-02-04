@@ -79,7 +79,8 @@ function Document({
 				) : (
 					<script
 						src="https://cdn.remix.guide/script.js"
-						data-spa="auto"
+						data-spa="history"
+						data-excluded-domains="localhost"
 						data-site="TICFDBXO"
 						defer
 					/>
