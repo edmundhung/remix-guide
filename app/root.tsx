@@ -78,7 +78,7 @@ function Document({
 					<LiveReload />
 				) : (
 					<script
-						src="https://cdn.usefathom.com/script.js"
+						src="https://cdn.remix.guide/script.js"
 						data-spa="auto"
 						data-site="TICFDBXO"
 						defer
