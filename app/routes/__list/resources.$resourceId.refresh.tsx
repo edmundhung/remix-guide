@@ -11,7 +11,7 @@ export let loader: LoaderFunction = async ({ request, context, params }) => {
 		return redirect(`/resources/${params.resourceId}`);
 	}
 
-	await resourceStore.refresh(profile.id, params.resourceId ?? '');
+	await resourceStore.refresh(params.resourceId ?? '');
 
 	return redirect(`/resources/${params.resourceId}`, {
 		headers: await session.commitWithFlashMessage(
