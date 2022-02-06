@@ -51,7 +51,7 @@ function FlashMessage({ message }: FlashMessageProps): ReactElement | null {
 	}
 
 	return (
-		<div className="flex items-center gap-4 bg-gray-700 px-5 py-3 text-sm">
+		<div className="h-full flex items-center gap-4 bg-gray-700 px-5 text-sm">
 			<div className="flex items-center flex-1 py-1 gap-4">
 				{formatMessage(message)}
 			</div>

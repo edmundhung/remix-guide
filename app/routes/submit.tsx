@@ -97,7 +97,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 			});
 		}
 
-		return redirect(`/resources/${id}`, {
+		return redirect(`/news?resourceId=${id}`, {
 			headers: setCookieHeader,
 		});
 	} catch (error) {

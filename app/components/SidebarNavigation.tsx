@@ -214,7 +214,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 			<PaneFooter padding="minimum">
 				{profile ? (
 					<Form
-						className="py-3 border-t"
+						className="h-full flex items-center border-t"
 						action="/logout"
 						method="post"
 						reloadDocument
@@ -225,7 +225,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 					</Form>
 				) : (
 					<Form
-						className="py-3 border-t"
+						className="h-full flex items-center border-t"
 						action="/login"
 						method="post"
 						reloadDocument

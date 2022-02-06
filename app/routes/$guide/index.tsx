@@ -21,6 +21,7 @@ import type {
 
 interface LoaderData {
 	resource: Resource;
+	message: string | null;
 	user: User | null;
 	suggestions: Array<{
 		entries: ResourceMetadata[];
@@ -91,9 +92,10 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 	}
 
 	const { session, resourceStore, userStore } = context as Context;
-	const [resource, profile] = await Promise.all([
+	const [resource, profile, [message, setCookieHeader]] = await Promise.all([
 		resourceStore.query(resourceId),
 		session.isAuthenticated(),
+		session.getFlashMessage(),
 	]);
 
 	if (!resource) {
@@ -105,11 +107,17 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 		profile?.id ? userStore.getUser(profile.id) : null,
 	]);
 
-	return json({
-		user,
-		resource: user ? patchResource(resource, user) : resource,
-		suggestions: getSuggestions(list, resource),
-	});
+	return json(
+		{
+			user,
+			message,
+			resource: user ? patchResource(resource, user) : resource,
+			suggestions: getSuggestions(list, resource),
+		},
+		{
+			headers: setCookieHeader,
+		},
+	);
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
@@ -130,14 +138,14 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function UserProfile() {
-	const { resource, user, suggestions } = useLoaderData<LoaderData>();
+	const { resource, message, user, suggestions } = useLoaderData<LoaderData>();
 
 	if (!resource) {
 		return <About />;
 	}
 
 	return (
-		<ResourcesDetails resource={resource} user={user}>
+		<ResourcesDetails resource={resource} user={user} message={message}>
 			{suggestions.map(({ entries, searchOptions }) => (
 				<SuggestedResources
 					key={JSON.stringify(searchOptions)}

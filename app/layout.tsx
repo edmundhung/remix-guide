@@ -56,7 +56,9 @@ export function PaneFooter({
 				'px-2.5 xl:px-5': padding !== 'none',
 			})}
 		>
-			<div className={clsx({ 'px-3': padding === 'maximum' })}>{children}</div>
+			<div className={clsx('h-14', { 'px-3': padding === 'maximum' })}>
+				{children}
+			</div>
 		</footer>
 	);
 }

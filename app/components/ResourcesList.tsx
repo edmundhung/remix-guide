@@ -95,10 +95,10 @@ export default function ResourcesList({
 				)}
 			</PaneContent>
 			<PaneFooter>
-				<div className="flex flex-row text-xs">
+				<div className="flex-1 h-full flex flex-row text-xs">
 					<Link
 						className={clsx(
-							'flex flex-col justify-center items-center gap-1 flex-auto py-3 border-t capitalize',
+							'flex flex-col justify-center items-center gap-1 flex-auto border-t capitalize',
 							searchOptions.sort === 'new'
 								? 'border-white'
 								: 'hover:border-gray-600',
@@ -112,7 +112,7 @@ export default function ResourcesList({
 					</Link>
 					<Link
 						className={clsx(
-							'flex flex-col justify-center items-center gap-1 flex-auto py-3 border-t capitalize',
+							'flex flex-col justify-center items-center gap-1 flex-auto border-t capitalize',
 							searchOptions.sort === 'hot'
 								? 'border-white'
 								: 'hover:border-gray-600',
@@ -126,7 +126,7 @@ export default function ResourcesList({
 					</Link>
 					<Link
 						className={clsx(
-							'flex flex-col justify-center items-center gap-1 flex-auto py-3 border-t capitalize',
+							'flex flex-col justify-center items-center gap-1 flex-auto border-t capitalize',
 							searchOptions.sort === 'top'
 								? 'border-white'
 								: 'hover:border-gray-600',
