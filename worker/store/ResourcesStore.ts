@@ -1,5 +1,6 @@
 import { customAlphabet } from 'nanoid';
 import { json } from 'remix';
+import { matchCache, removeCache, updateCache } from '../cache';
 import { createLogger } from '../logging';
 import { getIntegrations, getIntegrationsFromPage } from '../scraping';
 import type {
@@ -11,6 +12,7 @@ import type {
 	SubmissionStatus,
 	AsyncReturnType,
 } from '../types';
+import { createStoreFetch } from '../utils';
 import { getPageStore } from './PageStore';
 
 /**
@@ -171,17 +173,15 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 			return { id, status };
 		},
-		async refresh(userId: string, resourceId: string) {
+		async refresh(resourceId: string) {
 			let resource = await getResource(resourceId);
 
 			if (!resource) {
-				return false;
+				throw new Error(`Unknown resourceId found; Received ${resourceId}`);
 			}
 
 			// Only refresh the cache
 			await updateResourceCache(resource);
-
-			return true;
 		},
 		async getDetails(resourceId: string | null) {
 			const resource = resourceId ? await getResource(resourceId) : null;
@@ -193,6 +193,82 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			updateResourceCache(resource);
 
 			return resource;
+		},
+	};
+}
+
+export function getResourceStore(
+	env: Env,
+	ctx: ExecutionContext | DurableObjectState,
+) {
+	const fetchStore = createStoreFetch(env.RESOURCES_STORE, 'resources');
+	const storeName = '';
+
+	return {
+		async listResources(): Promise<ResourceMetadata[]> {
+			let list = await matchCache<ResourceMetadata[]>('resources');
+
+			if (!list) {
+				const result = await env.CONTENT.list<ResourceMetadata>({
+					prefix: 'resources/',
+				});
+
+				list = result.keys.flatMap((key) => key.metadata ?? []);
+
+				ctx.waitUntil(updateCache('resources', list, 300));
+			}
+
+			return list;
+		},
+		async query(resourceId: string) {
+			let resource = await matchCache<Resource>(`resources/${resourceId}`);
+
+			if (!resource) {
+				resource = await env.CONTENT.get<Resource>(
+					`resources/${resourceId}`,
+					'json',
+				);
+
+				if (!resource) {
+					resource = await fetchStore(storeName, '/details', 'GET', {
+						resourceId,
+					});
+				}
+
+				if (resource) {
+					ctx.waitUntil(updateCache(`resources/${resourceId}`, resource, 300));
+				}
+			}
+
+			return resource;
+		},
+		async submit(
+			url: string,
+			userId: string,
+		): Promise<{ id: string; status: SubmissionStatus }> {
+			const { id, status } = await fetchStore(storeName, '/submit', 'POST', {
+				url,
+				userId,
+			});
+
+			if (status === 'PUBLISHED') {
+				ctx.waitUntil(removeCache('resources'));
+			}
+
+			return {
+				id,
+				status,
+			};
+		},
+		async refresh(resourceId: string): Promise<void> {
+			await fetchStore(storeName, '/refresh', 'POST', { resourceId });
+			ctx.waitUntil(removeCache(`resources/${resourceId}`));
+		},
+		async backup(): Promise<Record<string, any>> {
+			return await fetchStore(storeName, '/backup', 'POST');
+		},
+		async restore(data: Record<string, any>): Promise<void> {
+			return await fetchStore(storeName, '/restore', 'POST', data);
 		},
 	};
 }
@@ -236,12 +312,11 @@ export class ResourcesStore {
 
 				response = json(result, 201);
 			} else if (url.pathname === '/refresh' && method === 'POST') {
-				const { userId, resourceId } = await request.json();
-				const success = await this.store.refresh(userId, resourceId);
+				const { resourceId } = await request.json();
 
-				if (success) {
-					response = new Response('OK', { status: 200 });
-				}
+				await this.store.refresh(resourceId);
+
+				response = new Response(null, { status: 204 });
 			} else if (url.pathname === '/details' && method === 'GET') {
 				const resourceId = url.searchParams.get('resourceId');
 				const resource = await this.store.getDetails(resourceId);
@@ -261,7 +336,7 @@ export class ResourcesStore {
 				// Re-initialise everything again
 				this.store = await createResourceStore(this.state, this.env);
 
-				response = new Response('OK', { status: 200 });
+				response = new Response(null, { status: 204 });
 			}
 		} catch (e) {
 			console.log('error', e);

@@ -33,9 +33,9 @@ export let meta: MetaFunction = ({ data }: { data?: LoaderData }) => {
 };
 
 export let loader: LoaderFunction = async ({ context, params }) => {
-	const { session, store, userStore } = context as Context;
+	const { session, resourceStore, userStore } = context as Context;
 	const [resource, profile] = await Promise.all([
-		store.query(params.resourceId ?? ''),
+		resourceStore.query(params.resourceId ?? ''),
 		session.isAuthenticated(),
 	]);
 
@@ -44,7 +44,7 @@ export let loader: LoaderFunction = async ({ context, params }) => {
 	}
 
 	const [list, [message, setCookieHeader], user] = await Promise.all([
-		store.search(),
+		resourceStore.listResources(),
 		session.getFlashMessage(),
 		profile?.id ? userStore.getUser(profile.id) : null,
 	]);

@@ -10,7 +10,9 @@ export function createStoreFetch(
 	): Promise<any> {
 		const id = namespace.idFromName(name);
 		const store = namespace.get(id);
-		const origin = `http://${name}.${hostname}${pathname}`;
+		const origin = `http://${
+			name !== '' ? name : 'global'
+		}.${hostname}${pathname}`;
 		const searchParams =
 			method === 'GET' && data
 				? new URLSearchParams(

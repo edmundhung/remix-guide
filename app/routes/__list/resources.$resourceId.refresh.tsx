@@ -4,14 +4,14 @@ import { maintainers } from '~/config';
 import type { Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, context, params }) => {
-	const { session, store } = context as Context;
+	const { session, resourceStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
 	if (!profile || !maintainers.includes(profile.name)) {
 		return redirect(`/resources/${params.resourceId}`);
 	}
 
-	await store.refresh(profile.id, params.resourceId ?? '');
+	await resourceStore.refresh(profile.id, params.resourceId ?? '');
 
 	return redirect(`/resources/${params.resourceId}`, {
 		headers: await session.commitWithFlashMessage(

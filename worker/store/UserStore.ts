@@ -4,6 +4,7 @@ import { createLogger } from '../logging';
 import type { Env, UserProfile, User, AsyncReturnType } from '../types';
 import { createStoreFetch } from '../utils';
 import { getPageStore } from './PageStore';
+import { getResourceStore } from './ResourcesStore';
 
 async function createUserStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
@@ -103,6 +104,7 @@ export function getUserStore(
 	ctx: ExecutionContext | DurableObjectState,
 ) {
 	const pageStore = getPageStore(env, ctx);
+	const resourcesStore = getResourceStore(env, ctx);
 	const fetchStore = createStoreFetch(env.USER_STORE, 'guide');
 
 	return {
@@ -118,6 +120,25 @@ export function getUserStore(
 			}
 
 			return user;
+		},
+		async getList(
+			userId: string,
+			list: string | null,
+		): Promise<string[] | null> {
+			if (!list) {
+				return null;
+			}
+
+			const user = await this.getUser(userId);
+
+			switch (list) {
+				case 'bookmarks':
+					return user?.bookmarked ?? [];
+				case 'history':
+					return user?.viewed ?? [];
+				default:
+					return [];
+			}
 		},
 		async listUserProfiles(): Promise<UserProfile[]> {
 			let list = await matchCache<UserProfile[]>('users');
@@ -152,6 +173,7 @@ export function getUserStore(
 			}
 
 			ctx.waitUntil(pageStore.view(url));
+			ctx.waitUntil(resourcesStore.refresh(resourceId));
 		},
 		async bookmark(
 			userId: string,
@@ -165,6 +187,7 @@ export function getUserStore(
 
 			ctx.waitUntil(removeCache(`users/${userId}`));
 			ctx.waitUntil(pageStore.bookmark(userId, url));
+			ctx.waitUntil(resourcesStore.refresh(resourceId));
 		},
 		async unbookmark(
 			userId: string,
@@ -175,6 +198,7 @@ export function getUserStore(
 
 			ctx.waitUntil(removeCache(`users/${userId}`));
 			ctx.waitUntil(pageStore.unbookmark(userId, url));
+			ctx.waitUntil(resourcesStore.refresh(resourceId));
 		},
 		async backup(userId: string): Promise<Record<string, any>> {
 			return await fetchStore(userId, '/backup', 'POST');

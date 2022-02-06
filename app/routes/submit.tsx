@@ -31,7 +31,7 @@ function isValidURL(text: string): boolean {
 }
 
 export let action: ActionFunction = async ({ request, context }) => {
-	const { session, store } = context as Context;
+	const { session, resourceStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
 	if (!profile) {
@@ -63,7 +63,10 @@ export let action: ActionFunction = async ({ request, context }) => {
 	}
 
 	try {
-		const { id, status } = await store.submit(url.toString(), profile.id);
+		const { id, status } = await resourceStore.submit(
+			url.toString(),
+			profile.id,
+		);
 
 		let setCookieHeader = {};
 

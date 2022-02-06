@@ -1,17 +1,17 @@
 import type { LoaderFunction, ShouldReloadFunction } from 'remix';
 import { Outlet, useLoaderData, useParams, json } from 'remix';
 import Feed from '~/components/Feed';
+import { search } from '~/resources';
 import { getSearchOptions } from '~/search';
 import type { ResourceMetadata, Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, context }) => {
-	const { session, store } = context as Context;
-	const profile = await session.isAuthenticated();
+	const { resourceStore } = context as Context;
 	const searchOptions = getSearchOptions(request.url);
-	const entries = await store.search(profile?.id ?? null, searchOptions);
+	const resources = await resourceStore.listResources();
 
 	return json({
-		entries,
+		entries: search(resources, searchOptions),
 	});
 };
 
