@@ -1,4 +1,4 @@
-import { Form, Link, useLocation, useTransition, useFetcher } from 'remix';
+import { Link, useLocation, useFetcher } from 'remix';
 import type { ReactElement, ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 import type { Resource } from '~/types';
@@ -6,12 +6,7 @@ import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import backIcon from '~/icons/back.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
-import {
-	getSite,
-	createIntegrationSearch,
-	getRelatedSearchParams,
-	excludeParams,
-} from '~/search';
+import { getSite, createIntegrationSearch, excludeParams } from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
 import { User } from '~/types';
@@ -37,8 +32,8 @@ function ResourcesDetails({
 	message,
 	children,
 }: ResourcesDetailsProps): ReactElement {
-	const transition = useTransition();
 	const { submit } = useFetcher();
+	const bookmark = useFetcher();
 	const location = useLocation();
 	const backURL = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);
@@ -50,9 +45,9 @@ function ResourcesDetails({
 	useEffect(() => {
 		submit(
 			{ type: 'view', resourceId: resource.id, url: resource.url },
-			{ method: 'post', action: '/api/view' },
+			{ method: 'post', action: `${location.pathname}?index` },
 		);
-	}, [submit, resource.id, resource.url]);
+	}, [submit, resource.id, resource.url, location.pathname]);
 
 	const authenticated = user !== null;
 	const bookmarked = user?.bookmarked.includes(resource.id) ?? false;
@@ -62,11 +57,7 @@ function ResourcesDetails({
 			<PaneHeader>
 				<IconLink icon={backIcon} to={backURL} />
 				<div className="flex-1" />
-				<Form
-					className="flex flex-row items-center"
-					method="post"
-					action="/api/bookmark"
-				>
+				<bookmark.Form className="flex flex-row items-center" method="post">
 					<input
 						type="hidden"
 						name="referer"
@@ -88,16 +79,14 @@ function ResourcesDetails({
 								? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
 								: ''
 						}`}
-						disabled={
-							!authenticated || typeof transition.submission !== 'undefined'
-						}
+						disabled={!authenticated || bookmark.state === 'submitting'}
 					>
 						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
 					</button>
 					<label className="px-2 w-10 text-right">
 						{resource.bookmarkUsers?.length ?? 0}
 					</label>
-				</Form>
+				</bookmark.Form>
 			</PaneHeader>
 			<PaneContent>
 				<div className="max-w-screen-xl divide-y">

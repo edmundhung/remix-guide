@@ -1,9 +1,14 @@
-import type { LoaderFunction, ShouldReloadFunction, MetaFunction } from 'remix';
+import type {
+	LoaderFunction,
+	ActionFunction,
+	ShouldReloadFunction,
+	MetaFunction,
+} from 'remix';
 import { useLoaderData, json } from 'remix';
 import About from '~/components/About';
 import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
-import { capitalize, formatMeta, notFound } from '~/helpers';
+import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
 import { getSearchOptions, getTitleBySearchOptions } from '~/search';
 import type {
@@ -39,6 +44,42 @@ export let meta: MetaFunction = ({ params, location }) => {
 		title,
 		'og:url': `https://remix.guide/${guide}/${list}`,
 	});
+};
+
+export let action: ActionFunction = async ({ context, request }) => {
+	const { session, userStore } = context as Context;
+	const [profile, formData] = await Promise.all([
+		session.isAuthenticated(),
+		request.formData(),
+	]);
+	const type = formData.get('type');
+	const url = formData.get('url')?.toString();
+	const resourceId = formData.get('resourceId')?.toString();
+
+	if (!type || !url || !resourceId) {
+		return new Response('Bad Request', { status: 400 });
+	}
+
+	if (type === 'view') {
+		await userStore.view(profile?.id ?? null, resourceId, url);
+	} else {
+		if (!profile) {
+			return new Response('Unauthorized', { status: 401 });
+		}
+
+		switch (type) {
+			case 'bookmark':
+				await userStore.bookmark(profile.id, resourceId, url);
+				break;
+			case 'unbookmark':
+				await userStore.unbookmark(profile.id, resourceId, url);
+				break;
+			default:
+				return new Response('Bad Request', { status: 400 });
+		}
+	}
+
+	return null;
 };
 
 export let loader: LoaderFunction = async ({ context, params, request }) => {
