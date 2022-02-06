@@ -3,28 +3,29 @@ import { redirect } from 'remix';
 import { Context } from '~/types';
 
 export let action: ActionFunction = async ({ context, request }) => {
-	const { session, store } = context as Context;
+	const { session, userStore } = context as Context;
 	const [profile, formData] = await Promise.all([
 		session.isAuthenticated(),
 		request.formData(),
 	]);
 	const type = formData.get('type');
+	const url = formData.get('url')?.toString();
 	const resourceId = formData.get('resourceId')?.toString();
 
 	if (!profile) {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	if (!resourceId) {
+	if (!url || !resourceId) {
 		return new Response('Bad Request', { status: 400 });
 	}
 
 	switch (type) {
 		case 'bookmark':
-			await store.bookmark(profile.id, resourceId);
+			await userStore.bookmark(profile.id, resourceId, url);
 			break;
 		case 'unbookmark':
-			await store.unbookmark(profile.id, resourceId);
+			await userStore.unbookmark(profile.id, resourceId, url);
 			break;
 		default:
 			return new Response('Bad Request', { status: 400 });

@@ -46,10 +46,10 @@ function ResourcesDetails({
 
 	useEffect(() => {
 		submit(
-			{ type: 'view', resourceId: resource.id },
+			{ type: 'view', resourceId: resource.id, url: resource.url },
 			{ method: 'post', action: '/api/view' },
 		);
-	}, [submit, resource.id]);
+	}, [submit, resource.id, resource.url]);
 
 	const authenticated = user !== null;
 	const bookmarked = user?.bookmarked.includes(resource.id) ?? false;
@@ -82,6 +82,7 @@ function ResourcesDetails({
 						value={bookmarked ? 'unbookmark' : 'bookmark'}
 					/>
 					<input type="hidden" name="resourceId" value={resource.id} />
+					<input type="hidden" name="url" value={resource.url} />
 					<button
 						type="submit"
 						className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${

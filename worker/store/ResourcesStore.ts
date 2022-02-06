@@ -179,7 +179,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			}
 
 			// Only refresh the cache
-			await updateResource(resource);
+			await updateResourceCache(resource);
 
 			return true;
 		},
@@ -193,42 +193,6 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			updateResourceCache(resource);
 
 			return resource;
-		},
-		async view(resourceId: string | null) {
-			const resource = resourceId ? await getResource(resourceId) : null;
-
-			if (!resource) {
-				return false;
-			}
-
-			await pageStore.view(resource.url);
-			await updateResourceCache(resource);
-
-			return true;
-		},
-		async bookmark(userId: string, resourceId: string | null) {
-			const resource = resourceId ? await getResource(resourceId) : null;
-
-			if (!resource) {
-				return false;
-			}
-
-			await pageStore.bookmark(userId, resource.url);
-			await updateResourceCache(resource);
-
-			return true;
-		},
-		async unbookmark(userId: string, resourceId: string | null) {
-			const resource = resourceId ? await getResource(resourceId) : null;
-
-			if (!resource) {
-				return false;
-			}
-
-			await pageStore.unbookmark(userId, resource.url);
-			await updateResourceCache(resource);
-
-			return true;
 		},
 	};
 }
@@ -284,27 +248,6 @@ export class ResourcesStore {
 
 				if (resource) {
 					response = json(resource);
-				}
-			} else if (url.pathname === '/view' && method === 'PUT') {
-				const { resourceId } = await request.json();
-				const success = await this.store.view(resourceId);
-
-				if (success) {
-					response = new Response('OK', { status: 200 });
-				}
-			} else if (url.pathname === '/bookmark' && method === 'PUT') {
-				const { userId, resourceId } = await request.json();
-				const success = await this.store.bookmark(userId, resourceId);
-
-				if (success) {
-					response = new Response('OK', { status: 200 });
-				}
-			} else if (url.pathname === '/bookmark' && method === 'DELETE') {
-				const { userId, resourceId } = await request.json();
-				const success = await this.store.unbookmark(userId, resourceId);
-
-				if (success) {
-					response = new Response('OK', { status: 200 });
 				}
 			} else if (url.pathname === '/backup' && method === 'POST') {
 				const data = await this.state.storage.list();

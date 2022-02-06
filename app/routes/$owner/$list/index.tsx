@@ -53,7 +53,7 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 		return json({});
 	}
 
-	const { session, store } = context as Context;
+	const { session, store, userStore } = context as Context;
 	const [resource, profile] = await Promise.all([
 		store.query(resourceId),
 		session.isAuthenticated(),
@@ -65,7 +65,7 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 
 	const [list, user] = await Promise.all([
 		store.search(),
-		profile?.id ? store.getUser(profile.id) : null,
+		profile?.id ? userStore.getUser(profile.id) : null,
 	]);
 
 	return json({
