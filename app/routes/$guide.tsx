@@ -1,27 +1,34 @@
 import { useMemo } from 'react';
-import { LoaderFunction, ShouldReloadFunction, useLocation } from 'remix';
+import {
+	LoaderFunction,
+	redirect,
+	ShouldReloadFunction,
+	useLocation,
+} from 'remix';
 import { Outlet, useLoaderData, json } from 'remix';
 import Feed from '~/components/Feed';
+import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { ResourceMetadata, Context } from '~/types';
 
-export let loader: LoaderFunction = async ({ request, context }) => {
-	const { session, resourceStore, userStore } = context as Context;
+export let loader: LoaderFunction = async ({ request, params, context }) => {
+	const { session, resourceStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!profile) {
-		return new Response('Unauthorized', { status: 401 });
+	if (params.guide === profile?.name) {
+		throw redirect(`${params.guide}/bookmarks`);
+	}
+
+	if (params.guide !== 'news') {
+		throw notFound();
 	}
 
 	const searchOptions = getSearchOptions(request.url);
-	const [resources, includes] = await Promise.all([
-		resourceStore.listResources(),
-		userStore.getList(profile.id, searchOptions.list ?? null),
-	]);
+	const resources = await resourceStore.listResources();
 
 	return json({
-		entries: search(resources, { ...searchOptions, includes }),
+		entries: search(resources, searchOptions),
 	});
 };
 

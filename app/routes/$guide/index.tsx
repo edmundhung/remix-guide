@@ -1,16 +1,12 @@
-import {
-	LoaderFunction,
-	ShouldReloadFunction,
-	MetaFunction,
-	useLoaderData,
-} from 'remix';
-import { json } from 'remix';
+import type { LoaderFunction, ShouldReloadFunction, MetaFunction } from 'remix';
+import { useLoaderData, json } from 'remix';
 import About from '~/components/About';
 import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
-import { capitalize, formatMeta, notFound } from '~/helpers';
+import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
-import {
+import { getSearchOptions, getTitleBySearchOptions } from '~/search';
+import type {
 	Context,
 	Resource,
 	ResourceMetadata,
@@ -27,25 +23,25 @@ interface LoaderData {
 	}>;
 }
 
-export let meta: MetaFunction = ({ data, params }) => {
-	const { list, owner } = params;
+export let meta: MetaFunction = ({ params, location }) => {
+	const { guide } = params;
 
-	if (!list || !owner) {
+	if (!guide) {
 		return {};
 	}
 
+	const searchOptions = getSearchOptions(
+		`${location.pathname}${location.search}`,
+	);
+	const title = getTitleBySearchOptions(searchOptions);
+
 	return formatMeta({
-		title: capitalize(list),
-		description: data?.resource?.description ?? '',
-		'og:url': `https://remix.guide/${owner}/${list}`,
+		title,
+		'og:url': `https://remix.guide/${guide}`,
 	});
 };
 
-export let loader: LoaderFunction = async ({ context, params, request }) => {
-	if (params.list !== 'history' && params.list !== 'bookmarks') {
-		throw notFound();
-	}
-
+export let loader: LoaderFunction = async ({ context, request }) => {
 	const url = new URL(request.url);
 	const resourceId = url.searchParams.get('resourceId');
 

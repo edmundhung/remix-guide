@@ -1,6 +1,6 @@
 import { test, expect } from './setup';
 import {
-	getPageURL,
+	getPageResourceId,
 	listResourcesMetadata,
 	mockPage,
 	submitURL,
@@ -27,7 +27,7 @@ test.describe('Index', () => {
 		await page.goto('/');
 	});
 
-	test('shows all resources submitted', async ({ page, mf, queries }) => {
+	test('shows all URLs submitted', async ({ page, mf, queries }) => {
 		const resources = await listResourcesMetadata(mf);
 		const links = await Promise.all(
 			resources.map((resource) =>
@@ -41,7 +41,7 @@ test.describe('Index', () => {
 		for (let i = 0; i < links.length; i++) {
 			await links[i]?.click();
 
-			expect(getPageURL(page).pathname).toBe(`/resources/${resources[i].id}`);
+			expect(getPageResourceId(page)).toBe(resources[i].id);
 		}
 	});
 });

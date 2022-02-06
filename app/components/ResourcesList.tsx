@@ -27,7 +27,7 @@ interface ResourcesListProps {
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['list', 'owner', 'sort'].concat(
+	const keys = ['guide', 'list', 'sort'].concat(
 		!searchOptions.list ? ['category'] : [],
 	);
 
@@ -72,15 +72,7 @@ export default function ResourcesList({
 					</div>
 					<IconLink
 						icon={timesIcon}
-						to={
-							searchOptions.list
-								? selectedResourceId
-									? `?resourceId=${selectedResourceId}`
-									: '?'
-								: selectedResourceId
-								? `/resources/${selectedResourceId}`
-								: '/'
-						}
+						to={selectedResourceId ? `?resourceId=${selectedResourceId}` : '?'}
 					/>
 				</PaneHeader>
 			)}

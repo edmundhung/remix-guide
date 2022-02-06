@@ -1,5 +1,5 @@
-import type { MetaFunction } from 'remix';
-import About from '~/components/About';
+import type { LoaderFunction, MetaFunction } from 'remix';
+import { redirect } from 'remix';
 import { formatMeta } from '~/helpers';
 
 export let meta: MetaFunction = () => {
@@ -10,4 +10,6 @@ export let meta: MetaFunction = () => {
 	});
 };
 
-export default About;
+export let loader: LoaderFunction = () => {
+	throw redirect('/news');
+};

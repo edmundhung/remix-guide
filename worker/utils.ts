@@ -32,6 +32,8 @@ export function createStoreFetch(
 
 		if (response.status === 204) {
 			return;
+		} else if (response.status === 404) {
+			return null;
 		}
 
 		if (!response.ok) {

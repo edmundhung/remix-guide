@@ -10,6 +10,7 @@ import {
 	getSite,
 	createIntegrationSearch,
 	getRelatedSearchParams,
+	excludeParams,
 } from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
@@ -39,10 +40,12 @@ function ResourcesDetails({
 	const transition = useTransition();
 	const { submit } = useFetcher();
 	const location = useLocation();
-	const search = useMemo(
-		() => getRelatedSearchParams(location.search).toString(),
-		[location.search],
-	);
+	const backURL = useMemo(() => {
+		const searchParams = new URLSearchParams(location.search);
+		const backURL = `?${excludeParams('resourceId', searchParams)}`;
+
+		return backURL;
+	}, [location.search]);
 
 	useEffect(() => {
 		submit(
@@ -53,18 +56,11 @@ function ResourcesDetails({
 
 	const authenticated = user !== null;
 	const bookmarked = user?.bookmarked.includes(resource.id) ?? false;
-	const backUrl = location.pathname.startsWith('/resources')
-		? search === ''
-			? '/'
-			: `/resources?${search}`
-		: search === ''
-		? location.pathname
-		: `${location.pathname}?${search}`;
 
 	return (
 		<PaneContainer>
 			<PaneHeader>
-				<IconLink icon={backIcon} to={backUrl} />
+				<IconLink icon={backIcon} to={backURL} />
 				<div className="flex-1" />
 				<Form
 					className="flex flex-row items-center"
@@ -142,9 +138,7 @@ function ResourcesDetails({
 											<Link
 												key={integration}
 												className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-												to={`/resources?${createIntegrationSearch(
-													integration,
-												)}`}
+												to={`/news?${createIntegrationSearch(integration)}`}
 											>
 												{integration}
 											</Link>

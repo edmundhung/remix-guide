@@ -243,7 +243,11 @@ export function mockPage(
 	mockSafeBrowsingAPI(mockAgent, 'test-google-api-key');
 }
 
-export async function getResource(mf: Miniflare, resourceId: string) {
+export async function getResource(mf: Miniflare, resourceId: string | null) {
+	if (!resourceId) {
+		return null;
+	}
+
 	const content = await mf.getKVNamespace('CONTENT');
 	const resource = await content.get<Resource>(
 		`resources/${resourceId}`,
@@ -269,10 +273,20 @@ export async function listResourcesMetadata(mf: Miniflare) {
 	return resources.keys.flatMap((key) => key.metadata ?? []);
 }
 
-export function getPageResourceId(page: Page): string {
-	return new URL(page.url()).pathname.replace('/resources/', '');
-}
-
 export function getPageURL(page: Page): URL {
 	return new URL(page.url());
+}
+
+export function getPageGuide(page: Page): string | null {
+	const { pathname } = getPageURL(page);
+
+	if (pathname.startsWith('/admin') || pathname.startsWith('/submit')) {
+		return null;
+	}
+
+	return pathname.slice(1).split('/')[0];
+}
+
+export function getPageResourceId(page: Page): string | null {
+	return getPageURL(page).searchParams.get('resourceId');
 }

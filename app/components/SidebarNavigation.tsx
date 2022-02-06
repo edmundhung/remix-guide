@@ -51,29 +51,29 @@ function ExternalLink({ href, children }: ExternalLinkProps): ReactElement {
 }
 
 interface SearchLinkProps
-	extends Pick<SearchOptions, 'owner' | 'list' | 'category'> {
+	extends Pick<SearchOptions, 'guide' | 'list' | 'category'> {
 	children: ReactNode;
 }
 
 function SearchLink({
-	owner,
+	guide,
 	list,
 	category,
 	children,
 }: SearchLinkProps): ReactElement {
 	const location = useLocation();
 	const [to, isActive] = useMemo(() => {
-		const to = getResourceURL({ owner, list, category });
+		const to = getResourceURL({ guide, list, category });
 		const currentOptions = getSearchOptions(
 			`${location.pathname}${location.search}`,
 		);
 		const isActive =
-			(typeof owner === 'undefined' || owner === currentOptions.owner) &&
+			(typeof guide === 'undefined' || guide === currentOptions.guide) &&
 			(typeof list === 'undefined' || list === currentOptions.list) &&
 			(typeof category === 'undefined' || category === currentOptions.category);
 
 		return [to, isActive];
-	}, [owner, list, category, location]);
+	}, [guide, list, category, location]);
 
 	return (
 		<Link
@@ -167,24 +167,24 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 								) : null
 							}
 						>
-							<SearchLink owner={profile.name} list="bookmarks">
+							<SearchLink guide={profile.name} list="bookmarks">
 								<SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
 							</SearchLink>
-							<SearchLink owner={profile.name} list="history">
+							<SearchLink guide={profile.name} list="history">
 								<SvgIcon className="w-4 h-4" href={historyIcon} /> History
 							</SearchLink>
 						</List>
 					) : null}
-					<List title="Discover">
-						<SearchLink owner={null} list={null} category="package">
+					<List title="News">
+						<SearchLink guide="news" category="package">
 							<SvgIcon className="w-4 h-4" href={packageIcon} />{' '}
 							{getCategoryListName('package')}
 						</SearchLink>
-						<SearchLink owner={null} list={null} category="repository">
+						<SearchLink guide="news" category="repository">
 							<SvgIcon className="w-4 h-4" href={repositoryIcon} />{' '}
 							{getCategoryListName('repository')}
 						</SearchLink>
-						<SearchLink owner={null} list={null} category="others">
+						<SearchLink guide="news" category="others">
 							<SvgIcon className="w-4 h-4" href={othersIcon} />{' '}
 							{getCategoryListName('others')}
 						</SearchLink>

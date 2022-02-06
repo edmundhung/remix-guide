@@ -110,7 +110,7 @@ export interface Resource extends Page, ResourceSummary {
 export interface SearchOptions {
 	keyword?: string | null;
 	list?: string | null;
-	owner?: string | null;
+	guide?: string | null;
 	author?: string | null;
 	site?: string | null;
 	category?: Category | null;

@@ -13,7 +13,6 @@ import {
 	PaneFooter,
 } from '~/layout';
 import { SearchOptions } from '~/types';
-import { getAction, getResourceSearchParams } from '~/search';
 
 interface SearchListProps {
 	searchOptions: SearchOptions;
@@ -49,27 +48,21 @@ function InputOption({ type, label, name, value, checked }: InputOptionProps) {
 	);
 }
 
-function SearchList({ searchOptions, selectedResourceId }: SearchListProps) {
+function SearchList({
+	searchOptions,
+	selectedResourceId: selectedId,
+}: SearchListProps) {
 	const ref = useRef<HTMLInputElement>(null);
 	const [keyword, setKeyword] = useState(searchOptions.keyword ?? '');
 
 	return (
-		<Form action={getAction(searchOptions, selectedResourceId)}>
+		<Form action={selectedId ? `?resourceId=${selectedId}` : '.'}>
 			<PaneContainer>
 				<PaneHeader padding="minimum">
 					<div className="relative w-full flex items-center">
 						<Link
 							className="z-10 absolute left-2"
-							to={
-								searchOptions.list
-									? selectedResourceId
-										? `?resourceId=${selectedResourceId}`
-										: '?'
-									: `?${getResourceSearchParams({
-											list: searchOptions.list,
-											category: searchOptions.category,
-									  })}`
-							}
+							to={selectedId ? `?resourceId=${selectedId}` : '?'}
 						>
 							<span className="flex items-center justify-center w-6 h-6">
 								<SvgIcon className="w-4 h-4" href={backIcon} />
