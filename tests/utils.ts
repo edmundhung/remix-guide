@@ -102,9 +102,10 @@ export async function submitURL(page: Page, url: string) {
 		name: /Submit/i,
 	});
 
-	await submitButton.click();
-
-	await page.waitForNavigation({ waitUntil: 'networkidle' });
+	await Promise.all([
+		page.waitForNavigation({ waitUntil: 'networkidle' }),
+		submitButton.click(),
+	]);
 }
 
 interface MockGitHubOptions {
