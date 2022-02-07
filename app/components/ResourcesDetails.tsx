@@ -50,7 +50,21 @@ function ResourcesDetails({
 	}, [submit, resource.id, resource.url, location.pathname]);
 
 	const authenticated = user !== null;
-	const bookmarked = user?.bookmarked.includes(resource.id) ?? false;
+
+	let bookmarked = user?.bookmarked.includes(resource.id) ?? false;
+	let bookmarkCount = resource.bookmarkUsers?.length ?? 0;
+
+	if (bookmark.submission) {
+		const pendingBookmarkType = bookmark.submission?.formData.get('type');
+
+		if (pendingBookmarkType === 'bookmark') {
+			bookmarked = true;
+			bookmarkCount = bookmarkCount + 1;
+		} else if (pendingBookmarkType === 'unbookmark') {
+			bookmarked = false;
+			bookmarkCount = bookmarkCount - 1;
+		}
+	}
 
 	return (
 		<PaneContainer>
@@ -84,7 +98,7 @@ function ResourcesDetails({
 						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
 					</button>
 					<label className="px-2 w-10 text-right">
-						{resource.bookmarkUsers?.length ?? 0}
+						{bookmarkCount >= 0 ? bookmarkCount : 0}
 					</label>
 				</bookmark.Form>
 			</PaneHeader>
