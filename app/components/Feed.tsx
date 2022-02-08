@@ -26,7 +26,7 @@ function Feed({ entries, selectedId, children }: ListProps) {
 	const selected = typeof selectedId !== 'undefined' && selectedId !== null;
 
 	return (
-		<div className="h-full flex flex-row">
+		<div className="flex flex-row">
 			<div
 				className={clsx('lg:border-r w-full lg:w-96', {
 					'hidden lg:block': selected,

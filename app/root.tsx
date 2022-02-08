@@ -70,7 +70,7 @@ function Document({
 				<Meta />
 				<Links />
 			</head>
-			<body className="relative w-full h-full min-h-screen flex bg-gray-900 text-gray-200">
+			<body className="relative w-full min-h-screen flex bg-gray-900 text-gray-200">
 				{children}
 				<ScrollRestoration />
 				<Scripts />
@@ -91,7 +91,7 @@ export default function App() {
 			<Progress />
 			<nav
 				className={clsx(
-					'z-30 xl:block w-full lg:w-96 xl:w-64 h-full border-r',
+					'z-30 xl:block w-full lg:w-96 xl:w-64 border-r',
 					isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden',
 				)}
 			>

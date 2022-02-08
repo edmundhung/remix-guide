@@ -9,7 +9,7 @@ interface PaneContainerProps {
 
 export function PaneContainer({ children }: PaneContainerProps): ReactElement {
 	return (
-		<section className="flex flex-col w-full h-full lg:max-h-screen min-h-screen lg:overflow-y-auto">
+		<section className="flex flex-col w-full lg:max-h-screen min-h-screen lg:overflow-y-auto">
 			{children}
 		</section>
 	);
@@ -77,7 +77,7 @@ export function PaneContent({
 	return (
 		<div
 			className={clsx('flex flex-col flex-1', {
-				'px-2.5 xl:px-5 lg:pb-16': padding !== 'none',
+				'px-2.5 xl:px-5': padding !== 'none',
 			})}
 		>
 			<div
