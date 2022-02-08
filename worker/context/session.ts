@@ -74,7 +74,7 @@ export function createSession(
 
 			session.set(authenticator.sessionKey, user);
 
-			throw redirect(`/${user.name}`, {
+			throw redirect(`/${user.name ?? ''}`, {
 				headers: {
 					'Set-Cookie': await sessionStorage.commitSession(session),
 				},

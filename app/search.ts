@@ -75,7 +75,7 @@ export function createIntegrationSearch(value: string): string {
 }
 
 export function getResourcePathname(options: SearchOptions): string {
-	let base = `/${options.guide}`;
+	let base = `/${options.guide ?? ''}`;
 
 	if (options.list) {
 		base += `/${options.list}`;
