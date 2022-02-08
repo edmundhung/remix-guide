@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { LoaderFunction, ShouldReloadFunction, useLocation } from 'remix';
 import { Outlet, useLoaderData, json } from 'remix';
 import Feed from '~/components/Feed';
+import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { ResourceMetadata, Context } from '~/types';
@@ -10,8 +11,8 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const { session, resourceStore, userStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!profile) {
-		return new Response('Unauthorized', { status: 401 });
+	if (!profile || params.guide !== profile?.name) {
+		throw notFound();
 	}
 
 	const searchOptions = getSearchOptions(request.url);
