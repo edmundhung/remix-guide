@@ -12,7 +12,7 @@ import type {
 	SubmissionStatus,
 	AsyncReturnType,
 } from '../types';
-import { createStoreFetch } from '../utils';
+import { createStoreFetch, restoreStoreData } from '../utils';
 import { getPageStore } from './PageStore';
 
 /**
@@ -25,15 +25,14 @@ const generateId = customAlphabet(
 );
 
 async function createResourceStore(state: DurableObjectState, env: Env) {
+	const { storage } = state;
 	const { CONTENT } = env;
 	const pageStore = getPageStore(env, state);
 
 	const resourceIdByURL =
-		(await state.storage.get<Record<string, string | undefined>>(
-			'index/URL',
-		)) ?? {};
+		(await storage.get<Record<string, string | undefined>>('index/URL')) ?? {};
 	const resourceIdByPackageName =
-		(await state.storage.get<Record<string, string | undefined>>(
+		(await storage.get<Record<string, string | undefined>>(
 			'index/PackageName',
 		)) ?? {};
 
@@ -61,7 +60,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 		if (page.category === 'package') {
 			resourceIdByPackageName[page.title] = id;
-			state.storage.put('index/PackageName', resourceIdByPackageName);
+			storage.put('index/PackageName', resourceIdByPackageName);
 		}
 
 		return {
@@ -71,7 +70,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	}
 
 	async function getResource(resourceId: string) {
-		const resource = await state.storage.get<ResourceSummary>(resourceId);
+		const resource = await storage.get<ResourceSummary>(resourceId);
 
 		if (!resource) {
 			return null;
@@ -91,7 +90,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		resource: ResourceSummary,
 		page?: Page,
 	): Promise<void> {
-		await state.storage.put(resource.id, resource);
+		await storage.put(resource.id, resource);
 		await updateResourceCache(resource, page);
 	}
 
@@ -165,7 +164,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 				if (id) {
 					resourceIdByURL[page.url] = id;
-					state.storage.put('index/URL', resourceIdByURL);
+					storage.put('index/URL', resourceIdByURL);
 				}
 			} else {
 				status = 'RESUBMITTED';
@@ -193,6 +192,14 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			updateResourceCache(resource);
 
 			return resource;
+		},
+		async backup(): Promise<Record<string, any>> {
+			const data = await storage.list();
+
+			return Object.fromEntries(data);
+		},
+		async restore(data: Record<string, any>): Promise<void> {
+			await restoreStoreData(storage, data);
 		},
 	};
 }
@@ -325,13 +332,13 @@ export class ResourcesStore {
 					response = json(resource);
 				}
 			} else if (url.pathname === '/backup' && method === 'POST') {
-				const data = await this.state.storage.list();
+				const data = await this.store.backup();
 
-				response = json(Object.fromEntries(data));
+				response = json(data);
 			} else if (url.pathname === '/restore' && method === 'POST') {
-				const data = await request.json();
+				const data = await request.json<any>();
 
-				await this.state.storage.put(data as Record<string, any>);
+				await this.store.restore(data);
 
 				// Re-initialise everything again
 				this.store = await createResourceStore(this.state, this.env);

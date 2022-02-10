@@ -6,6 +6,15 @@ interface BackupFormProps {
 }
 
 function BackupForm({ data }: BackupFormProps): ReactElement {
+	const dataSortedByKeys = !data
+		? null
+		: Object.keys(data)
+				.sort()
+				.reduce(
+					(result, key) => Object.assign(result, { [key]: data[key] }),
+					{} as Record<string, any>,
+				);
+
 	const handleConfirm = (
 		e: React.MouseEvent<HTMLButtonElement, MouseEvent>,
 	) => {
@@ -19,7 +28,9 @@ function BackupForm({ data }: BackupFormProps): ReactElement {
 			<textarea
 				className="whitespace-pre font-mono w-full flex-1 px-4 py-2 bg-gray-900 text-gray-200 border rounded-lg border-gray-600 focus:outline-none focus:border-white appearance-none"
 				name="data"
-				defaultValue={JSON.stringify(data, null, 2)}
+				defaultValue={
+					dataSortedByKeys ? JSON.stringify(dataSortedByKeys, null, 2) : ''
+				}
 			/>
 			<div className="flex gap-4 py-4">
 				<button

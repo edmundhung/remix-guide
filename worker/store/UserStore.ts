@@ -2,7 +2,7 @@ import { json } from 'remix';
 import { matchCache, removeCache, updateCache } from '../cache';
 import { createLogger } from '../logging';
 import type { Env, UserProfile, User, AsyncReturnType } from '../types';
-import { createStoreFetch } from '../utils';
+import { createStoreFetch, restoreStoreData } from '../utils';
 import { getPageStore } from './PageStore';
 import { getResourceStore } from './ResourcesStore';
 
@@ -94,7 +94,7 @@ async function createUserStore(state: DurableObjectState, env: Env) {
 			return Object.fromEntries(data);
 		},
 		async restore(data: Record<string, any>): Promise<void> {
-			await storage.put(data);
+			await restoreStoreData(storage, data);
 		},
 	};
 }
