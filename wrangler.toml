@@ -46,3 +46,9 @@ watch_dir = "./build/index.js"
 format = "modules"
 dir = "./dist"
 main = "./worker.mjs"
+
+[vars]
+SESSION_SECRETS="your-session-secrets"
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+GITHUB_CALLBACK_URL="your-github-callback-url"

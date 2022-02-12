@@ -11,9 +11,9 @@ export function createSession(
 	env: Env,
 	ctx: ExecutionContext,
 ) {
-	if (!env.SESSION_SECERTS) {
+	if (!env.SESSION_SECRETS) {
 		throw new Error(
-			'Fail initialising the session storge; SESSION_SECERTS is missing',
+			'Fail initialising the session storge; SESSION_SECRETS is missing',
 		);
 	}
 
@@ -23,7 +23,7 @@ export function createSession(
 			httpOnly: true,
 			path: '/',
 			sameSite: 'lax',
-			secrets: env.SESSION_SECERTS.split(','),
+			secrets: env.SESSION_SECRETS.split(','),
 			secure: env.GITHUB_CALLBACK_URL?.startsWith('https') ?? false,
 		},
 	});
