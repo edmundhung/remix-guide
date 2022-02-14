@@ -53,7 +53,7 @@ export const test = base.extend<TestFixtures, WorkerFixtures>({
 				wranglerConfigPath: true,
 				buildCommand: undefined,
 				bindings: {
-					SESSION_SECERTS: 'ReMixGuIDe',
+					SESSION_SECRETS: 'ReMixGuIDe',
 					GITHUB_CLIENT_ID: 'test-client-id',
 					GITHUB_CLIENT_SECRET: 'test-secret',
 					GITHUB_CALLBACK_URL: `http://localhost:${port}/auth`,
