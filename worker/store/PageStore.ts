@@ -170,7 +170,7 @@ export function getPageStore(
 					getPageDetails(page.url, env),
 					GOOGLE_API_KEY
 						? checkSafeBrowsingAPI([page.url], GOOGLE_API_KEY)
-						: false,
+						: process.env.NODE_ENV !== 'production', // Consider URL as safe for non production environment without GOOGLE_API_KEY
 				]);
 
 				page = {
