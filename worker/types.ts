@@ -15,7 +15,7 @@ export interface Env {
 	GITHUB_CLIENT_SECRET?: string;
 	GITHUB_CALLBACK_URL?: string;
 	GOOGLE_API_KEY?: string;
-	SESSION_SECERTS?: string;
+	SESSION_SECRETS?: string;
 	SENTRY_DSN?: string;
 	USER_AGENT?: string;
 	DEBUG?: string;
