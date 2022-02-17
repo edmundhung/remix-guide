@@ -5,7 +5,7 @@
 	"description": "A platform for sharing everything about Remix",
 	"license": "MIT",
 	"scripts": {
-		"cleanup": "rimraf .cache ./dist ./build ./public/build ./app/styles/tailwind.css",
+		"cleanup": "rimraf .cache ./dist ./build ./public/build ./public/sw.js ./app/styles/tailwind.css",
 		"build:remix": "remix build",
 		"build:style": "cross-env NODE_ENV=production tailwindcss -o ./app/styles/tailwind.css --minify",
 		"build:worker": "cross-env NODE_ENV=production VERSION=$(git rev-parse --short HEAD) node ./scripts/build.mjs",

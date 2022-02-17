@@ -21,11 +21,13 @@ import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
+import { useServiceWorker } from './sw';
 
 export let links: LinksFunction = () => {
 	return [
 		{ rel: 'stylesheet', href: stylesUrl },
 		{ rel: 'icon', href: '/favicon.svg', type: 'image/svg+xml' },
+		{ rel: 'manifest', href: '/manifest.json' },
 	];
 };
 
@@ -85,6 +87,8 @@ export default function App() {
 	const location = useLocation();
 	const isMenuOpened =
 		new URLSearchParams(location.search).get('open') === 'menu';
+
+	useServiceWorker(globalThis.navigator?.serviceWorker);
 
 	return (
 		<Document>
