@@ -29,7 +29,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 							<span className="capitalize">{entry.category}</span> /{' '}
 							{getSite(entry.url)}
 						</span>
-						<span>{entry.createdAt.substr(0, 10)}</span>
+						<span>{entry.createdAt.substring(0, 10)}</span>
 					</div>
 					<h2 className="text-gray-100 break-words line-clamp-2">
 						{entry.title ?? entry.url}

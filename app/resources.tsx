@@ -135,15 +135,23 @@ export function getSuggestions(
 	const suggestions: SearchOptions[] = [];
 
 	if (resource.category === 'package' && resource.title) {
-		suggestions.push({ integrations: [resource.title], sort: 'top' });
+		suggestions.push({
+			guide: 'news',
+			integrations: [resource.title],
+			sort: 'top',
+		});
 	}
 
 	if (resource.author) {
-		suggestions.push({ author: resource.author, sort: 'top' });
+		suggestions.push({ guide: 'news', author: resource.author, sort: 'top' });
 	}
 
 	if (resource.category === 'others') {
-		suggestions.push({ site: getSite(resource.url), sort: 'top' });
+		suggestions.push({
+			guide: 'news',
+			site: getSite(resource.url),
+			sort: 'top',
+		});
 	}
 
 	const result = suggestions.map((searchOptions) => ({
