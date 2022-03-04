@@ -1,10 +1,15 @@
 import { json } from 'remix';
 import { matchCache, removeCache, updateCache } from '../cache';
-import { createLogger } from '../logging';
+import { configureLogger } from '../logging';
 import type { Env, UserProfile, User, AsyncReturnType } from '../types';
 import { createStoreFetch, restoreStoreData } from '../utils';
 import { getPageStore } from './PageStore';
 import { getResourceStore } from './ResourcesStore';
+
+/**
+ * Configure logging namespace
+ */
+const createLogger = configureLogger('store:UserStore');
 
 async function createUserStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
@@ -227,11 +232,7 @@ export class UserStore {
 	}
 
 	async fetch(request: Request) {
-		const logger = createLogger(request, {
-			...this.env,
-			LOGGER_NAME: 'store:UserStore',
-		});
-
+		let logger = createLogger(request, this.env);
 		let response = new Response('Not found', { status: 404 });
 
 		try {

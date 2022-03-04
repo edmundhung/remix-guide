@@ -1,10 +1,15 @@
 import { json } from 'remix';
-import { createLogger } from '../logging';
+import { configureLogger } from '../logging';
 import { checkSafeBrowsingAPI, getPageDetails, scrapeHTML } from '../scraping';
 import type { Env, Page, PageMetadata, AsyncReturnType } from '../types';
 import { createStoreFetch, restoreStoreData } from '../utils';
 
 type PageStatistics = Required<Pick<Page, 'bookmarkUsers' | 'viewCount'>>;
+
+/**
+ * Configure logging namespace
+ */
+const createLogger = configureLogger('store:PageStore');
 
 function getPageMetadata(page: Page): PageMetadata {
 	return {
@@ -241,16 +246,11 @@ export class PageStore {
 	}
 
 	async fetch(request: Request) {
-		const url = new URL(request.url);
-		const method = request.method.toUpperCase();
-		const logger = createLogger(request, {
-			...this.env,
-			LOGGER_NAME: 'store:PageStore',
-		});
-
+		let logger = createLogger(request, this.env);
 		let response = new Response('Not found', { status: 404 });
 
 		try {
+			const url = new URL(request.url);
 			const method = request.method.toUpperCase();
 
 			if (!this.store) {

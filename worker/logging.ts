@@ -45,17 +45,21 @@ function createReporter(
 	};
 }
 
-function createLogger(
-	request: Request,
-	env: Env,
-	ctx?: ExecutionContext,
-): Tracker {
-	const reporter = createReporter(request, env, ctx);
-	const logger = track(request, env.LOGGER_NAME, reporter);
+function configureLogger(name: string) {
+	function createLogger(
+		request: Request,
+		env: Env,
+		ctx?: ExecutionContext,
+	): Tracker {
+		const reporter = createReporter(request, env, ctx);
+		const logger = track(request, name, reporter);
 
-	enable(env.DEBUG ?? '*');
+		enable(env.DEBUG ?? '*');
 
-	return logger;
+		return logger;
+	}
+
+	return createLogger;
 }
 
-export { createLogger };
+export { configureLogger };

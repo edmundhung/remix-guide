@@ -1,7 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import { json } from 'remix';
 import { matchCache, removeCache, updateCache } from '../cache';
-import { createLogger } from '../logging';
+import { configureLogger } from '../logging';
 import { getIntegrations, getIntegrationsFromPage } from '../scraping';
 import type {
 	Env,
@@ -23,6 +23,11 @@ const generateId = customAlphabet(
 	'0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz',
 	12,
 );
+
+/**
+ * Configure logging namespace
+ */
+const createLogger = configureLogger('store:ResourcesStore');
 
 async function createResourceStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
@@ -298,16 +303,12 @@ export class ResourcesStore {
 	}
 
 	async fetch(request: Request) {
-		const logger = createLogger(request, {
-			...this.env,
-			LOGGER_NAME: 'store:ResourcesStore',
-		});
-
+		let logger = createLogger(request, this.env);
 		let response = new Response('Not found', { status: 404 });
 
 		try {
-			let url = new URL(request.url);
-			let method = request.method.toUpperCase();
+			const url = new URL(request.url);
+			const method = request.method.toUpperCase();
 
 			if (!this.store) {
 				throw new Error(

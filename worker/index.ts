@@ -1,7 +1,6 @@
 import * as build from '../build/index.js';
 import { createFetchHandler, createWorkerAssetHandler } from './adapter';
 import { createContext } from './context';
-import { createLogger } from './logging.js';
 
 // Setup Durable Objects
 export * from './store';
@@ -15,22 +14,7 @@ const handleFetch = createFetchHandler({
 });
 
 const worker: ExportedHandler = {
-	async fetch(request, env, ctx) {
-		const logger = createLogger(
-			request,
-			{ ...env, LOGGER_NAME: 'worker' },
-			ctx,
-		);
-		const response = await handleFetch(
-			request,
-			{ ...env, LOGGER: logger },
-			ctx,
-		);
-
-		ctx.waitUntil(logger.report(response));
-
-		return response;
-	},
+	fetch: handleFetch,
 };
 
 export default worker;

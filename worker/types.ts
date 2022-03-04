@@ -19,8 +19,6 @@ export interface Env {
 	SENTRY_DSN?: string;
 	USER_AGENT?: string;
 	DEBUG?: string;
-	LOGGER_NAME?: string;
-	LOGGER?: Tracker;
 	CONTENT: KVNamespace;
 	PAGE: KVNamespace;
 	RESOURCES_STORE: DurableObjectNamespace;
