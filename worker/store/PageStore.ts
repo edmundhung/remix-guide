@@ -29,25 +29,15 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
 	const { PAGE } = env;
 
-	const pageMap = new Map<string, Page>();
-	const statMap = await storage.list<PageStatistics>({
-		prefix: 'stat/',
-	});
+	const pageMap = await storage.list<Page>();
 
 	function getStatistics(url: string): PageStatistics {
-		return statMap.get(`stat/${url}`) ?? { bookmarkUsers: [], viewCount: 0 };
-	}
+		const page = pageMap.get(url);
 
-	async function updateStatistics(
-		url: string,
-		statistics: PageStatistics,
-	): Promise<void> {
-		statMap.set(`stat/${url}`, statistics);
-
-		await Promise.all([
-			storage.put(`stat/${url}`, statistics),
-			updatePage(url, statistics),
-		]);
+		return {
+			bookmarkUsers: page?.bookmarkUsers ?? [],
+			viewCount: page?.viewCount ?? 0,
+		};
 	}
 
 	async function getPage(url: string): Promise<Page> {
@@ -81,6 +71,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 				metadata: getPageMetadata(updatedPage),
 			}),
 			storage.put(url, updatedPage),
+			storage.delete(`stat/${url}`),
 		]);
 	}
 
@@ -97,7 +88,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 		async view(url: string) {
 			const statistics = getStatistics(url);
 
-			await updateStatistics(url, {
+			await updatePage(url, {
 				...statistics,
 				viewCount: statistics.viewCount + 1,
 			});
@@ -109,7 +100,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 				return;
 			}
 
-			await updateStatistics(url, {
+			await updatePage(url, {
 				...statistics,
 				bookmarkUsers: statistics.bookmarkUsers.concat(userId),
 			});
@@ -121,7 +112,7 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 				return;
 			}
 
-			await updateStatistics(url, {
+			await updatePage(url, {
 				...statistics,
 				bookmarkUsers: statistics.bookmarkUsers.filter((id) => id !== userId),
 			});
