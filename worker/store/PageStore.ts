@@ -76,9 +76,12 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 
 		pageMap.set(url, updatedPage);
 
-		await PAGE.put(url, JSON.stringify(updatedPage), {
-			metadata: getPageMetadata(updatedPage),
-		});
+		await Promise.all([
+			PAGE.put(url, JSON.stringify(updatedPage), {
+				metadata: getPageMetadata(updatedPage),
+			}),
+			storage.put(url, updatedPage),
+		]);
 	}
 
 	return {
@@ -246,13 +249,13 @@ export class PageStore {
 	}
 
 	async fetch(request: Request) {
-		let logger = createLogger(request, this.env);
+		const logger = createLogger(request, this.env);
+		const url = new URL(request.url);
+		const method = request.method.toUpperCase();
+
 		let response = new Response('Not found', { status: 404 });
 
 		try {
-			const url = new URL(request.url);
-			const method = request.method.toUpperCase();
-
 			if (!this.store) {
 				throw new Error(
 					'The store object is unavailable; Please check if the store is initialised properly',
