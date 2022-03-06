@@ -75,10 +75,16 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	}
 
 	async function getResource(resourceId: string) {
-		const resource = await storage.get<ResourceSummary>(resourceId);
+		let resource = await storage.get<ResourceSummary>(
+			`resources/${resourceId}`,
+		);
 
 		if (!resource) {
-			return null;
+			resource = await storage.get<ResourceSummary>(resourceId);
+
+			if (!resource) {
+				return null;
+			}
 		}
 
 		return {
@@ -95,8 +101,11 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		resource: ResourceSummary,
 		page?: Page,
 	): Promise<void> {
-		await storage.put(resource.id, resource);
-		await updateResourceCache(resource, page);
+		await Promise.all([
+			storage.put(`resources/${resource.id}`, resource),
+			storage.delete(resource.id),
+			updateResourceCache(resource, page),
+		]);
 	}
 
 	async function updateResourceCache(
@@ -185,7 +194,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			}
 
 			// Only refresh the cache
-			await updateResourceCache(resource);
+			await updateResource(resource);
 		},
 		async getDetails(resourceId: string | null) {
 			const resource = resourceId ? await getResource(resourceId) : null;
