@@ -20,7 +20,6 @@ export interface Env {
 	USER_AGENT?: string;
 	DEBUG?: string;
 	CONTENT: KVNamespace;
-	PAGE: KVNamespace;
 	RESOURCES_STORE: DurableObjectNamespace;
 	PAGE_STORE: DurableObjectNamespace;
 	USER_STORE: DurableObjectNamespace;

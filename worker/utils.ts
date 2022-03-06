@@ -23,7 +23,7 @@ export function createStoreFetch(
 				: null;
 		const body = method !== 'GET' && data ? JSON.stringify(data) : null;
 		const response = await store.fetch(
-			`${origin}?${searchParams?.toString()}`,
+			`${origin}?${searchParams?.toString() ?? ''}`,
 			{
 				method,
 				body,

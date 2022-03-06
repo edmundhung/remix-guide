@@ -5,6 +5,7 @@ import { createCookie } from '@remix-run/server-runtime';
 import { sign, unsign } from '@remix-run/node/cookieSigning';
 import { queries, getDocument } from '@playwright-testing-library/test';
 import type { Resource, ResourceMetadata } from '../worker/types';
+import { createStoreFetch } from '../worker/utils';
 
 /**
  * Simulate installGlobals from remix
@@ -258,8 +259,9 @@ export async function getResource(mf: Miniflare, resourceId: string | null) {
 }
 
 export async function getPage(mf: Miniflare, url: string) {
-	const PAGE = await mf.getKVNamespace('PAGE');
-	const page = await PAGE.get<Page>(url, 'json');
+	const PAGE_STORE = await mf.getDurableObjectNamespace('PAGE_STORE');
+	const fetchStore = createStoreFetch(PAGE_STORE, 'page');
+	const page = await fetchStore('global', '/details', 'GET', { url });
 
 	return page;
 }

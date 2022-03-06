@@ -27,57 +27,33 @@ function getPageMetadata(page: Page): PageMetadata {
 
 async function createPageStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
-	const { PAGE } = env;
 
 	const pageMap = await storage.list<Page>();
 
-	function getStatistics(url: string): PageStatistics {
-		const page = pageMap.get(url);
-
+	function getStatistics(page: Page | undefined): PageStatistics {
 		return {
 			bookmarkUsers: page?.bookmarkUsers ?? [],
 			viewCount: page?.viewCount ?? 0,
 		};
 	}
 
-	async function getPage(url: string): Promise<Page> {
-		let page = pageMap.get(url) ?? null;
+	async function updatePage(url: string, page: Page): Promise<void> {
+		pageMap.set(url, page);
 
-		if (!page) {
-			page = await PAGE.get<Page>(url, 'json');
-
-			if (!page) {
-				throw new Error(`No existing page found for ${url}`);
-			}
-
-			pageMap.set(url, page);
-		}
-
-		return page;
-	}
-
-	async function updatePage(url: string, update: Partial<Page>): Promise<void> {
-		const page = await getPage(url);
-		const updatedPage = {
-			...page,
-			...update,
-			createdAt: page.createdAt,
-		};
-
-		pageMap.set(url, updatedPage);
-
-		await Promise.all([
-			PAGE.put(url, JSON.stringify(updatedPage), {
-				metadata: getPageMetadata(updatedPage),
-			}),
-			storage.put(url, updatedPage),
-			storage.delete(`stat/${url}`),
-		]);
+		await storage.put(url, page);
 	}
 
 	return {
+		async getPage(url: string) {
+			const page = pageMap.get(url);
+
+			return page ?? null;
+		},
+		async list() {
+			return Object.fromEntries(pageMap.entries());
+		},
 		async refresh(url: string, page: Page) {
-			const statistics = getStatistics(url);
+			const statistics = getStatistics(page);
 
 			await updatePage(url, {
 				...page,
@@ -86,34 +62,49 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 			});
 		},
 		async view(url: string) {
-			const statistics = getStatistics(url);
+			const page = pageMap.get(url);
+			const statistics = getStatistics(page);
+
+			if (!page) {
+				throw new Error(`No existing page found for ${url}`);
+			}
 
 			await updatePage(url, {
-				...statistics,
+				...page,
 				viewCount: statistics.viewCount + 1,
 			});
 		},
 		async bookmark(userId: string, url: string) {
-			const statistics = getStatistics(url);
+			const page = pageMap.get(url);
+			const statistics = getStatistics(page);
+
+			if (!page) {
+				throw new Error(`No existing page found for ${url}`);
+			}
 
 			if (statistics.bookmarkUsers.includes(userId)) {
 				return;
 			}
 
 			await updatePage(url, {
-				...statistics,
+				...page,
 				bookmarkUsers: statistics.bookmarkUsers.concat(userId),
 			});
 		},
 		async unbookmark(userId: string, url: string) {
-			const statistics = getStatistics(url);
+			const page = pageMap.get(url);
+			const statistics = getStatistics(page);
+
+			if (!page) {
+				throw new Error(`No existing page found for ${url}`);
+			}
 
 			if (!statistics.bookmarkUsers.includes(userId)) {
 				return;
 			}
 
 			await updatePage(url, {
-				...statistics,
+				...page,
 				bookmarkUsers: statistics.bookmarkUsers.filter((id) => id !== userId),
 			});
 		},
@@ -133,72 +124,58 @@ export function getPageStore(
 	ctx: ExecutionContext | DurableObjectState,
 ): AsyncReturnType<typeof createPageStore> & {
 	getOrCreatePage: (url: string) => Promise<Page>;
-	getPage: (url: string) => Promise<Page | null>;
 	listPageMetadata: () => Promise<PageMetadata[]>;
 	refresh: (url: string) => Promise<void>;
 } {
-	const { PAGE, PAGE_STORE, GOOGLE_API_KEY, USER_AGENT } = env;
+	const { PAGE_STORE, GOOGLE_API_KEY, USER_AGENT } = env;
 	const fetchStore = createStoreFetch(PAGE_STORE, 'page');
 	const storeName = 'global';
 
+	async function createPage(url: string): Promise<Page> {
+		const page = await scrapeHTML(url, USER_AGENT);
+		const [pageDetails, isSafe] = await Promise.all([
+			getPageDetails(page.url, env),
+			GOOGLE_API_KEY
+				? checkSafeBrowsingAPI([page.url], GOOGLE_API_KEY)
+				: process.env.NODE_ENV !== 'production', // Consider URL as safe for non production environment without GOOGLE_API_KEY,
+		]);
+
+		return {
+			...page,
+			...pageDetails,
+			isSafe,
+		};
+	}
+
 	return {
 		async getPage(url: string) {
-			let page = await PAGE.get<Page>(url, 'json');
-
-			return page;
+			return await fetchStore(storeName, '/details', 'GET', { url });
+		},
+		async list() {
+			return await fetchStore(storeName, '/list', 'GET');
 		},
 		async listPageMetadata() {
-			const result = await PAGE.list<PageMetadata>();
-			const list = result.keys
-				.flatMap((key) => key.metadata ?? [])
-				.sort(
-					(prev, next) =>
-						new Date(next.createdAt).valueOf() -
-						new Date(prev.createdAt).valueOf(),
-				);
+			const data = await this.list();
 
-			return list;
+			return Object.values(data).map(getPageMetadata);
 		},
 		async getOrCreatePage(url: string) {
-			let page = await PAGE.get<Page>(url, 'json');
+			let page = await this.getPage(url);
 
 			if (!page) {
-				page = await scrapeHTML(url, USER_AGENT);
+				page = await createPage(url);
 
-				const [pageDetails, isSafe] = await Promise.all([
-					getPageDetails(page.url, env),
-					GOOGLE_API_KEY
-						? checkSafeBrowsingAPI([page.url], GOOGLE_API_KEY)
-						: process.env.NODE_ENV !== 'production', // Consider URL as safe for non production environment without GOOGLE_API_KEY
-				]);
-
-				page = {
-					...page,
-					...pageDetails,
-					isSafe,
-				};
-
-				PAGE.put(page.url, JSON.stringify(page), {
-					metadata: getPageMetadata(page),
-				});
+				ctx.waitUntil(
+					fetchStore(storeName, '/refresh', 'POST', { url: page.url, page }),
+				);
 			}
 
 			return page;
 		},
 		async refresh(url: string) {
-			const [page, pageDetails, isSafe] = await Promise.all([
-				scrapeHTML(url, USER_AGENT),
-				getPageDetails(url, env),
-				GOOGLE_API_KEY ? checkSafeBrowsingAPI([url], GOOGLE_API_KEY) : false,
-			]);
-
 			return await fetchStore(storeName, '/refresh', 'POST', {
 				url,
-				page: {
-					...page,
-					...pageDetails,
-					isSafe,
-				},
+				page: await createPage(url),
 			});
 		},
 		async view(url: string) {
@@ -253,7 +230,25 @@ export class PageStore {
 				);
 			}
 
-			if (method === 'POST') {
+			if (method === 'GET') {
+				switch (url.pathname) {
+					case '/details': {
+						const pageUrl = url.searchParams.get('url');
+						const data = pageUrl ? await this.store.getPage(pageUrl) : null;
+
+						response = data
+							? json(data)
+							: new Response('Not found', { status: 404 });
+						break;
+					}
+					case '/list': {
+						const data = await this.store.list();
+
+						response = json(data);
+						break;
+					}
+				}
+			} else if (method === 'POST') {
 				switch (url.pathname) {
 					case '/refresh': {
 						const { url, page } = await request.json();
