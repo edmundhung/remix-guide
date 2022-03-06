@@ -11,20 +11,14 @@ import SuggestedResources from '~/components/SuggestedResources';
 import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
 import { getSearchOptions, getTitleBySearchOptions } from '~/search';
-import type {
-	Context,
-	Resource,
-	ResourceMetadata,
-	SearchOptions,
-	User,
-} from '~/types';
+import type { Context, Resource, SearchOptions, User } from '~/types';
 
 interface LoaderData {
 	resource: Resource;
 	message: string | null;
 	user: User | null;
 	suggestions: Array<{
-		entries: ResourceMetadata[];
+		entries: Resource[];
 		searchOptions: SearchOptions;
 	}>;
 }
@@ -96,19 +90,19 @@ export let loader: LoaderFunction = async ({ context, params, request }) => {
 	}
 
 	const { session, resourceStore, userStore } = context as Context;
-	const [resource, profile, [message, setCookieHeader]] = await Promise.all([
-		resourceStore.query(resourceId),
+	const [list, profile] = await Promise.all([
+		resourceStore.list(),
 		session.isAuthenticated(),
-		session.getFlashMessage(),
 	]);
+	const resource = list[resourceId];
 
 	if (!resource) {
 		throw notFound();
 	}
 
-	const [list, user] = await Promise.all([
-		resourceStore.listResources(),
+	const [user, [message, setCookieHeader]] = await Promise.all([
 		profile?.id ? userStore.getUser(profile.id) : null,
+		session.getFlashMessage(),
 	]);
 
 	return json(

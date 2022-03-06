@@ -1,7 +1,7 @@
 import { test, expect } from './setup';
 import {
 	getPageResourceId,
-	listResourcesMetadata,
+	listResources,
 	mockPage,
 	submitURL,
 	login,
@@ -28,7 +28,8 @@ test.describe('Index', () => {
 	});
 
 	test('shows all URLs submitted', async ({ page, mf, queries }) => {
-		const resources = await listResourcesMetadata(mf);
+		const list = await listResources(mf);
+		const resources = Object.values(list ?? {});
 		const links = await Promise.all(
 			resources.map((resource) =>
 				resource.title ? queries.queryByTitle(resource.title) : null,

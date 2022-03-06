@@ -75,22 +75,6 @@ export type SubmissionStatus = 'PUBLISHED' | 'RESUBMITTED' | 'INVALID';
 
 export type MessageType = 'success' | 'error' | 'warning' | 'info';
 
-export interface ResourceMetadata
-	extends Pick<
-		Resource,
-		| 'id'
-		| 'url'
-		| 'category'
-		| 'author'
-		| 'title'
-		| 'description'
-		| 'integrations'
-		| 'createdAt'
-	> {
-	viewCount: number;
-	bookmarkCount: number;
-}
-
 export interface ResourceSummary {
 	id: string;
 	url: string;

@@ -5,7 +5,7 @@ import Feed from '~/components/Feed';
 import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
-import type { ResourceMetadata, Context } from '~/types';
+import type { Resource, Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const { session, resourceStore, userStore } = context as Context;
@@ -16,13 +16,13 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 	}
 
 	const searchOptions = getSearchOptions(request.url);
-	const [resources, includes] = await Promise.all([
-		resourceStore.listResources(),
+	const [list, includes] = await Promise.all([
+		resourceStore.list(),
 		userStore.getList(profile.id, params.list ?? null),
 	]);
 
 	return json({
-		entries: search(resources, { ...searchOptions, includes }),
+		entries: search(list, { ...searchOptions, includes }),
 	});
 };
 
@@ -37,7 +37,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function List() {
-	const { entries } = useLoaderData<{ entries: ResourceMetadata[] }>();
+	const { entries } = useLoaderData<{ entries: Resource[] }>();
 	const location = useLocation();
 	const resourceId = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);

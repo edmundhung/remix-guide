@@ -1,6 +1,5 @@
 import { customAlphabet } from 'nanoid';
 import { json } from 'remix';
-import { matchCache, removeCache, updateCache } from '../cache';
 import { configureLogger } from '../logging';
 import { getIntegrations, getIntegrationsFromPage } from '../scraping';
 import type {
@@ -8,7 +7,6 @@ import type {
 	Page,
 	Resource,
 	ResourceSummary,
-	ResourceMetadata,
 	SubmissionStatus,
 	AsyncReturnType,
 } from '../types';
@@ -31,7 +29,6 @@ const createLogger = configureLogger('store:ResourcesStore');
 
 async function createResourceStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
-	const { CONTENT } = env;
 	const pageStore = getPageStore(env, state);
 
 	const resourceIdByURL =
@@ -51,17 +48,14 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		const id = generateId();
 		const now = new Date().toISOString();
 
-		await updateResource(
-			{
-				id,
-				url: page.url,
-				createdAt: now,
-				createdBy: userId,
-				updatedAt: now,
-				updatedBy: userId,
-			},
-			page,
-		);
+		await updateResource({
+			id,
+			url: page.url,
+			createdAt: now,
+			createdBy: userId,
+			updatedAt: now,
+			updatedBy: userId,
+		});
 
 		if (page.category === 'package') {
 			resourceIdByPackageName[page.title] = id;
@@ -74,89 +68,54 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		};
 	}
 
-	async function getResource(resourceId: string) {
-		let resource = await storage.get<ResourceSummary>(
-			`resources/${resourceId}`,
-		);
-
-		if (!resource) {
-			resource = await storage.get<ResourceSummary>(resourceId);
-
-			if (!resource) {
-				return null;
-			}
-		}
-
-		return {
-			id: resource.id,
-			url: resource.url,
-			createdAt: resource.createdAt,
-			createdBy: resource.createdBy,
-			updatedAt: resource.updatedAt,
-			updatedBy: resource.updatedBy,
-		};
-	}
-
-	async function updateResource(
-		resource: ResourceSummary,
-		page?: Page,
-	): Promise<void> {
-		await Promise.all([
-			storage.put(`resources/${resource.id}`, resource),
-			storage.delete(resource.id),
-			updateResourceCache(resource, page),
-		]);
-	}
-
-	async function updateResourceCache(
-		summary: ResourceSummary,
-		pageData?: Page,
-	): Promise<void> {
-		const page = pageData ?? (await pageStore.getPage(summary.url));
-
-		if (!page) {
-			throw new Error('No page data found for the corresponding URL');
-		}
-
-		const packages = Object.keys(resourceIdByPackageName);
-		const integrations =
-			page.category === 'package' || page.category === 'repository'
-				? getIntegrations(page.configs ?? [], packages, page.dependencies ?? {})
-				: getIntegrationsFromPage(page, packages);
-		const resource: Resource = {
-			...summary,
-			category: page.category,
-			author: page.author,
-			title: page.title,
-			description: page.description,
-			image: page.image,
-			video: page.video,
-			isSafe: page.isSafe,
-			dependencies: page.dependencies,
-			configs: page.configs,
-			viewCount: page.viewCount,
-			bookmarkUsers: page.bookmarkUsers,
-			integrations,
-		};
-		const metadata: ResourceMetadata = {
-			id: resource.id,
-			url: resource.url,
-			category: resource.category,
-			author: resource.author,
-			title: resource.title,
-			description: resource.description?.slice(0, 80),
-			viewCount: resource.viewCount ?? 0,
-			bookmarkCount: resource.bookmarkUsers?.length ?? 0,
-			integrations: resource.integrations,
-			createdAt: resource.createdAt,
-		};
-
-		await CONTENT.put(`resources/${resource.id}`, JSON.stringify(resource), {
-			metadata,
-		});
+	async function updateResource(resource: ResourceSummary): Promise<void> {
+		await storage.put(`resources/${resource.id}`, resource);
 	}
 
 	return {
+		async list() {
+			const [resourceSummaryMap, pageDictionary] = await Promise.all([
+				storage.list<ResourceSummary>({ prefix: 'resources/' }),
+				pageStore.list(),
+			]);
+
+			return Object.fromEntries(
+				Array.from(resourceSummaryMap.entries()).map(([key, summary]) => {
+					const page = pageDictionary[summary.url];
+
+					if (!page) {
+						throw new Error('No page data found for the corresponding URL');
+					}
+
+					const packages = Object.keys(resourceIdByPackageName);
+					const integrations =
+						page.category === 'package' || page.category === 'repository'
+							? getIntegrations(
+									page.configs ?? [],
+									packages,
+									page.dependencies ?? {},
+							  )
+							: getIntegrationsFromPage(page, packages);
+					const resource: Resource = {
+						...summary,
+						category: page.category,
+						author: page.author,
+						title: page.title,
+						description: page.description,
+						image: page.image,
+						video: page.video,
+						isSafe: page.isSafe,
+						dependencies: page.dependencies,
+						configs: page.configs,
+						viewCount: page.viewCount,
+						bookmarkUsers: page.bookmarkUsers,
+						integrations,
+					};
+
+					return [summary.id, resource];
+				}),
+			);
+		},
 		async submit(userId: string, url: string) {
 			let status: SubmissionStatus | null = null;
 			let page = await pageStore.getOrCreatePage(url);
@@ -186,27 +145,6 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 
 			return { id, status };
 		},
-		async refresh(resourceId: string) {
-			let resource = await getResource(resourceId);
-
-			if (!resource) {
-				throw new Error(`Unknown resourceId found; Received ${resourceId}`);
-			}
-
-			// Only refresh the cache
-			await updateResource(resource);
-		},
-		async getDetails(resourceId: string | null) {
-			const resource = resourceId ? await getResource(resourceId) : null;
-
-			if (!resource) {
-				return null;
-			}
-
-			updateResourceCache(resource);
-
-			return resource;
-		},
 		async backup(): Promise<Record<string, any>> {
 			const data = await storage.list();
 
@@ -222,46 +160,28 @@ export function getResourceStore(
 	env: Env,
 	ctx: ExecutionContext | DurableObjectState,
 ) {
-	const fetchStore = createStoreFetch(env.RESOURCES_STORE, 'resources');
+	const { CONTENT, RESOURCES_STORE } = env;
+	const fetchStore = createStoreFetch(RESOURCES_STORE, 'resources');
 	const storeName = '';
 
 	return {
-		async listResources(): Promise<ResourceMetadata[]> {
-			let list = await matchCache<ResourceMetadata[]>('resources');
+		async list(): Promise<{ [resourceId: string]: Resource }> {
+			let data = await CONTENT.get<{ [resourceId: string]: Resource }>(
+				'guides/news',
+				'json',
+			);
 
-			if (!list) {
-				const result = await env.CONTENT.list<ResourceMetadata>({
-					prefix: 'resources/',
-				});
+			if (!data) {
+				data = await fetchStore(storeName, '/resources', 'GET');
 
-				list = result.keys.flatMap((key) => key.metadata ?? []);
-
-				ctx.waitUntil(updateCache('resources', list, 300));
-			}
-
-			return list;
-		},
-		async query(resourceId: string) {
-			let resource = await matchCache<Resource>(`resources/${resourceId}`);
-
-			if (!resource) {
-				resource = await env.CONTENT.get<Resource>(
-					`resources/${resourceId}`,
-					'json',
+				ctx.waitUntil(
+					CONTENT.put('guides/news', JSON.stringify(data), {
+						expirationTtl: 3600,
+					}),
 				);
-
-				if (!resource) {
-					resource = await fetchStore(storeName, '/details', 'GET', {
-						resourceId,
-					});
-				}
-
-				if (resource) {
-					ctx.waitUntil(updateCache(`resources/${resourceId}`, resource, 300));
-				}
 			}
 
-			return resource;
+			return data ?? {};
 		},
 		async submit(
 			url: string,
@@ -273,17 +193,13 @@ export function getResourceStore(
 			});
 
 			if (status === 'PUBLISHED') {
-				ctx.waitUntil(removeCache('resources'));
+				await CONTENT.delete('guides/news');
 			}
 
 			return {
 				id,
 				status,
 			};
-		},
-		async refresh(resourceId: string): Promise<void> {
-			await fetchStore(storeName, '/refresh', 'POST', { resourceId });
-			ctx.waitUntil(removeCache(`resources/${resourceId}`));
 		},
 		async backup(): Promise<Record<string, any>> {
 			return await fetchStore(storeName, '/backup', 'POST');
@@ -323,24 +239,15 @@ export class ResourcesStore {
 				throw new Error(
 					'The store object is unavailable; Please check if the store is initialised properly',
 				);
+			} else if (url.pathname === '/resources' && method === 'GET') {
+				const result = await this.store.list();
+
+				response = json(result);
 			} else if (url.pathname === '/submit' && method === 'POST') {
 				const { url, userId } = await request.json();
 				const result = await this.store.submit(userId, url);
 
 				response = json(result, 201);
-			} else if (url.pathname === '/refresh' && method === 'POST') {
-				const { resourceId } = await request.json();
-
-				await this.store.refresh(resourceId);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/details' && method === 'GET') {
-				const resourceId = url.searchParams.get('resourceId');
-				const resource = await this.store.getDetails(resourceId);
-
-				if (resource) {
-					response = json(resource);
-				}
 			} else if (url.pathname === '/backup' && method === 'POST') {
 				const data = await this.store.backup();
 

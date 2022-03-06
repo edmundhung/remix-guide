@@ -1,11 +1,11 @@
 import { Link } from 'remix';
 import type { ReactElement } from 'react';
-import type { ResourceMetadata } from '~/types';
+import type { Resource } from '~/types';
 import { getSite, getResourceURL } from '~/search';
 import type { SearchOptions } from '~/types';
 
 interface CardProps {
-	entry: ResourceMetadata;
+	entry: Resource;
 	searchOptions: SearchOptions;
 	selected?: boolean;
 }

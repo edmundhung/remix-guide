@@ -1,25 +1,21 @@
 import { getSite } from '~/search';
-import { ResourceMetadata, SearchOptions, Resource, User } from '~/types';
+import { SearchOptions, Resource, User } from '~/types';
 
-function calculateScore(resource: ResourceMetadata): number {
+function calculateScore(resource: Resource): number {
 	const timeScore =
 		(new Date(resource.createdAt).valueOf() -
 			new Date('2021-12-24T00:00:00.000Z').valueOf()) /
 		1000 /
 		3600 /
 		24;
-	const bookmarkScore =
-		resource.bookmarkCount > 0 ? Math.log10(resource.bookmarkCount) + 1 : 0;
-	const viewScore = Math.log10(resource.viewCount);
+	const bookmarkCount = resource.bookmarkUsers?.length ?? 0;
+	const bookmarkScore = bookmarkCount > 0 ? Math.log10(bookmarkCount) + 1 : 0;
+	const viewScore = Math.log10(resource.viewCount ?? 0);
 
 	return 1 * timeScore + 10 * bookmarkScore + 1.5 * viewScore;
 }
 
-function compareResources(
-	key: string,
-	prev: ResourceMetadata,
-	next: ResourceMetadata,
-): number {
+function compareResources(key: string, prev: Resource, next: Resource): number {
 	let diff = 0;
 
 	switch (key) {
@@ -28,10 +24,11 @@ function compareResources(
 				new Date(next.createdAt).valueOf() - new Date(prev.createdAt).valueOf();
 			break;
 		case 'bookmarkCount':
-			diff = next.bookmarkCount - prev.bookmarkCount;
+			diff =
+				(next.bookmarkUsers?.length ?? 0) - (prev.bookmarkUsers?.length ?? 0);
 			break;
 		case 'viewCount':
-			diff = next.viewCount - prev.viewCount;
+			diff = (next.viewCount ?? 0) - (prev.viewCount ?? 0);
 			break;
 	}
 
@@ -39,9 +36,9 @@ function compareResources(
 }
 
 export function search(
-	resources: ResourceMetadata[],
+	list: { [resourceId: string]: Resource },
 	options: SearchOptions,
-): ResourceMetadata[] {
+): Resource[] {
 	function match(
 		wanted: string[],
 		value: string | string[],
@@ -58,7 +55,7 @@ export function search(
 		return wanted.includes(value);
 	}
 
-	const entries = resources
+	const entries = Object.values(list)
 		.filter((resource) => {
 			if (options.includes && !options.includes.includes(resource.id)) {
 				return false;
@@ -129,7 +126,7 @@ export function search(
 }
 
 export function getSuggestions(
-	resources: ResourceMetadata[],
+	list: { [resourceId: string]: Resource },
 	resource: Resource,
 ) {
 	const suggestions: SearchOptions[] = [];
@@ -155,7 +152,7 @@ export function getSuggestions(
 	}
 
 	const result = suggestions.map((searchOptions) => ({
-		entries: search(resources, {
+		entries: search(list, {
 			...searchOptions,
 			excludes: [resource.id],
 			limit: 6,

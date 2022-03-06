@@ -4,7 +4,7 @@ import type { MockAgent } from 'undici';
 import { createCookie } from '@remix-run/server-runtime';
 import { sign, unsign } from '@remix-run/node/cookieSigning';
 import { queries, getDocument } from '@playwright-testing-library/test';
-import type { Resource, ResourceMetadata } from '../worker/types';
+import type { Resource } from '../worker/types';
 import { createStoreFetch } from '../worker/utils';
 
 /**
@@ -249,11 +249,8 @@ export async function getResource(mf: Miniflare, resourceId: string | null) {
 		return null;
 	}
 
-	const content = await mf.getKVNamespace('CONTENT');
-	const resource = await content.get<Resource>(
-		`resources/${resourceId}`,
-		'json',
-	);
+	const resources = await listResources(mf);
+	const resource = resources?.[resourceId] ?? null;
 
 	return resource;
 }
@@ -266,13 +263,14 @@ export async function getPage(mf: Miniflare, url: string) {
 	return page;
 }
 
-export async function listResourcesMetadata(mf: Miniflare) {
+export async function listResources(mf: Miniflare) {
 	const content = await mf.getKVNamespace('CONTENT');
-	const resources = await content.list<ResourceMetadata>({
-		prefix: 'resources/',
-	});
+	const data = await content.get<{ [resourceId: string]: Resource }>(
+		'guides/news',
+		'json',
+	);
 
-	return resources.keys.flatMap((key) => key.metadata ?? []);
+	return data;
 }
 
 export function getPageURL(page: Page): URL {

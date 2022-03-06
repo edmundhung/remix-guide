@@ -5,10 +5,10 @@ import clsx from 'clsx';
 import SearchList from '~/components/SearchList';
 import ResourcesList from '~/components/ResourcesList';
 import { getSearchOptions } from '~/search';
-import type { ResourceMetadata } from '~/types';
+import type { Resource } from '~/types';
 
 interface ListProps {
-	entries: ResourceMetadata[];
+	entries: Resource[];
 	selectedId: string | null | undefined;
 	children: ReactNode;
 }

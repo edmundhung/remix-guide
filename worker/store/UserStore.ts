@@ -178,7 +178,6 @@ export function getUserStore(
 			}
 
 			ctx.waitUntil(pageStore.view(url));
-			ctx.waitUntil(resourcesStore.refresh(resourceId));
 		},
 		async bookmark(
 			userId: string,
@@ -192,7 +191,6 @@ export function getUserStore(
 
 			ctx.waitUntil(removeCache(`users/${userId}`));
 			ctx.waitUntil(pageStore.bookmark(userId, url));
-			ctx.waitUntil(resourcesStore.refresh(resourceId));
 		},
 		async unbookmark(
 			userId: string,
@@ -203,7 +201,6 @@ export function getUserStore(
 
 			ctx.waitUntil(removeCache(`users/${userId}`));
 			ctx.waitUntil(pageStore.unbookmark(userId, url));
-			ctx.waitUntil(resourcesStore.refresh(resourceId));
 		},
 		async backup(userId: string): Promise<Record<string, any>> {
 			return await fetchStore(userId, '/backup', 'POST');

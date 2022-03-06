@@ -1,10 +1,10 @@
 import type { ReactElement } from 'react';
 import Card from '~/components/Card';
 import { getTitleBySearchOptions } from '~/search';
-import type { ResourceMetadata, SearchOptions } from '~/types';
+import type { Resource, SearchOptions } from '~/types';
 
 interface SuggestedResourcesProps {
-	entries: ResourceMetadata[];
+	entries: Resource[];
 	searchOptions: SearchOptions;
 }
 

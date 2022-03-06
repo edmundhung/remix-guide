@@ -8,7 +8,7 @@ import newIcon from '~/icons/satellite-dish.svg';
 import hotIcon from '~/icons/fire-alt.svg';
 import topIcon from '~/icons/badge-check.svg';
 import menuIcon from '~/icons/menu.svg';
-import type { ResourceMetadata } from '~/types';
+import type { Resource } from '~/types';
 import { PaneContainer, PaneHeader, PaneContent, PaneFooter } from '~/layout';
 import {
 	getResourceURL,
@@ -21,7 +21,7 @@ import clsx from 'clsx';
 import IconLink from '~/components/IconLink';
 
 interface ResourcesListProps {
-	entries: ResourceMetadata[];
+	entries: Resource[];
 	selectedResourceId: string | null | undefined;
 	searchOptions: SearchOptions;
 }
