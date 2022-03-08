@@ -9,11 +9,12 @@ import type { Resource } from '~/types';
 
 interface ListProps {
 	entries: Resource[];
+	count: number;
 	selectedId: string | null | undefined;
 	children: ReactNode;
 }
 
-function Feed({ entries, selectedId, children }: ListProps) {
+function Feed({ entries, count, selectedId, children }: ListProps) {
 	const location = useLocation();
 	const searchParams = useMemo(
 		() => new URLSearchParams(location.search),
@@ -40,6 +41,7 @@ function Feed({ entries, selectedId, children }: ListProps) {
 				) : (
 					<ResourcesList
 						entries={entries}
+						count={count}
 						searchOptions={searchOptions}
 						selectedResourceId={selectedId}
 					/>

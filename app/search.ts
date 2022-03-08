@@ -2,6 +2,11 @@ import { Category, SearchOptions } from '~/types';
 import { platforms } from '~/config';
 import { capitalize } from '~/helpers';
 
+/**
+ * Number of entries to be shown by default
+ */
+const defaultLimit = 25;
+
 export function getRelatedSearchParams(search: string): URLSearchParams {
 	const searchParams = new URLSearchParams(search);
 	const supported = [
@@ -13,6 +18,7 @@ export function getRelatedSearchParams(search: string): URLSearchParams {
 		'author',
 		'site',
 		'sort',
+		'limit',
 	];
 
 	for (const [key, value] of Array.from(searchParams.entries())) {
@@ -25,6 +31,16 @@ export function getRelatedSearchParams(search: string): URLSearchParams {
 }
 
 export function getSearchOptions(url: string): SearchOptions {
+	function parseNumber(text: string | null, defaultNumber: number): number {
+		if (!text) {
+			return defaultNumber;
+		}
+
+		const number = Number(text);
+
+		return !isNaN(number) ? number : defaultNumber;
+	}
+
 	const { pathname, searchParams } = new URL(url, 'https://remix.guide');
 	const [, guide, list] =
 		pathname.match(/^\/([a-z-0-9]+)(?:\/([a-z-0-9]+))*$/i) ?? [];
@@ -37,6 +53,7 @@ export function getSearchOptions(url: string): SearchOptions {
 		category: searchParams.get('category'),
 		platform: searchParams.get('platform'),
 		integrations: searchParams.getAll('integration'),
+		limit: parseNumber(searchParams.get('limit'), defaultLimit),
 		sort: searchParams.get('sort') ?? 'new',
 	};
 
@@ -95,13 +112,17 @@ export function getResourceSearchParams(
 				case 'platform':
 				case 'site':
 				case 'keyword':
+				case 'limit':
 				case 'sort': {
 					let k = key;
 					let v = value;
 
 					if (k === 'keyword') {
 						k = 'q';
-					} else if (k === 'sort' && v === 'new') {
+					} else if (
+						(k === 'sort' && v === 'new') ||
+						(k === 'limit' && v === defaultLimit)
+					) {
 						v = '';
 					}
 

@@ -38,7 +38,7 @@ function compareResources(key: string, prev: Resource, next: Resource): number {
 export function search(
 	list: { [resourceId: string]: Resource },
 	options: SearchOptions,
-): Resource[] {
+): { entries: Resource[]; count: number } {
 	function match(
 		wanted: string[],
 		value: string | string[],
@@ -118,11 +118,10 @@ export function search(
 			return diff;
 		});
 
-	if (options.limit) {
-		return entries.slice(0, options.limit);
-	}
-
-	return entries;
+	return {
+		entries: options.limit ? entries.slice(0, options.limit) : entries,
+		count: entries.length,
+	};
 }
 
 export function getSuggestions(
@@ -156,7 +155,7 @@ export function getSuggestions(
 			...searchOptions,
 			excludes: [resource.id],
 			limit: 6,
-		}),
+		}).entries,
 		searchOptions,
 	}));
 

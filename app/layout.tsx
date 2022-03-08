@@ -1,4 +1,5 @@
 import type { ReactElement, ReactNode } from 'react';
+import { forwardRef } from 'react';
 import clsx from 'clsx';
 
 type Padding = 'none' | 'minimum' | 'maximum';
@@ -7,13 +8,18 @@ interface PaneContainerProps {
 	children: ReactNode;
 }
 
-export function PaneContainer({ children }: PaneContainerProps): ReactElement {
-	return (
-		<section className="flex flex-col w-full lg:max-h-screen min-h-screen lg:overflow-y-auto">
-			{children}
-		</section>
-	);
-}
+export const PaneContainer = forwardRef<HTMLElement, PaneContainerProps>(
+	({ children }, ref) => {
+		return (
+			<section
+				ref={ref}
+				className="flex flex-col w-full lg:max-h-screen min-h-screen lg:overflow-y-auto"
+			>
+				{children}
+			</section>
+		);
+	},
+);
 
 interface PaneHeaderProps {
 	padding?: Padding;

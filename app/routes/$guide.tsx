@@ -27,9 +27,7 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const searchOptions = getSearchOptions(request.url);
 	const list = await resourceStore.list();
 
-	return json({
-		entries: search(list, searchOptions),
-	});
+	return json(search(list, searchOptions));
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
@@ -43,7 +41,8 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function List() {
-	const { entries } = useLoaderData<{ entries: Resource[] }>();
+	const { entries, count } =
+		useLoaderData<{ entries: Resource[]; count: number }>();
 	const location = useLocation();
 	const resourceId = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);
@@ -53,7 +52,7 @@ export default function List() {
 	}, [location.search]);
 
 	return (
-		<Feed entries={entries} selectedId={resourceId}>
+		<Feed entries={entries} count={count} selectedId={resourceId}>
 			<Outlet />
 		</Feed>
 	);

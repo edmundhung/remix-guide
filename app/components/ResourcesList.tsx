@@ -16,18 +16,21 @@ import {
 	toggleSearchParams,
 } from '~/search';
 import type { SearchOptions } from '~/types';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import clsx from 'clsx';
 import IconLink from '~/components/IconLink';
+import ShowMoreButton from '~/components/ShowMoreButton';
+import { useScrollTop } from '~/scroll';
 
 interface ResourcesListProps {
 	entries: Resource[];
+	count: number;
 	selectedResourceId: string | null | undefined;
 	searchOptions: SearchOptions;
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['guide', 'list', 'sort'].concat(
+	const keys = ['guide', 'list', 'sort', 'limit'].concat(
 		!searchOptions.list ? ['category'] : [],
 	);
 
@@ -40,9 +43,11 @@ function isSearching(searchOptions: SearchOptions): boolean {
 
 export default function ResourcesList({
 	entries,
+	count,
 	selectedResourceId,
 	searchOptions,
 }: ResourcesListProps) {
+	const [container, scrollTop] = useScrollTop();
 	const location = useLocation();
 	const [toggleSearchURL, toggleMenuURL] = useMemo(
 		() => [
@@ -52,14 +57,23 @@ export default function ResourcesList({
 		[location.search],
 	);
 
+	useEffect(() => {
+		scrollTop();
+	}, [scrollTop, searchOptions.category, searchOptions.sort]);
+
 	return (
-		<PaneContainer>
+		<PaneContainer ref={container}>
 			{!isSearching(searchOptions) ? (
 				<PaneHeader>
 					<IconLink icon={menuIcon} to={toggleMenuURL} mobileOnly />
-					<div className="flex-1 line-clamp-1 text-center lg:text-left">
+					<Link
+						className="flex-1 line-clamp-1 text-center lg:text-left"
+						to="."
+						onClick={scrollTop}
+						replace={!selectedResourceId}
+					>
 						{getTitleBySearchOptions(searchOptions)}
-					</div>
+					</Link>
 					<IconLink icon={searchIcon} to={toggleSearchURL} />
 				</PaneHeader>
 			) : (
@@ -91,6 +105,12 @@ export default function ResourcesList({
 								selected={entry.id === selectedResourceId}
 							/>
 						))}
+						{entries.length < count ? (
+							<ShowMoreButton
+								searchOptions={searchOptions}
+								selected={selectedResourceId}
+							/>
+						) : null}
 					</div>
 				)}
 			</PaneContent>
@@ -104,7 +124,7 @@ export default function ResourcesList({
 								: 'hover:border-gray-600',
 						)}
 						to={getResourceURL(
-							{ ...searchOptions, sort: 'new' },
+							{ ...searchOptions, sort: 'new', limit: undefined },
 							selectedResourceId,
 						)}
 					>
@@ -118,7 +138,7 @@ export default function ResourcesList({
 								: 'hover:border-gray-600',
 						)}
 						to={getResourceURL(
-							{ ...searchOptions, sort: 'hot' },
+							{ ...searchOptions, sort: 'hot', limit: undefined },
 							selectedResourceId,
 						)}
 					>
@@ -132,7 +152,7 @@ export default function ResourcesList({
 								: 'hover:border-gray-600',
 						)}
 						to={getResourceURL(
-							{ ...searchOptions, sort: 'top' },
+							{ ...searchOptions, sort: 'top', limit: undefined },
 							selectedResourceId,
 						)}
 					>
