@@ -16,11 +16,11 @@ import {
 	toggleSearchParams,
 } from '~/search';
 import type { SearchOptions } from '~/types';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import clsx from 'clsx';
 import IconLink from '~/components/IconLink';
 import ShowMoreButton from '~/components/ShowMoreButton';
-import { useScrollTop } from '~/scroll';
+import { useElementScrollRestoration } from '~/scroll';
 
 interface ResourcesListProps {
 	entries: Resource[];
@@ -47,8 +47,8 @@ export default function ResourcesList({
 	selectedResourceId,
 	searchOptions,
 }: ResourcesListProps) {
-	const [container, scrollTop] = useScrollTop();
 	const location = useLocation();
+	const container = useElementScrollRestoration('feed');
 	const [toggleSearchURL, toggleMenuURL] = useMemo(
 		() => [
 			`?${toggleSearchParams(location.search, 'search')}`,
@@ -57,23 +57,14 @@ export default function ResourcesList({
 		[location.search],
 	);
 
-	useEffect(() => {
-		scrollTop();
-	}, [scrollTop, searchOptions.category, searchOptions.sort]);
-
 	return (
 		<PaneContainer ref={container}>
 			{!isSearching(searchOptions) ? (
 				<PaneHeader>
 					<IconLink icon={menuIcon} to={toggleMenuURL} mobileOnly />
-					<Link
-						className="flex-1 line-clamp-1 text-center lg:text-left"
-						to="."
-						onClick={scrollTop}
-						replace={!selectedResourceId}
-					>
+					<div className="flex-1 line-clamp-1 text-center lg:text-left">
 						{getTitleBySearchOptions(searchOptions)}
-					</Link>
+					</div>
 					<IconLink icon={searchIcon} to={toggleSearchURL} />
 				</PaneHeader>
 			) : (

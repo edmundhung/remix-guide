@@ -22,6 +22,7 @@ function ShowMoreButton({ searchOptions, selected }: ShowMoreButtonProps) {
 			<Link
 				className="block rounded-lg no-underline text-sm text-center py-2 hover:bg-gray-800"
 				to={`?${searchParams.toString()}`}
+				state={{ skipRestore: true }}
 				replace
 				prefetch="intent"
 			>

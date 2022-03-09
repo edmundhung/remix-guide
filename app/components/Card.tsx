@@ -21,6 +21,7 @@ function Card({ entry, searchOptions, selected }: CardProps): ReactElement {
 				}`}
 				title={entry.title ?? entry.url}
 				to={getResourceURL(searchOptions, entry.id)}
+				state={{ skipRestore: true }}
 				prefetch="intent"
 			>
 				<section className="px-2.5 py-2.5 text-sm">

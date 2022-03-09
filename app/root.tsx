@@ -13,7 +13,6 @@ import {
 	LiveReload,
 	useCatch,
 	Outlet,
-	ScrollRestoration,
 	json,
 } from 'remix';
 import clsx from 'clsx';
@@ -72,7 +71,6 @@ function Document({
 			</head>
 			<body className="relative w-full min-h-screen flex bg-gray-900 text-gray-200">
 				{children}
-				<ScrollRestoration />
 				<Scripts />
 				{process.env.NODE_ENV === 'development' ? <LiveReload /> : null}
 			</body>
