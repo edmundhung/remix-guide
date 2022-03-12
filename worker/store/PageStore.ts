@@ -157,7 +157,13 @@ export function getPageStore(
 		async listPageMetadata() {
 			const data = await this.list();
 
-			return Object.values(data).map(getPageMetadata);
+			return Object.values(data)
+				.map(getPageMetadata)
+				.sort(
+					(prev, next) =>
+						new Date(next.createdAt).valueOf() -
+						new Date(prev.createdAt).valueOf(),
+				);
 		},
 		async getOrCreatePage(url: string) {
 			let page = await this.getPage(url);
