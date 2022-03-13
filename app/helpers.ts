@@ -1,3 +1,5 @@
+import { administrators, maintainers } from './config';
+
 export function notFound(): Response {
 	const statusText = 'Not Found';
 
@@ -50,4 +52,28 @@ export function capitalize(text: string | null | undefined): string | null {
 	}
 
 	return text[0].toUpperCase() + text.slice(1).toLowerCase();
+}
+
+export function isMaintainer(name: string | null | undefined) {
+	if (!name) {
+		return false;
+	}
+
+	if (process.env.NODE_ENV === 'development') {
+		return true;
+	}
+
+	return maintainers.includes(name) || isAdministrator(name);
+}
+
+export function isAdministrator(name: string | null | undefined) {
+	if (!name) {
+		return false;
+	}
+
+	if (process.env.NODE_ENV === 'development') {
+		return true;
+	}
+
+	return administrators.includes(name);
 }

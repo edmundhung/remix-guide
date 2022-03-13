@@ -23,7 +23,7 @@ export const integrations = [
 
 export const administrators = ['edmundhung'];
 
-export const maintainers = administrators.concat(
+export const maintainers = [
 	'marbiano',
 	'CanRau',
 	'ryanflorence',
@@ -33,4 +33,4 @@ export const maintainers = administrators.concat(
 	'mcansh',
 	'kiliman',
 	'benborgers',
-);
+];

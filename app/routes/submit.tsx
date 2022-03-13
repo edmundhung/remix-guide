@@ -4,9 +4,8 @@ import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
-import { maintainers } from '~/config';
 import { Context } from '~/types';
-import { formatMeta } from '~/helpers';
+import { formatMeta, isMaintainer } from '~/helpers';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
 
@@ -41,7 +40,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 				'warning',
 			),
 		});
-	} else if (!maintainers.includes(profile.name)) {
+	} else if (!isMaintainer(profile.name)) {
 		return redirect('/submit', {
 			headers: await session.commitWithFlashMessage(
 				'Sorry. This feature is not enabled on your account yet.',

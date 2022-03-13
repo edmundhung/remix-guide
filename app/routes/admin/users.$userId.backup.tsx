@@ -1,15 +1,14 @@
 import type { ActionFunction } from 'remix';
 import { json, useActionData, redirect } from 'remix';
 import BackupForm from '~/components/BackupForm';
-import { notFound } from '~/helpers';
+import { isAdministrator, notFound } from '~/helpers';
 import type { Context } from '~/types';
-import { administrators } from '~/config';
 
 export let action: ActionFunction = async ({ params, request, context }) => {
 	const { session, userStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!administrators.includes(profile?.name ?? '') || !params.userId) {
+	if (!isAdministrator(profile?.name) || !params.userId) {
 		throw notFound();
 	}
 

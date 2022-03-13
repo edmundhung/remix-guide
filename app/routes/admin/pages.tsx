@@ -1,7 +1,6 @@
 import { LoaderFunction, ActionFunction, Link } from 'remix';
 import { Form, useLoaderData, useLocation, json, redirect } from 'remix';
-import { administrators } from '~/config';
-import { notFound } from '~/helpers';
+import { isAdministrator, notFound } from '~/helpers';
 import { getSite } from '~/search';
 import type { Context, PageMetadata } from '~/types';
 
@@ -17,7 +16,7 @@ export let action: ActionFunction = async ({ context, request }) => {
 		return new Response('Unauthorized', { status: 401 });
 	}
 
-	if (!administrators.includes(profile.name)) {
+	if (!isAdministrator(profile.name)) {
 		return new Response('Forbidden', { status: 403 });
 	}
 
@@ -39,7 +38,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 	const { pageStore, session } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!administrators.includes(profile?.name ?? '')) {
+	if (!isAdministrator(profile?.name)) {
 		throw notFound();
 	}
 

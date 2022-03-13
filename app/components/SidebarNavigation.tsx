@@ -29,8 +29,8 @@ import {
 	toggleSearchParams,
 } from '~/search';
 import { SearchOptions } from '~/types';
-import { administrators, maintainers } from '~/config';
 import IconLink from '~/components/IconLink';
+import { isAdministrator, isMaintainer } from '~/helpers';
 
 interface ExternalLinkProps {
 	href: string;
@@ -151,7 +151,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 						<List
 							title={`Hi, ${profile.name}`}
 							action={
-								maintainers.includes(profile.name) ? (
+								isMaintainer(profile.name) ? (
 									<NavLink
 										className={({ isActive }) =>
 											clsx(
@@ -189,7 +189,7 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 							{getCategoryListName('others')}
 						</SearchLink>
 					</List>
-					{profile && administrators.includes(profile.name) ? (
+					{isAdministrator(profile?.name) ? (
 						<List title="Administrator">
 							<MenuLink to="/admin/pages">🌐 Pages</MenuLink>
 							<MenuLink to="/admin/users">👥 Users</MenuLink>

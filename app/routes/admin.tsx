@@ -4,9 +4,8 @@ import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
-import { notFound } from '~/helpers';
+import { isAdministrator, notFound } from '~/helpers';
 import type { Context } from '~/types';
-import { administrators } from '~/config';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
 
@@ -14,7 +13,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 	const { session } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (!administrators.includes(profile?.name ?? '')) {
+	if (!isAdministrator(profile?.name)) {
 		throw notFound();
 	}
 
