@@ -53,12 +53,14 @@ async function createPageStore(state: DurableObjectState, env: Env) {
 			return Object.fromEntries(pageMap.entries());
 		},
 		async refresh(url: string, page: Page) {
-			const statistics = getStatistics(page);
+			const cachedPage = pageMap.get(url);
+			const statistics = getStatistics(cachedPage ?? page);
 
 			await updatePage(url, {
 				...page,
 				...statistics,
-				updatedAt: new Date().toISOString(),
+				createdAt: cachedPage?.createdAt ?? page.createdAt,
+				updatedAt: page.createdAt,
 			});
 		},
 		async view(url: string) {
