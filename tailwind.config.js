@@ -8,6 +8,10 @@ module.exports = {
 			DEFAULT: theme('colors.gray.800', 'currentColor'),
 		}),
 		extend: {
+			screens: {
+				'3xl': '1700px',
+				'4xl': '1921px',
+			},
 			colors: {
 				gray: colors.neutral,
 			},

@@ -103,92 +103,96 @@ function ResourcesDetails({
 				</bookmark.Form>
 			</PaneHeader>
 			<PaneContent>
-				<div className="max-w-screen-xl divide-y">
-					<div className="px-2.5 pt-3 pb-8">
-						<div className="flex flex-col-reverse md:flex-row justify-between gap-8 2xl:gap-12">
-							<div className="pt-0.5 flex-1">
-								<div className="flex items-center justify-between text-xs pb-1.5 text-gray-400">
-									<span className="capitalize">{resource.category}</span>
-									<span>{resource.createdAt.substring(0, 10)}</span>
+				<div className="flex flex-row justify-center">
+					<div className="flex-1 4xl:max-w-screen-lg divide-y">
+						<div className="px-2.5 pt-3 pb-8">
+							<div className="flex flex-col-reverse 2xl:flex-row justify-between gap-8 2xl:gap-12">
+								<div className="pt-0.5 flex-1">
+									<div className="flex items-center justify-between text-xs pb-1.5 text-gray-400">
+										<span className="capitalize">{resource.category}</span>
+										<span>{resource.createdAt.substring(0, 10)}</span>
+									</div>
+									<div>
+										<a
+											className="sticky top-0"
+											href={resource.url}
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											<h2 className="inline-block text-xl break-words">
+												{resource.title ?? resource.url}
+											</h2>
+										</a>
+									</div>
+									<a
+										className="hover:underline text-gray-400"
+										href={resource.url}
+										target="_blank"
+										rel="noopener noreferrer"
+									>
+										<SvgIcon
+											className="inline-block w-3 h-3 mr-2"
+											href={linkIcon}
+										/>
+										{getSite(resource.url)}
+									</a>
+									{!resource.integrations?.length ? null : (
+										<div className="pt-4 flex flex-wrap gap-2">
+											{resource.integrations?.map((integration) => (
+												<Link
+													key={integration}
+													className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
+													to={`/news?${createIntegrationSearch(integration)}`}
+												>
+													{integration}
+												</Link>
+											))}
+										</div>
+									)}
+									{!resource.description ? null : (
+										<p className="pt-6 text-gray-400 break-words whitespace-pre-line">
+											{resource.description}
+										</p>
+									)}
 								</div>
 								<div>
-									<a
-										className="sticky top-0"
-										href={resource.url}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<h2 className="inline-block text-xl break-words">
-											{resource.title ?? resource.url}
-										</h2>
-									</a>
-								</div>
-								<a
-									className="hover:underline text-gray-400"
-									href={resource.url}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
-									<SvgIcon
-										className="inline-block w-3 h-3 mr-2"
-										href={linkIcon}
-									/>
-									{getSite(resource.url)}
-								</a>
-								{!resource.integrations?.length ? null : (
-									<div className="pt-4 flex flex-wrap gap-2">
-										{resource.integrations?.map((integration) => (
-											<Link
-												key={integration}
-												className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-												to={`/news?${createIntegrationSearch(integration)}`}
-											>
-												{integration}
-											</Link>
-										))}
-									</div>
-								)}
-								{!resource.description ? null : (
-									<p className="pt-6 text-gray-400 break-words whitespace-pre-line">
-										{resource.description}
-									</p>
-								)}
-							</div>
-							<div className="md:max-w-xs w-auto">
-								{resource.video ? (
-									<div className="pt-1 w-full md:w-72">
-										<div className="aspect-w-16 aspect-h-9">
-											<iframe
-												width="720"
-												height="405"
-												src={resource.video}
-												title={resource.title}
-												frameBorder="0"
-												allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-												allowFullScreen
-											/>
+									{resource.video ? (
+										<div className="pt-1 w-full 2xl:w-96">
+											<div className="aspect-w-16 aspect-h-9">
+												<iframe
+													width="720"
+													height="405"
+													src={resource.video}
+													title={resource.title}
+													frameBorder="0"
+													allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+													allowFullScreen
+												/>
+											</div>
 										</div>
-									</div>
-								) : (
-									<a
-										className="relative"
-										href={resource.url}
-										target="_blank"
-										rel="noopener noreferrer"
-									>
-										<img
-											className="max-h-96 rounded-lg bg-white"
-											src={resource.image ?? getScreenshotURL(resource.url)}
-											width="auto"
-											height="auto"
-											alt="cover"
-										/>
-									</a>
-								)}
+									) : (
+										<div className="lg:max-w-sm 2xl:max-w-xs w-auto mx-auto">
+											<a
+												className="relative"
+												href={resource.url}
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												<img
+													className="max-h-96 rounded-lg bg-white"
+													src={resource.image ?? getScreenshotURL(resource.url)}
+													width="auto"
+													height="auto"
+													alt="cover"
+												/>
+											</a>
+										</div>
+									)}
+								</div>
 							</div>
 						</div>
+						{children}
 					</div>
-					{children}
 				</div>
 			</PaneContent>
 			<PaneFooter>
