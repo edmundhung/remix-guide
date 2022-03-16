@@ -33,11 +33,15 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 export const unstable_shouldReload: ShouldReloadFunction = ({
 	url,
 	prevUrl,
+	submission,
 }) => {
 	const nextSearch = getRelatedSearchParams(url.search).toString();
 	const prevSearch = getRelatedSearchParams(prevUrl.search).toString();
 
-	return nextSearch !== prevSearch;
+	return (
+		nextSearch !== prevSearch ||
+		submission?.formData.get('type')?.toString() === 'delete'
+	);
 };
 
 export default function List() {

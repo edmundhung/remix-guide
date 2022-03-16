@@ -1,10 +1,14 @@
-import type {
+import {
 	ActionFunction,
 	LoaderFunction,
 	ShouldReloadFunction,
 	MetaFunction,
+	Form,
+	redirect,
 } from 'remix';
-import { useLoaderData, json } from 'remix';
+import { useLoaderData, useLocation, json } from 'remix';
+import { useMemo } from 'react';
+import clsx from 'clsx';
 import About from '~/components/About';
 import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
@@ -12,6 +16,7 @@ import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
 import { getSearchOptions, getTitleBySearchOptions } from '~/search';
 import type { Context, Resource, SearchOptions, User } from '~/types';
+import BookmarkDetails from '~/components/BookmarkDetails';
 
 interface LoaderData {
 	resource: Resource;
@@ -41,21 +46,26 @@ export let meta: MetaFunction = ({ params, location }) => {
 	});
 };
 
-export let action: ActionFunction = async ({ context, request }) => {
-	const { session, userStore } = context as Context;
+export let action: ActionFunction = async ({ params, context, request }) => {
+	const { session, userStore, resourceStore } = context as Context;
 	const [profile, formData] = await Promise.all([
 		session.isAuthenticated(),
 		request.formData(),
 	]);
 	const type = formData.get('type');
-	const url = formData.get('url')?.toString();
 	const resourceId = formData.get('resourceId')?.toString();
 
-	if (!type || !url || !resourceId) {
+	if (!type || !resourceId) {
 		return new Response('Bad Request', { status: 400 });
 	}
 
 	if (type === 'view') {
+		const url = formData.get('url')?.toString();
+
+		if (!url) {
+			return new Response('Bad Request', { status: 400 });
+		}
+
 		await userStore.view(profile?.id ?? null, resourceId, url);
 	} else {
 		if (!profile) {
@@ -63,12 +73,38 @@ export let action: ActionFunction = async ({ context, request }) => {
 		}
 
 		switch (type) {
-			case 'bookmark':
+			case 'bookmark': {
+				const url = formData.get('url')?.toString();
+
+				if (!url) {
+					return new Response('Bad Request', { status: 400 });
+				}
+
 				await userStore.bookmark(profile.id, resourceId, url);
 				break;
-			case 'unbookmark':
+			}
+			case 'unbookmark': {
+				const url = formData.get('url')?.toString();
+
+				if (!url) {
+					return new Response('Bad Request', { status: 400 });
+				}
+
 				await userStore.unbookmark(profile.id, resourceId, url);
 				break;
+			}
+			case 'update': {
+				const description = formData.get('description')?.toString() ?? null;
+				const lists = formData.getAll('lists').map((value) => value.toString());
+
+				await resourceStore.updateBookmark(resourceId, description, lists);
+				break;
+			}
+			case 'delete': {
+				await resourceStore.deleteBookmark(resourceId);
+
+				return redirect(`/${params.guide}`);
+			}
 			default:
 				return new Response('Bad Request', { status: 400 });
 		}
@@ -133,20 +169,36 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 
 export default function UserProfile() {
 	const { resource, message, user, suggestions } = useLoaderData<LoaderData>();
+	const location = useLocation();
+	const showBookmark = useMemo(() => {
+		const searchParams = new URLSearchParams(location.search);
+		const showBookmark = searchParams.get('open') === 'bookmark';
+
+		return showBookmark;
+	}, [location.search]);
 
 	if (!resource) {
 		return <About />;
 	}
 
 	return (
-		<ResourcesDetails resource={resource} user={user} message={message}>
-			{suggestions.map(({ entries, searchOptions }) => (
-				<SuggestedResources
-					key={JSON.stringify(searchOptions)}
-					entries={entries}
-					searchOptions={searchOptions}
-				/>
-			))}
-		</ResourcesDetails>
+		<div className="flex flex-row">
+			<div className={clsx('flex-1', { 'hidden lg:block': showBookmark })}>
+				<ResourcesDetails resource={resource} user={user} message={message}>
+					{suggestions.map(({ entries, searchOptions }) => (
+						<SuggestedResources
+							key={JSON.stringify(searchOptions)}
+							entries={entries}
+							searchOptions={searchOptions}
+						/>
+					))}
+				</ResourcesDetails>
+			</div>
+			{showBookmark ? (
+				<Form className="w-full lg:w-80 3xl:w-96 lg:border-l" method="post">
+					<BookmarkDetails resource={resource} />
+				</Form>
+			) : null}
+		</div>
 	);
 }

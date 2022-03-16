@@ -6,11 +6,17 @@ import SvgIcon from '~/components/SvgIcon';
 import linkIcon from '~/icons/link.svg';
 import backIcon from '~/icons/back.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
-import { getSite, createIntegrationSearch, excludeParams } from '~/search';
+import {
+	getSite,
+	createIntegrationSearch,
+	excludeParams,
+	toggleSearchParams,
+} from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
 import { User } from '~/types';
 import IconLink from '~/components/IconLink';
+import { isAdministrator } from '~/helpers';
 
 interface ResourcesDetailsProps {
 	resource: Resource;
@@ -35,11 +41,15 @@ function ResourcesDetails({
 	const { submit } = useFetcher();
 	const bookmark = useFetcher();
 	const location = useLocation();
-	const backURL = useMemo(() => {
+	const [backURL, bookmarkURL] = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);
 		const backURL = `?${excludeParams('resourceId', searchParams)}`;
+		const bookmarkURL = `?${toggleSearchParams(
+			searchParams.toString(),
+			'bookmark',
+		)}`;
 
-		return backURL;
+		return [backURL, bookmarkURL];
 	}, [location.search]);
 
 	useEffect(() => {
@@ -71,36 +81,51 @@ function ResourcesDetails({
 			<PaneHeader>
 				<IconLink icon={backIcon} to={backURL} />
 				<div className="flex-1" />
-				<bookmark.Form className="flex flex-row items-center" method="post">
-					<input
-						type="hidden"
-						name="referer"
-						value={`${location.pathname}${location.search}`}
-					/>
-					<input
-						type="hidden"
-						name="type"
-						value={bookmarked ? 'unbookmark' : 'bookmark'}
-					/>
-					<input type="hidden" name="resourceId" value={resource.id} />
-					<input type="hidden" name="url" value={resource.url} />
-					<button
-						type="submit"
-						className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${
-							bookmarked
-								? 'rounded-full text-red-500 bg-gray-200'
-								: authenticated
-								? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
-								: ''
-						}`}
-						disabled={!authenticated || bookmark.state === 'submitting'}
-					>
-						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
-					</button>
-					<label className="px-2 w-10 text-right">
-						{bookmarkCount >= 0 ? bookmarkCount : 0}
-					</label>
-				</bookmark.Form>
+				{!isAdministrator(user?.profile.name) ? (
+					<bookmark.Form className="flex flex-row items-center" method="post">
+						<input
+							type="hidden"
+							name="referer"
+							value={`${location.pathname}${location.search}`}
+						/>
+						<input
+							type="hidden"
+							name="type"
+							value={bookmarked ? 'unbookmark' : 'bookmark'}
+						/>
+						<input type="hidden" name="resourceId" value={resource.id} />
+						<input type="hidden" name="url" value={resource.url} />
+						<button
+							type="submit"
+							className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${
+								bookmarked
+									? 'rounded-full text-red-500 bg-gray-200'
+									: authenticated
+									? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
+									: ''
+							}`}
+							disabled={!authenticated || bookmark.state === 'submitting'}
+						>
+							<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
+						</button>
+						<label className="px-2 w-10 text-right">
+							{bookmarkCount >= 0 ? bookmarkCount : 0}
+						</label>
+					</bookmark.Form>
+				) : (
+					<div className="flex flex-row items-center">
+						<Link
+							className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 rounded-full text-red-500 bg-gray-200 hover:rounded-full hover:bg-gray-200 hover:text-black"
+							to={bookmarkURL}
+							state={{ skipRestore: true }}
+						>
+							<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
+						</Link>
+						<label className="px-2 w-10 text-right">
+							{bookmarkCount >= 0 ? bookmarkCount : 0}
+						</label>
+					</div>
+				)}
 			</PaneHeader>
 			<PaneContent>
 				<div className="flex flex-row justify-center">
@@ -155,7 +180,7 @@ function ResourcesDetails({
 										</p>
 									)}
 								</div>
-								<div>
+								<div className="flex flex-row justify-center">
 									{resource.video ? (
 										<div className="pt-1 w-full 2xl:w-96">
 											<div className="aspect-w-16 aspect-h-9">

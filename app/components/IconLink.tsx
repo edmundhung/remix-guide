@@ -23,6 +23,7 @@ function IconLink({
 				{ 'xl:hidden': mobileOnly },
 			)}
 			to={to}
+			state={{ skipRestore: true }}
 			prefetch={prefetch}
 		>
 			<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={icon} />

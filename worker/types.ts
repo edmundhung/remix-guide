@@ -78,6 +78,8 @@ export type MessageType = 'success' | 'error' | 'warning' | 'info';
 export interface ResourceSummary {
 	id: string;
 	url: string;
+	description?: string | null;
+	lists?: string[];
 	createdAt: string;
 	createdBy: string;
 	updatedAt: string;
@@ -86,6 +88,20 @@ export interface ResourceSummary {
 
 export interface Resource extends Page, ResourceSummary {
 	integrations: string[];
+}
+
+export interface List {
+	slug: string;
+	title: string;
+}
+
+export interface Guide {
+	[resourceId: string]: Resource;
+}
+
+export interface GuideMetadata {
+	timestamp?: string;
+	lists?: (List & { count: number })[];
 }
 
 export interface SearchOptions {

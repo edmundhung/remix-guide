@@ -96,9 +96,12 @@ export let action: ActionFunction = async ({ request, context }) => {
 			});
 		}
 
-		return redirect(`/news?resourceId=${id}`, {
-			headers: setCookieHeader,
-		});
+		return redirect(
+			`/news?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
+			{
+				headers: setCookieHeader,
+			},
+		);
 	} catch (error) {
 		console.log('Error while submitting new url; Received', error);
 		return redirect('/submit', {
