@@ -167,7 +167,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		},
 		async updateBookmark(
 			resourceId: string,
-			description: string,
+			description: string | null,
 			lists: string[],
 		): Promise<void> {
 			const resource = await storage.get<ResourceSummary>(
@@ -275,7 +275,7 @@ export function getResourceStore(
 		): Promise<void> {
 			await fetchStore(storeName, '/resources', 'PUT', {
 				resourceId,
-				description,
+				description: description !== '' ? description : null,
 				lists,
 			});
 			await CONTENT.delete('guides/news');

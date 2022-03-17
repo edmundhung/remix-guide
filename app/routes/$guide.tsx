@@ -40,7 +40,9 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 
 	return (
 		nextSearch !== prevSearch ||
-		submission?.formData.get('type')?.toString() === 'delete'
+		['update', 'delete'].includes(
+			submission?.formData.get('type')?.toString() ?? '',
+		)
 	);
 };
 

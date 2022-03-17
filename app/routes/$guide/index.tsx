@@ -3,7 +3,6 @@ import {
 	LoaderFunction,
 	ShouldReloadFunction,
 	MetaFunction,
-	Form,
 	redirect,
 } from 'remix';
 import { useLoaderData, useLocation, json } from 'remix';
@@ -162,7 +161,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 		return true;
 	}
 
-	return ['bookmark', 'unbookmark'].includes(
+	return ['bookmark', 'unbookmark', 'update', 'delete'].includes(
 		submission?.formData.get('type')?.toString() ?? '',
 	);
 };
@@ -195,9 +194,9 @@ export default function UserProfile() {
 				</ResourcesDetails>
 			</div>
 			{showBookmark ? (
-				<Form className="w-full lg:w-80 3xl:w-96 lg:border-l" method="post">
+				<div className="w-full lg:w-80 3xl:w-96 lg:border-l">
 					<BookmarkDetails resource={resource} />
-				</Form>
+				</div>
 			) : null}
 		</div>
 	);
