@@ -1,11 +1,18 @@
 import { ReactElement, useMemo } from 'react';
-import { useLocation } from 'remix';
+import { useLocation, useMatches } from 'remix';
 import { PaneContainer, PaneHeader, PaneContent, PaneFooter } from '~/layout';
 import IconLink from '~/components/IconLink';
 import InputOption from '~/components/InputOption';
 import timesIcon from '~/icons/times.svg';
 import type { Resource } from '~/types';
 import { toggleSearchParams } from '~/search';
+import { GuideMetadata } from '../../worker/types';
+
+function useLists(): Required<GuideMetadata>['lists'] {
+	const [rootMatch] = useMatches();
+
+	return rootMatch?.data.lists ?? [];
+}
 
 interface BookmarkDetailsProps {
 	resource: Resource;
@@ -13,6 +20,7 @@ interface BookmarkDetailsProps {
 
 function BookmarkDetails({ resource }: BookmarkDetailsProps): ReactElement {
 	const location = useLocation();
+	const lists = useLists();
 	const closeURL = useMemo(
 		() => `?${toggleSearchParams(location.search, 'bookmark')}`,
 		[location.search],
@@ -48,20 +56,14 @@ function BookmarkDetails({ resource }: BookmarkDetailsProps): ReactElement {
 				<div className="py-3">
 					<div className="px-2.5 pt-0.5 pb-0.5 text-gray-400 text-xs">List</div>
 					<div className="py-0.5 capitalize">
-						{[
-							'official',
-							'packages',
-							'videos',
-							'templates',
-							'examples',
-							'integrations',
-						].map((option) => (
+						{lists.map((list) => (
 							<InputOption
-								key={option}
+								key={list.slug}
 								type="checkbox"
 								name="lists"
-								value={option}
-								checked={resource.lists?.includes(option) ?? false}
+								label={list.title}
+								value={list.slug}
+								checked={resource.lists?.includes(list.slug) ?? false}
 							/>
 						))}
 					</div>
