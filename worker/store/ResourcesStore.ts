@@ -76,7 +76,7 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	}
 
 	return {
-		async list(): Promise<{ value: Guide; metadata: GuideMetadata }> {
+		async list(): Promise<Guide> {
 			const [resourceSummaryMap, lists, pageDictionary] = await Promise.all([
 				storage.list<ResourceSummary>({ prefix: 'resources/' }),
 				storage.get<List[]>('lists'),
@@ -229,15 +229,13 @@ export function getResourceStore(
 		return diff > 3600;
 	}
 
-	async function getGuideData(
-		name: string,
-	): Promise<{ value: Guide; metadata: GuideMetadata }> {
+	async function getGuide(name: string): Promise<Guide> {
 		return await fetchStore(name, '/resources', 'GET');
 	}
 
 	async function updateCache(
 		name: string,
-		guide: Guide,
+		guide: Guide['value'],
 		metadata: GuideMetadata,
 	): Promise<void> {
 		await CONTENT.put(`guides/${name}`, JSON.stringify(guide), {
@@ -246,16 +244,14 @@ export function getResourceStore(
 		});
 	}
 
-	async function getGuideDataWithCache(
-		name: string,
-	): Promise<{ value: Guide; metadata: GuideMetadata }> {
+	async function getGuideWithCache(name: string): Promise<Guide> {
 		let { value, metadata } = await CONTENT.getWithMetadata<
-			Guide,
+			Guide['value'],
 			GuideMetadata
 		>('guides/news', 'json');
 
 		if (!value || !metadata) {
-			const data = await getGuideData(storeName);
+			const data = await getGuide(storeName);
 			value = data.value;
 			metadata = data.metadata;
 
@@ -263,7 +259,7 @@ export function getResourceStore(
 		} else if (isExpiring(metadata.timestamp)) {
 			ctx.waitUntil(
 				(async function () {
-					const data = await getGuideData(storeName);
+					const data = await getGuide(storeName);
 
 					await updateCache(storeName, data.value, data.metadata);
 				})(),
@@ -274,8 +270,11 @@ export function getResourceStore(
 	}
 
 	return {
-		async list(): Promise<Guide> {
-			let { value } = await getGuideDataWithCache(storeName);
+		async getData(): Promise<Guide> {
+			return await getGuideWithCache(storeName);
+		},
+		async list(): Promise<Guide['value']> {
+			let { value } = await getGuideWithCache(storeName);
 
 			return value;
 		},

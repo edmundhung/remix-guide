@@ -96,7 +96,8 @@ export interface List {
 }
 
 export interface Guide {
-	[resourceId: string]: Resource;
+	value: { [resourceId: string]: Resource };
+	metadata: GuideMetadata;
 }
 
 export interface GuideMetadata {

@@ -66,6 +66,7 @@ export function search(
 			}
 
 			const isMatching =
+				match(options?.list ? [options.list] : [], resource.lists ?? []) &&
 				match(
 					options?.keyword ? options.keyword.toLowerCase().split(' ') : [],
 					`${resource.title} ${resource.description}`.toLowerCase(),

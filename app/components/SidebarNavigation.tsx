@@ -13,6 +13,9 @@ import timesIcon from '~/icons/times.svg';
 import remixIcon from '~/icons/remix.svg';
 import packageIcon from '~/icons/box-open.svg';
 import repositoryIcon from '~/icons/map-signs.svg';
+import officialIcon from '~/icons/bullhorn.svg';
+import tutorialIcon from '~/icons/chalkboard-teacher.svg';
+import templateIcon from '~/icons/layer-group.svg';
 import othersIcon from '~/icons/mail-bulk.svg';
 import type { UserProfile } from '~/types';
 import {
@@ -22,15 +25,11 @@ import {
 	PaneContent,
 	List,
 } from '~/layout';
-import {
-	getCategoryListName,
-	getResourceURL,
-	getSearchOptions,
-	toggleSearchParams,
-} from '~/search';
+import { getResourceURL, getSearchOptions, toggleSearchParams } from '~/search';
 import { SearchOptions } from '~/types';
 import IconLink from '~/components/IconLink';
 import { isAdministrator, isMaintainer } from '~/helpers';
+import { GuideMetadata } from '../../worker/types';
 
 interface ExternalLinkProps {
 	href: string;
@@ -78,12 +77,12 @@ function SearchLink({
 	return (
 		<Link
 			className={clsx(
-				'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg',
+				'px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg group',
 				isActive
 					? 'text-gray-200 bg-gray-700'
 					: 'text-gray-400 hover:text-gray-200 hover:bg-gray-800',
 			)}
-			to={isActive ? '/' : to}
+			to={isActive ? `/${guide === 'news' ? guide : ''}` : to}
 			prefetch="intent"
 		>
 			{children}
@@ -119,11 +118,32 @@ function MenuLink({ to, children }: MenuLinkProps): ReactElement {
 	);
 }
 
-interface SidebarNavigationProps {
-	profile: UserProfile | null;
+function getListIcon(slug: string): string {
+	switch (slug) {
+		case 'official':
+			return officialIcon;
+		case 'packages':
+			return packageIcon;
+		case 'examples':
+			return repositoryIcon;
+		case 'tutorials':
+			return tutorialIcon;
+		case 'templates':
+			return templateIcon;
+		default:
+			return othersIcon;
+	}
 }
 
-function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
+interface SidebarNavigationProps {
+	profile: UserProfile | null;
+	lists: GuideMetadata['lists'];
+}
+
+function SidebarNavigation({
+	profile,
+	lists,
+}: SidebarNavigationProps): ReactElement {
 	const location = useLocation();
 	const toggleMenuURL = useMemo(
 		() => `?${toggleSearchParams(location.search, 'menu')}`,
@@ -176,18 +196,15 @@ function SidebarNavigation({ profile }: SidebarNavigationProps): ReactElement {
 						</List>
 					) : null}
 					<List title="News">
-						<SearchLink guide="news" category="package">
-							<SvgIcon className="w-4 h-4" href={packageIcon} />{' '}
-							{getCategoryListName('package')}
-						</SearchLink>
-						<SearchLink guide="news" category="repository">
-							<SvgIcon className="w-4 h-4" href={repositoryIcon} />{' '}
-							{getCategoryListName('repository')}
-						</SearchLink>
-						<SearchLink guide="news" category="others">
-							<SvgIcon className="w-4 h-4" href={othersIcon} />{' '}
-							{getCategoryListName('others')}
-						</SearchLink>
+						{(lists ?? []).map((list) => (
+							<SearchLink key={list.slug} guide="news" list={list.slug}>
+								<SvgIcon className="w-4 h-4" href={getListIcon(list.slug)} />{' '}
+								<div className="flex-1">{list.title}</div>
+								<span className="px-1 py-0.5 text-xs">
+									{String(list.count).padStart(3, ' ')}
+								</span>
+							</SearchLink>
+						))}
 					</List>
 					{isAdministrator(profile?.name) ? (
 						<List title="Administrator">

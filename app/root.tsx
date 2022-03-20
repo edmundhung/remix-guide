@@ -36,11 +36,15 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { session } = context as Context;
-	const profile = await session.isAuthenticated();
+	const { session, resourceStore } = context as Context;
+	const [profile, guide] = await Promise.all([
+		session.isAuthenticated(),
+		resourceStore.getData(),
+	]);
 
 	return json({
 		profile,
+		lists: guide.metadata.lists,
 		version: process.env.VERSION,
 	});
 };
@@ -50,8 +54,8 @@ export let loader: LoaderFunction = async ({ context }) => {
  * But the only time this data change is when user login / logout
  * Which trigger a full page reload at the moment
  */
-export const unstable_shouldReload: ShouldReloadFunction = () => {
-	return false;
+export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
+	return typeof submission !== 'undefined';
 };
 
 function Document({
@@ -79,7 +83,7 @@ function Document({
 }
 
 export default function App() {
-	const { profile } = useLoaderData();
+	const { profile, lists } = useLoaderData();
 	const location = useLocation();
 	const isMenuOpened =
 		new URLSearchParams(location.search).get('open') === 'menu';
@@ -93,7 +97,7 @@ export default function App() {
 					isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden',
 				)}
 			>
-				<SidebarNavigation profile={profile} />
+				<SidebarNavigation profile={profile} lists={lists} />
 			</nav>
 			<main className={clsx('flex-1', { 'hidden lg:block': isMenuOpened })}>
 				<Outlet />
