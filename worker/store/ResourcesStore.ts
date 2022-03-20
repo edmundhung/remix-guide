@@ -34,9 +34,9 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 	const { storage } = state;
 	const pageStore = getPageStore(env, state);
 
-	const resourceIdByURL =
+	let resourceIdByURL =
 		(await storage.get<Record<string, string | undefined>>('index/URL')) ?? {};
-	const resourceIdByPackageName =
+	let resourceIdByPackageName =
 		(await storage.get<Record<string, string | undefined>>(
 			'index/PackageName',
 		)) ?? {};
@@ -185,7 +185,18 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 			});
 		},
 		async deleteBookmark(resourceId: string): Promise<void> {
-			await storage.delete(`resources/${resourceId}`);
+			const isDeleted = await storage.delete(`resources/${resourceId}`);
+
+			if (isDeleted) {
+				resourceIdByURL = Object.fromEntries(
+					Object.entries(resourceIdByURL).filter(([, id]) => id !== resourceId),
+				);
+				resourceIdByPackageName = Object.fromEntries(
+					Object.entries(resourceIdByPackageName).filter(
+						([, id]) => id !== resourceId,
+					),
+				);
+			}
 		},
 		async backup(): Promise<Record<string, any>> {
 			const data = await storage.list();
