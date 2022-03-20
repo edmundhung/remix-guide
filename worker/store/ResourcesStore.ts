@@ -255,13 +255,13 @@ export function getResourceStore(
 			value = data.value;
 			metadata = data.metadata;
 
-			ctx.waitUntil(updateCache(storeName, value, metadata));
+			ctx.waitUntil(updateCache('news', value, metadata));
 		} else if (isExpiring(metadata.timestamp)) {
 			ctx.waitUntil(
 				(async function () {
 					const data = await getGuide(storeName);
 
-					await updateCache(storeName, data.value, data.metadata);
+					await updateCache('news', data.value, data.metadata);
 				})(),
 			);
 		}
