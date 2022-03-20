@@ -36,7 +36,6 @@ test.describe('Index', () => {
 			),
 		);
 
-		expect(links).toHaveLength(3);
 		expect(links).not.toContain(null);
 
 		for (let i = 0; i < links.length; i++) {
