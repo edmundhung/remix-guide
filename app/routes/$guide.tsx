@@ -1,11 +1,6 @@
 import { useMemo } from 'react';
-import {
-	LoaderFunction,
-	redirect,
-	ShouldReloadFunction,
-	useLocation,
-} from 'remix';
-import { Outlet, useLoaderData, json } from 'remix';
+import type { LoaderFunction, ShouldReloadFunction } from 'remix';
+import { Outlet, useLoaderData, useLocation, json, redirect } from 'remix';
 import Feed from '~/components/Feed';
 import { notFound } from '~/helpers';
 import { search } from '~/resources';

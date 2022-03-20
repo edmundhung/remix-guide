@@ -3,9 +3,8 @@ import {
 	LoaderFunction,
 	ShouldReloadFunction,
 	MetaFunction,
-	redirect,
 } from 'remix';
-import { useLoaderData, useLocation, json } from 'remix';
+import { Form, useLoaderData, useLocation, json, redirect } from 'remix';
 import { useMemo } from 'react';
 import clsx from 'clsx';
 import About from '~/components/About';
@@ -97,12 +96,23 @@ export let action: ActionFunction = async ({ params, context, request }) => {
 				const lists = formData.getAll('lists').map((value) => value.toString());
 
 				await resourceStore.updateBookmark(resourceId, description, lists);
-				break;
+
+				return redirect(request.url, {
+					headers: await session.commitWithFlashMessage(
+						'The bookmark is updated successfully',
+						'success',
+					),
+				});
 			}
 			case 'delete': {
 				await resourceStore.deleteBookmark(resourceId);
 
-				return redirect(`/${params.guide}`);
+				return redirect(`/${params.guide}`, {
+					headers: await session.commitWithFlashMessage(
+						'The bookmark is deleted successfully',
+						'success',
+					),
+				});
 			}
 			default:
 				return new Response('Bad Request', { status: 400 });
@@ -169,11 +179,13 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 export default function UserProfile() {
 	const { resource, message, user, suggestions } = useLoaderData<LoaderData>();
 	const location = useLocation();
-	const showBookmark = useMemo(() => {
+	const [showBookmark, action] = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);
 		const showBookmark = searchParams.get('open') === 'bookmark';
 
-		return showBookmark;
+		searchParams.delete('open');
+
+		return [showBookmark, `?${searchParams.toString()}&index`];
 	}, [location.search]);
 
 	if (!resource) {
@@ -194,9 +206,13 @@ export default function UserProfile() {
 				</ResourcesDetails>
 			</div>
 			{showBookmark ? (
-				<div className="w-full lg:w-80 3xl:w-96 lg:border-l">
+				<Form
+					className="w-full lg:w-80 3xl:w-96 lg:border-l"
+					method="post"
+					action={action}
+				>
 					<BookmarkDetails resource={resource} />
-				</div>
+				</Form>
 			) : null}
 		</div>
 	);
