@@ -1,18 +1,12 @@
 import { ReactElement, useMemo } from 'react';
-import { useLocation, useMatches } from 'remix';
+import { useLocation } from 'remix';
 import { PaneContainer, PaneHeader, PaneContent, PaneFooter } from '~/layout';
 import IconLink from '~/components/IconLink';
 import InputOption from '~/components/InputOption';
 import timesIcon from '~/icons/times.svg';
 import type { Resource } from '~/types';
 import { toggleSearchParams } from '~/search';
-import { GuideMetadata } from '../../worker/types';
-
-function useLists(): Required<GuideMetadata>['lists'] {
-	const [rootMatch] = useMatches();
-
-	return rootMatch?.data.lists ?? [];
-}
+import { useLists } from '~/hooks';
 
 interface BookmarkDetailsProps {
 	resource: Resource;

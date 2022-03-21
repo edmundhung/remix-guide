@@ -17,6 +17,7 @@ import FlashMessage from '~/components/FlashMessage';
 import { User } from '~/types';
 import IconLink from '~/components/IconLink';
 import { isAdministrator } from '~/helpers';
+import { useLists } from '~/hooks';
 
 interface ResourcesDetailsProps {
 	resource: Resource;
@@ -40,6 +41,7 @@ function ResourcesDetails({
 }: ResourcesDetailsProps): ReactElement {
 	const { submit } = useFetcher();
 	const bookmark = useFetcher();
+	const lists = useLists();
 	const location = useLocation();
 	const [backURL, bookmarkURL] = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);
@@ -161,8 +163,22 @@ function ResourcesDetails({
 										/>
 										{getSite(resource.url)}
 									</a>
-									{!resource.integrations?.length ? null : (
+									{!resource.integrations || resource.lists ? (
 										<div className="pt-4 flex flex-wrap gap-2">
+											{resource.lists
+												?.flatMap(
+													(slug) =>
+														lists.find((list) => list.slug === slug) ?? [],
+												)
+												.map((list) => (
+													<Link
+														key={list.slug}
+														className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
+														to={`/news/${list.slug}`}
+													>
+														{list.title}
+													</Link>
+												))}
 											{resource.integrations?.map((integration) => (
 												<Link
 													key={integration}
@@ -173,7 +189,7 @@ function ResourcesDetails({
 												</Link>
 											))}
 										</div>
-									)}
+									) : null}
 									{!resource.description ? null : (
 										<p className="pt-6 text-gray-400 break-words whitespace-pre-line">
 											{resource.description}
