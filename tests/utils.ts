@@ -266,7 +266,7 @@ export async function getPage(mf: Miniflare, url: string) {
 export async function listResources(mf: Miniflare) {
 	const content = await mf.getKVNamespace('CONTENT');
 	const data = await content.get<{ [resourceId: string]: Resource }>(
-		'guides/news',
+		'guides/discover',
 		'json',
 	);
 

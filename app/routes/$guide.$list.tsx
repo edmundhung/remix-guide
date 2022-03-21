@@ -11,7 +11,7 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const { session, resourceStore, userStore } = context as Context;
 	const profile = await session.isAuthenticated();
 
-	if (params.guide === 'news') {
+	if (params.guide === 'discover') {
 		const searchOptions = getSearchOptions(request.url);
 		const guide = await resourceStore.getData();
 

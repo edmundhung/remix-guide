@@ -248,20 +248,20 @@ export function getResourceStore(
 		let { value, metadata } = await CONTENT.getWithMetadata<
 			Guide['value'],
 			GuideMetadata
-		>('guides/news', 'json');
+		>('guides/discover', 'json');
 
 		if (!value || !metadata) {
 			const data = await getGuide(storeName);
 			value = data.value;
 			metadata = data.metadata;
 
-			ctx.waitUntil(updateCache('news', value, metadata));
+			ctx.waitUntil(updateCache('discover', value, metadata));
 		} else if (isExpiring(metadata.timestamp)) {
 			ctx.waitUntil(
 				(async function () {
 					const data = await getGuide(storeName);
 
-					await updateCache('news', data.value, data.metadata);
+					await updateCache('discover', data.value, data.metadata);
 				})(),
 			);
 		}
@@ -288,11 +288,11 @@ export function getResourceStore(
 				description: description !== '' ? description : null,
 				lists,
 			});
-			await CONTENT.delete('guides/news');
+			await CONTENT.delete('guides/discover');
 		},
 		async deleteBookmark(resourceId: string): Promise<void> {
 			await fetchStore(storeName, '/resources', 'DELETE', { resourceId });
-			await CONTENT.delete('guides/news');
+			await CONTENT.delete('guides/discover');
 		},
 		async submit(
 			url: string,
@@ -304,7 +304,7 @@ export function getResourceStore(
 			});
 
 			if (status === 'PUBLISHED') {
-				await CONTENT.delete('guides/news');
+				await CONTENT.delete('guides/discover');
 			}
 
 			return {

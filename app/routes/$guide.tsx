@@ -15,7 +15,7 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 		throw redirect(`${params.guide}/bookmarks`);
 	}
 
-	if (params.guide !== 'news') {
+	if (params.guide !== 'discover') {
 		throw notFound();
 	}
 

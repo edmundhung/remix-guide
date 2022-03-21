@@ -7,5 +7,5 @@ export let loader: LoaderFunction = async ({ request }) => {
 	const searchParams = getRelatedSearchParams(url.search);
 	const search = searchParams.toString();
 
-	throw redirect(search ? `/news?${search}` : '/news');
+	throw redirect(search ? `/discover?${search}` : '/discover');
 };

@@ -220,5 +220,5 @@ export function getTitleBySearchOptions(searchOptions: SearchOptions): string {
 		return 'Search Result';
 	}
 
-	return options[0] ?? 'News';
+	return options[0] ?? 'Discover';
 }

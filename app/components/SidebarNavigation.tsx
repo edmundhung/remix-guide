@@ -82,7 +82,7 @@ function SearchLink({
 					? 'text-gray-200 bg-gray-700'
 					: 'text-gray-400 hover:text-gray-200 hover:bg-gray-800',
 			)}
-			to={isActive ? `/${guide === 'news' ? guide : ''}` : to}
+			to={isActive ? `/${guide === 'discover' ? guide : ''}` : to}
 			prefetch="intent"
 		>
 			{children}
@@ -195,9 +195,9 @@ function SidebarNavigation({
 							</SearchLink>
 						</List>
 					) : null}
-					<List title="News">
+					<List title="Discover">
 						{(lists ?? []).map((list) => (
-							<SearchLink key={list.slug} guide="news" list={list.slug}>
+							<SearchLink key={list.slug} guide="discover" list={list.slug}>
 								<SvgIcon className="w-4 h-4" href={getListIcon(list.slug)} />{' '}
 								<div className="flex-1">{list.title}</div>
 								<span className="px-1 py-0.5 text-xs">

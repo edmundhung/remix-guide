@@ -67,7 +67,7 @@ export function search(
 
 			const isMatching =
 				match(
-					options.guide === 'news' && options?.list ? [options.list] : [],
+					options.guide === 'discover' && options?.list ? [options.list] : [],
 					resource.lists ?? [],
 				) &&
 				match(
@@ -136,19 +136,23 @@ export function getSuggestions(
 
 	if (resource.category === 'package' && resource.title) {
 		suggestions.push({
-			guide: 'news',
+			guide: 'discover',
 			integrations: [resource.title],
 			sort: 'top',
 		});
 	}
 
 	if (resource.author) {
-		suggestions.push({ guide: 'news', author: resource.author, sort: 'top' });
+		suggestions.push({
+			guide: 'discover',
+			author: resource.author,
+			sort: 'top',
+		});
 	}
 
 	if (resource.category === 'others') {
 		suggestions.push({
-			guide: 'news',
+			guide: 'discover',
 			site: getSite(resource.url),
 			sort: 'top',
 		});

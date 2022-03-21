@@ -97,7 +97,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 		}
 
 		return redirect(
-			`/news?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
+			`/discover?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
 			{
 				headers: setCookieHeader,
 			},

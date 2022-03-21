@@ -11,5 +11,5 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = () => {
-	throw redirect('/news');
+	throw redirect('/discover');
 };
