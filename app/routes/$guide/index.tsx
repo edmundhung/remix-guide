@@ -40,6 +40,7 @@ export let meta: MetaFunction = ({ params, location }) => {
 
 	return formatMeta({
 		title,
+		description: 'A platform for sharing everything about Remix',
 		'og:url': `https://remix.guide/${guide}`,
 	});
 };

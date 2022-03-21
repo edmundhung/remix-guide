@@ -20,12 +20,14 @@ export function formatMeta(meta: Record<string, string>) {
 
 		switch (key) {
 			case 'title': {
-				descriptor['title'] =
+				const title =
 					value === descriptor['title']
 						? descriptor['title']
 						: `${value} - ${descriptor['title']}`;
-				descriptor['og:title'] = value;
-				descriptor['twitter:title'] = value;
+
+				descriptor['title'] = title;
+				descriptor['og:title'] = title;
+				descriptor['twitter:title'] = title;
 				break;
 			}
 			case 'description': {
