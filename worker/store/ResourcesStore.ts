@@ -226,7 +226,7 @@ export function getResourceStore(
 		const reference = new Date(timestamp);
 		const diff = now.valueOf() - reference.valueOf();
 
-		return diff > 3600;
+		return diff > 3600 * 1000;
 	}
 
 	async function getGuide(name: string): Promise<Guide> {
