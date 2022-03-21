@@ -1,12 +1,11 @@
 import { useMemo } from 'react';
-import { LoaderFunction, ShouldReloadFunction, useLocation } from 'remix';
-import { Outlet, useLoaderData, json } from 'remix';
+import type { LoaderFunction, ShouldReloadFunction } from 'remix';
+import { Outlet, useLoaderData, useLocation, json } from 'remix';
 import Feed from '~/components/Feed';
 import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { Resource, Context } from '~/types';
-import type { SearchOptions } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const { session, resourceStore, userStore } = context as Context;

@@ -2,7 +2,7 @@ import { customAlphabet } from 'nanoid';
 import { json } from 'remix';
 import { configureLogger } from '../logging';
 import { getIntegrations, getIntegrationsFromPage } from '../scraping';
-import {
+import type {
 	Env,
 	Page,
 	Resource,

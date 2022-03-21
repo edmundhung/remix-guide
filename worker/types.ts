@@ -1,4 +1,3 @@
-import type { Tracker } from 'workers-logger';
 export type { Context } from './context';
 
 export type AsyncReturnType<T> = T extends Promise<infer U>
