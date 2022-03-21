@@ -25,6 +25,7 @@ export function createSession(
 			sameSite: 'lax',
 			secrets: env.SESSION_SECRETS.split(','),
 			secure: env.GITHUB_CALLBACK_URL?.startsWith('https') ?? false,
+			maxAge: 2_592_000, // 30 days
 		},
 	});
 
