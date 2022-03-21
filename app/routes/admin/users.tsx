@@ -38,6 +38,12 @@ export default function ListUsers() {
 							<th className="px-4 py-2 text-left border border-gray-700">
 								Action
 							</th>
+							<th className="px-4 py-2 text-left border border-gray-700">
+								Created at
+							</th>
+							<th className="px-4 py-2 text-left border border-gray-700">
+								Updated at
+							</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -54,6 +60,12 @@ export default function ListUsers() {
 									<Link to={`${user.id}/backup`} className="hover:underline">
 										Backup
 									</Link>
+								</td>
+								<td className="px-4 py-2 border border-gray-700">
+									{user.createdAt ?? 'n/a'}
+								</td>
+								<td className="px-4 py-2 border border-gray-700">
+									{user.updatedAt ?? 'n/a'}
 								</td>
 							</tr>
 						))}

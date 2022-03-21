@@ -4,7 +4,6 @@ import { configureLogger } from '../logging';
 import type { Env, UserProfile, User, AsyncReturnType } from '../types';
 import { createStoreFetch, restoreStoreData } from '../utils';
 import { getPageStore } from './PageStore';
-import { getResourceStore } from './ResourcesStore';
 
 /**
  * Configure logging namespace
@@ -40,13 +39,21 @@ async function createUserStore(state: DurableObjectState, env: Env) {
 				);
 			}
 
-			profile = newProfile;
+			const now = new Date().toISOString();
+			const updated = {
+				...newProfile,
+				createdAt: profile?.createdAt ?? now,
+				updatedAt: now,
+			};
+
 			await Promise.all([
-				storage.put('profile', profile),
-				CONTENT.put(`user/${profile.id}`, JSON.stringify(profile), {
-					metadata: profile,
+				storage.put('profile', updated),
+				CONTENT.put(`user/${updated.id}`, JSON.stringify(updated), {
+					metadata: updated,
 				}),
 			]);
+
+			profile = updated;
 		},
 		async view(userId: string, resourceId: string): Promise<void> {
 			if (profile?.id !== userId) {
@@ -109,7 +116,6 @@ export function getUserStore(
 	ctx: ExecutionContext | DurableObjectState,
 ) {
 	const pageStore = getPageStore(env, ctx);
-	const resourcesStore = getResourceStore(env, ctx);
 	const fetchStore = createStoreFetch(env.USER_STORE, 'guide');
 
 	return {
