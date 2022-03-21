@@ -30,9 +30,7 @@ interface ResourcesListProps {
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['guide', 'list', 'sort', 'limit'].concat(
-		!searchOptions.list ? ['category'] : [],
-	);
+	const keys = ['guide', 'list', 'sort', 'limit'];
 
 	return Object.entries(searchOptions).some(
 		([key, value]) =>
