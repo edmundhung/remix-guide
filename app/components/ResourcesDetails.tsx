@@ -26,13 +26,6 @@ interface ResourcesDetailsProps {
 	children: ReactNode;
 }
 
-function getScreenshotURL(url: string): string {
-	return `https://cdn.statically.io/screenshot/${url.replace(
-		`${new URL(url).protocol}//`,
-		'',
-	)}`;
-}
-
 function ResourcesDetails({
 	resource,
 	user,
@@ -196,40 +189,42 @@ function ResourcesDetails({
 										</p>
 									)}
 								</div>
-								<div className="flex flex-row justify-center">
-									{resource.video ? (
-										<div className="pt-1 w-full 2xl:w-96">
-											<div className="aspect-w-16 aspect-h-9">
-												<iframe
-													width="720"
-													height="405"
-													src={resource.video}
-													title={resource.title}
-													frameBorder="0"
-													allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-													allowFullScreen
-												/>
+								{resource.video || resource.image ? (
+									<div className="flex flex-row justify-center">
+										{resource.video ? (
+											<div className="pt-1 w-full 2xl:w-96">
+												<div className="aspect-w-16 aspect-h-9">
+													<iframe
+														width="720"
+														height="405"
+														src={resource.video}
+														title={resource.title}
+														frameBorder="0"
+														allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+														allowFullScreen
+													/>
+												</div>
 											</div>
-										</div>
-									) : (
-										<div className="lg:max-w-sm 2xl:max-w-xs w-auto mx-auto">
-											<a
-												className="relative"
-												href={resource.url}
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												<img
-													className="max-h-96 rounded-lg bg-white"
-													src={resource.image ?? getScreenshotURL(resource.url)}
-													width="auto"
-													height="auto"
-													alt="cover"
-												/>
-											</a>
-										</div>
-									)}
-								</div>
+										) : resource.image ? (
+											<div className="lg:max-w-sm 2xl:max-w-xs w-auto mx-auto">
+												<a
+													className="relative"
+													href={resource.url}
+													target="_blank"
+													rel="noopener noreferrer"
+												>
+													<img
+														className="max-h-96 rounded-lg bg-white"
+														src={resource.image}
+														width="auto"
+														height="auto"
+														alt="cover"
+													/>
+												</a>
+											</div>
+										) : null}
+									</div>
+								) : null}
 							</div>
 						</div>
 						{children}
