@@ -156,7 +156,7 @@ function ResourcesDetails({
 										/>
 										{getSite(resource.url)}
 									</a>
-									{!resource.integrations || resource.lists ? (
+									{resource.integrations || resource.lists ? (
 										<div className="pt-4 flex flex-wrap gap-2">
 											{resource.lists
 												?.flatMap(
