@@ -1,3 +1,4 @@
+/* eslint-disable no-undef */
 import * as esbuild from 'esbuild';
 
 async function build() {
@@ -19,6 +20,7 @@ async function build() {
 		define: {
 			'process.env.NODE_ENV': `"${mode}"`,
 			'process.env.VERSION': `"${version}"`,
+			'process.env.REMIX_DEV_SERVER_WS_PORT': `""`,
 		},
 		conditions: ['worker'], // Needed for diary to be built correctly
 		outfile,
