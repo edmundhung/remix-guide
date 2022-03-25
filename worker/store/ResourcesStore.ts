@@ -1,6 +1,4 @@
 import { customAlphabet } from 'nanoid';
-import { json } from 'remix';
-import { configureLogger } from '../logging';
 import { getIntegrations, getIntegrationsFromPage } from '../scraping';
 import type {
 	Env,
@@ -8,12 +6,11 @@ import type {
 	Resource,
 	ResourceSummary,
 	SubmissionStatus,
-	AsyncReturnType,
 	List,
 	Guide,
 	GuideMetadata,
 } from '../types';
-import { createStoreFetch, restoreStoreData } from '../utils';
+import { configureStore, restoreStoreData } from '../utils';
 import { getPageStore } from './PageStore';
 
 /**
@@ -25,12 +22,7 @@ const generateId = customAlphabet(
 	12,
 );
 
-/**
- * Configure logging namespace
- */
-const createLogger = configureLogger('store:ResourcesStore');
-
-async function createResourceStore(state: DurableObjectState, env: Env) {
+const { Store, createClient } = configureStore(async (state, env: Env) => {
 	const { storage } = state;
 	const pageStore = getPageStore(env, state);
 
@@ -136,7 +128,10 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 				},
 			};
 		},
-		async submit(userId: string, url: string) {
+		async submit(
+			userId: string,
+			url: string,
+		): Promise<{ id: string | null; status: SubmissionStatus | null }> {
 			let status: SubmissionStatus | null = null;
 			let page = await pageStore.getOrCreatePage(url);
 
@@ -205,16 +200,28 @@ async function createResourceStore(state: DurableObjectState, env: Env) {
 		},
 		async restore(data: Record<string, any>): Promise<void> {
 			await restoreStoreData(storage, data);
+
+			resourceIdByURL =
+				(await storage.get<Record<string, string | undefined>>('index/URL')) ??
+				{};
+			resourceIdByPackageName =
+				(await storage.get<Record<string, string | undefined>>(
+					'index/PackageName',
+				)) ?? {};
 		},
 	};
-}
+});
+
+/**
+ * ResourcesStore - A durable object that keeps resources data and preview info
+ */
+export const ResourcesStore = Store;
 
 export function getResourceStore(
 	env: Env,
 	ctx: ExecutionContext | DurableObjectState,
 ) {
 	const { CONTENT, RESOURCES_STORE } = env;
-	const fetchStore = createStoreFetch(RESOURCES_STORE, 'resources');
 	const storeName = '';
 
 	function isExpiring(timestamp: string | undefined): boolean {
@@ -230,7 +237,9 @@ export function getResourceStore(
 	}
 
 	async function getGuide(name: string): Promise<Guide> {
-		return await fetchStore(name, '/resources', 'GET');
+		const client = createClient(RESOURCES_STORE, name);
+
+		return await client.list();
 	}
 
 	async function updateCache(
@@ -251,7 +260,7 @@ export function getResourceStore(
 		>('guides/discover', 'json');
 
 		if (!value || !metadata) {
-			const data = await getGuide(storeName);
+			const data = await getGuide(name);
 			value = data.value;
 			metadata = data.metadata;
 
@@ -259,7 +268,7 @@ export function getResourceStore(
 		} else if (isExpiring(metadata.timestamp)) {
 			ctx.waitUntil(
 				(async function () {
-					const data = await getGuide(storeName);
+					const data = await getGuide(name);
 
 					await updateCache('discover', data.value, data.metadata);
 				})(),
@@ -283,25 +292,28 @@ export function getResourceStore(
 			description: string | null,
 			lists: string[],
 		): Promise<void> {
-			await fetchStore(storeName, '/resources', 'PUT', {
+			const client = createClient(RESOURCES_STORE, storeName);
+
+			await client.updateBookmark(
 				resourceId,
-				description: description !== '' ? description : null,
+				description !== '' ? description : null,
 				lists,
-			});
+			);
 			await CONTENT.delete('guides/discover');
 		},
 		async deleteBookmark(resourceId: string): Promise<void> {
-			await fetchStore(storeName, '/resources', 'DELETE', { resourceId });
+			const client = createClient(RESOURCES_STORE, storeName);
+
+			await client.deleteBookmark(resourceId);
 			await CONTENT.delete('guides/discover');
 		},
 		async submit(
 			url: string,
 			userId: string,
-		): Promise<{ id: string; status: SubmissionStatus }> {
-			const { id, status } = await fetchStore(storeName, '/submit', 'POST', {
-				url,
-				userId,
-			});
+		): Promise<{ id: string | null; status: SubmissionStatus | null }> {
+			const client = createClient(RESOURCES_STORE, storeName);
+
+			const { id, status } = await client.submit(userId, url);
 
 			if (status === 'PUBLISHED') {
 				await CONTENT.delete('guides/discover');
@@ -313,92 +325,14 @@ export function getResourceStore(
 			};
 		},
 		async backup(): Promise<Record<string, any>> {
-			return await fetchStore(storeName, '/backup', 'POST');
+			const client = createClient(RESOURCES_STORE, storeName);
+
+			return await client.backup();
 		},
 		async restore(data: Record<string, any>): Promise<void> {
-			return await fetchStore(storeName, '/restore', 'POST', data);
+			const client = createClient(RESOURCES_STORE, storeName);
+
+			return await client.restore(data);
 		},
 	};
-}
-
-/**
- * ResourcesStore - A durable object that keeps resources data and preview info
- */
-export class ResourcesStore {
-	env: Env;
-	state: DurableObjectState;
-	store: AsyncReturnType<typeof createResourceStore> | null;
-
-	constructor(state: DurableObjectState, env: Env) {
-		this.env = env;
-		this.state = state;
-		this.store = null;
-		state.blockConcurrencyWhile(async () => {
-			this.store = await createResourceStore(state, env);
-		});
-	}
-
-	async fetch(request: Request) {
-		let logger = createLogger(request, this.env);
-		let response = new Response('Not found', { status: 404 });
-
-		try {
-			const url = new URL(request.url);
-			const method = request.method.toUpperCase();
-
-			if (!this.store) {
-				throw new Error(
-					'The store object is unavailable; Please check if the store is initialised properly',
-				);
-			} else if (url.pathname === '/resources' && method === 'GET') {
-				const result = await this.store.list();
-
-				response = json(result);
-			} else if (url.pathname === '/resources' && method === 'PUT') {
-				const { resourceId, description, lists } = await request.json();
-
-				await this.store.updateBookmark(resourceId, description, lists);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/resources' && method === 'DELETE') {
-				const { resourceId } = await request.json();
-
-				await this.store.deleteBookmark(resourceId);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/submit' && method === 'POST') {
-				const { url, userId } = await request.json();
-				const result = await this.store.submit(userId, url);
-
-				response = json(result, 201);
-			} else if (url.pathname === '/backup' && method === 'POST') {
-				const data = await this.store.backup();
-
-				response = json(data);
-			} else if (url.pathname === '/restore' && method === 'POST') {
-				const data = await request.json<any>();
-
-				await this.store.restore(data);
-
-				// Re-initialise everything again
-				this.store = await createResourceStore(this.state, this.env);
-
-				response = new Response(null, { status: 204 });
-			}
-		} catch (e) {
-			console.log('error', e);
-			if (e instanceof Error) {
-				logger.error(e);
-				logger.log(
-					`ResourcesStore failed while handling fetch - ${request.url}; Received message: ${e.message}`,
-				);
-			}
-
-			response = new Response('Internal Server Error', { status: 500 });
-		} finally {
-			logger.report(response);
-		}
-
-		return response;
-	}
 }

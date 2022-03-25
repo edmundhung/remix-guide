@@ -1,51 +1,92 @@
-export function createStoreFetch(
-	namespace: DurableObjectNamespace,
-	hostname: string,
+export function configureStore<Env, T extends Record<string, any>>(
+	handlersCreator: (state: DurableObjectState, env: Env) => Promise<T>,
 ) {
-	async function fetchStore(
-		name: string,
-		pathname: string,
-		method: string,
-		data?: Record<string, any>,
-	): Promise<any> {
+	class Store {
+		env: Env;
+		state: DurableObjectState;
+		handlers: T | null;
+
+		constructor(state: DurableObjectState, env: Env) {
+			this.state = state;
+			this.env = env;
+			this.handlers = null;
+
+			state.blockConcurrencyWhile(async () => {
+				this.handlers = await handlersCreator(state, env);
+			});
+		}
+
+		async fetch(request: Request): Promise<Response> {
+			const { method, args } = await request.json<{
+				method: string;
+				args: any[];
+			}>();
+
+			try {
+				if (!this.handlers) {
+					throw new Error(
+						'The handlers are not initialised; Please check if the store is setup properly',
+					);
+				}
+
+				const handler = this.handlers[method];
+
+				if (typeof handler === 'function') {
+					return new Response(JSON.stringify(await handler(...args)) ?? null, {
+						status: 200,
+					});
+				} else {
+					return new Response('Not Found', { status: 404 });
+				}
+			} catch (e) {
+				console.error(e);
+				return new Response('Internal Server Error', { status: 500 });
+			}
+		}
+	}
+
+	function createClient(namespace: DurableObjectNamespace, name: string): T {
 		const id = namespace.idFromName(name);
-		const store = namespace.get(id);
-		const origin = `http://${
-			name !== '' ? name : 'global'
-		}.${hostname}${pathname}`;
-		const searchParams =
-			method === 'GET' && data
-				? new URLSearchParams(
-						Object.entries(data).filter(
-							([_, value]) => value !== null && typeof value !== 'undefined',
-						),
-				  )
-				: null;
-		const body = method !== 'GET' && data ? JSON.stringify(data) : null;
-		const response = await store.fetch(
-			`${origin}?${searchParams?.toString() ?? ''}`,
+		const stub = namespace.get(id);
+		const client = new Proxy(
+			{},
 			{
-				method,
-				body,
+				get(_, method) {
+					return async (...args: any[]) => {
+						const response = await stub.fetch('http://store', {
+							headers: {
+								'content-type': 'application/json',
+							},
+							method: 'POST',
+							body: JSON.stringify({ method, args }),
+						});
+
+						switch (response.status) {
+							case 200:
+								if (!response.body) {
+									return;
+								}
+
+								return await response.json();
+							case 404:
+								throw new Error(`Method ${method.toString()} is not available`);
+							default:
+								throw new Error(
+									`Unknown error caught; Received a ${response.status} response`,
+								);
+						}
+					};
+				},
 			},
 		);
 
-		if (response.status === 204) {
-			return;
-		} else if (response.status === 404) {
-			return null;
-		}
-
-		if (!response.ok) {
-			throw new Error(
-				`Request ${method} ${origin} failed; Received response with status ${response.status}`,
-			);
-		}
-
-		return await response.json<any>();
+		return client as T;
 	}
 
-	return fetchStore;
+	return {
+		Store,
+		createClient,
+	};
 }
 
 export async function restoreStoreData(

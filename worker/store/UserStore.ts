@@ -1,19 +1,10 @@
-import { json } from 'remix';
 import { matchCache, removeCache, updateCache } from '../cache';
-import { configureLogger } from '../logging';
-import type { Env, UserProfile, User, AsyncReturnType } from '../types';
-import { createStoreFetch, restoreStoreData } from '../utils';
+import type { Env, UserProfile, User } from '../types';
+import { configureStore, restoreStoreData } from '../utils';
 import { getPageStore } from './PageStore';
 
-/**
- * Configure logging namespace
- */
-const createLogger = configureLogger('store:UserStore');
-
-async function createUserStore(state: DurableObjectState, env: Env) {
-	const { storage } = state;
-	const { CONTENT } = env;
-
+const { Store, createClient } = configureStore(async ({ storage }, env) => {
+	const { CONTENT } = env as Env;
 	let [profile = null, bookmarked = [], viewed = []] = await Promise.all([
 		storage.get<UserProfile>('profile'),
 		storage.get<string[]>('bookmarked'),
@@ -107,23 +98,34 @@ async function createUserStore(state: DurableObjectState, env: Env) {
 		},
 		async restore(data: Record<string, any>): Promise<void> {
 			await restoreStoreData(storage, data);
+
+			[profile = null, bookmarked = [], viewed = []] = await Promise.all([
+				storage.get<UserProfile>('profile'),
+				storage.get<string[]>('bookmarked'),
+				storage.get<string[]>('viewed'),
+			]);
 		},
 	};
-}
+});
+
+/**
+ * UserStore - A durable object that keeps user profile, bookmarks and views
+ */
+export const UserStore = Store;
 
 export function getUserStore(
 	env: Env,
 	ctx: ExecutionContext | DurableObjectState,
 ) {
 	const pageStore = getPageStore(env, ctx);
-	const fetchStore = createStoreFetch(env.USER_STORE, 'guide');
 
 	return {
 		async getUser(userId: string): Promise<User | null> {
+			const client = createClient(env.USER_STORE, userId);
 			let user = await matchCache<User>(`users/${userId}`);
 
 			if (!user) {
-				user = await fetchStore(userId, '/', 'GET');
+				user = await client.getUser();
 
 				if (user) {
 					ctx.waitUntil(updateCache(`users/${userId}`, user, 10800));
@@ -167,7 +169,9 @@ export function getUserStore(
 			return list;
 		},
 		async updateProfile(profile: UserProfile): Promise<void> {
-			return await fetchStore(profile.id, '/profile', 'PUT', { profile });
+			const client = createClient(env.USER_STORE, profile.id);
+
+			return await client.updateProfile(profile);
 		},
 		async view(
 			userId: string | null,
@@ -175,10 +179,9 @@ export function getUserStore(
 			url: string,
 		): Promise<void> {
 			if (userId) {
-				await fetchStore(userId, '/view', 'PUT', {
-					userId,
-					resourceId,
-				});
+				const client = createClient(env.USER_STORE, userId);
+
+				await client.view(userId, resourceId);
 
 				ctx.waitUntil(removeCache(`users/${userId}`));
 			}
@@ -190,10 +193,9 @@ export function getUserStore(
 			resourceId: string,
 			url: string,
 		): Promise<void> {
-			await fetchStore(userId, '/bookmark', 'PUT', {
-				userId,
-				resourceId,
-			});
+			const client = createClient(env.USER_STORE, userId);
+
+			await client.bookmark(userId, resourceId);
 
 			ctx.waitUntil(removeCache(`users/${userId}`));
 			ctx.waitUntil(pageStore.bookmark(userId, url));
@@ -203,106 +205,22 @@ export function getUserStore(
 			resourceId: string,
 			url: string,
 		): Promise<void> {
-			await fetchStore(userId, '/bookmark', 'DELETE', { userId, resourceId });
+			const client = createClient(env.USER_STORE, userId);
+
+			await client.unbookmark(userId, resourceId);
 
 			ctx.waitUntil(removeCache(`users/${userId}`));
 			ctx.waitUntil(pageStore.unbookmark(userId, url));
 		},
 		async backup(userId: string): Promise<Record<string, any>> {
-			return await fetchStore(userId, '/backup', 'POST');
+			const client = createClient(env.USER_STORE, userId);
+
+			return await client.backup();
 		},
 		async restore(userId: string, data: Record<string, any>): Promise<void> {
-			return await fetchStore(userId, '/restore', 'POST', data);
+			const client = createClient(env.USER_STORE, userId);
+
+			return await client.restore(data);
 		},
 	};
-}
-
-/**
- * UserStore - A durable object that keeps user profile, bookmarks and views
- */
-export class UserStore {
-	env: Env;
-	state: DurableObjectState;
-	store: AsyncReturnType<typeof createUserStore> | null;
-
-	constructor(state: DurableObjectState, env: Env) {
-		this.state = state;
-		this.env = env;
-		this.store = null;
-		this.state.blockConcurrencyWhile(async () => {
-			this.store = await createUserStore(state, env);
-		});
-	}
-
-	async fetch(request: Request) {
-		let logger = createLogger(request, this.env);
-		let response = new Response('Not found', { status: 404 });
-
-		try {
-			let url = new URL(request.url);
-			let method = request.method.toUpperCase();
-
-			if (!this.store) {
-				throw new Error(
-					'The store object is unavailable; Please check if the store is initialised properly',
-				);
-			} else if (url.pathname === '/' && method === 'GET') {
-				const user = await this.store.getUser();
-
-				if (user) {
-					response = json(user);
-				}
-			} else if (url.pathname === '/profile' && method === 'PUT') {
-				const { profile } = await request.json();
-
-				await this.store.updateProfile(profile);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/view' && method === 'PUT') {
-				const { userId, resourceId } = await request.json();
-
-				await this.store.view(userId, resourceId);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/bookmark' && method === 'PUT') {
-				const { userId, resourceId } = await request.json();
-
-				await this.store.bookmark(userId, resourceId);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/bookmark' && method === 'DELETE') {
-				const { userId, resourceId } = await request.json();
-
-				await this.store.unbookmark(userId, resourceId);
-
-				response = new Response(null, { status: 204 });
-			} else if (url.pathname === '/backup' && method === 'POST') {
-				const data = await this.store.backup();
-
-				response = json(data);
-			} else if (url.pathname === '/restore' && method === 'POST') {
-				const data = await request.json<any>();
-
-				await this.store.restore(data);
-
-				// Re-initialise everything again
-				this.store = await createUserStore(this.state, this.env);
-
-				response = new Response(null, { status: 204 });
-			}
-		} catch (e) {
-			if (e instanceof Error) {
-				logger.error(e);
-				logger.log(
-					`UserStore failed while handling a fetch call - ${request.url}; Received message: ${e.message}`,
-				);
-			}
-
-			response = new Response('Internal Server Error', { status: 500 });
-		} finally {
-			logger.report(response);
-		}
-
-		return response;
-	}
 }

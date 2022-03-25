@@ -1,13 +1,5 @@
 export type { Context } from './context';
 
-export type AsyncReturnType<T> = T extends Promise<infer U>
-	? U
-	: T extends (...args: any) => Promise<infer U>
-	? U
-	: T extends (...args: any) => infer U
-	? U
-	: T;
-
 export interface Env {
 	GITHUB_TOKEN?: string;
 	GITHUB_CLIENT_ID?: string;
