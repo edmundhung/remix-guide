@@ -1,18 +1,15 @@
 import type { ActionFunction } from 'remix';
 import { json, useActionData, redirect } from 'remix';
+import { requireAdministrator } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
-import { isAdministrator, notFound } from '~/helpers';
 import type { Context } from '~/types';
 
 export let action: ActionFunction = async ({ request, context }) => {
 	const { session, resourceStore } = context as Context;
-	const profile = await session.isAuthenticated();
-
-	if (!isAdministrator(profile?.name)) {
-		throw notFound();
-	}
-
-	const formData = await request.formData();
+	const [formData] = await Promise.all([
+		request.formData(),
+		requireAdministrator(context),
+	]);
 	const type = formData.get('type');
 
 	switch (type) {
@@ -27,28 +24,31 @@ export let action: ActionFunction = async ({ request, context }) => {
 
 			if (data.trim() === '') {
 				return redirect('/admin/resources', {
-					headers: await session.commitWithFlashMessage(
-						'Please provide proper data before clicking restore',
-						'error',
-					),
+					headers: {
+						'Set-Cookie': await session.flash(
+							'Please provide proper data before clicking restore',
+							'error',
+						),
+					},
 				});
 			}
 
 			await resourceStore.restore(JSON.parse(data.trim()));
 
 			return redirect('/admin/resources', {
-				headers: await session.commitWithFlashMessage(
-					'Data restored',
-					'success',
-				),
+				headers: {
+					'Set-Cookie': await session.flash('Data restored', 'success'),
+				},
 			});
 		}
 		default:
 			return redirect('/admin/resources', {
-				headers: await session.commitWithFlashMessage(
-					'Please select either backup or restore',
-					'error',
-				),
+				headers: {
+					'Set-Cookie': await session.flash(
+						'Please select either backup or restore',
+						'error',
+					),
+				},
 			});
 	}
 };

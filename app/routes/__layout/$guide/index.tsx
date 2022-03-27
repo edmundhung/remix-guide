@@ -49,7 +49,7 @@ export let meta: MetaFunction = ({ params, location }) => {
 export let action: ActionFunction = async ({ params, context, request }) => {
 	const { session, userStore, resourceStore } = context as Context;
 	const [profile, formData] = await Promise.all([
-		session.isAuthenticated(),
+		session.getUserProfile(),
 		request.formData(),
 	]);
 	const type = formData.get('type');
@@ -100,20 +100,24 @@ export let action: ActionFunction = async ({ params, context, request }) => {
 				await resourceStore.updateBookmark(resourceId, description, lists);
 
 				return redirect(request.url, {
-					headers: await session.commitWithFlashMessage(
-						'The bookmark is updated successfully',
-						'success',
-					),
+					headers: {
+						'Set-Cookie': await session.flash(
+							'The bookmark is updated successfully',
+							'success',
+						),
+					},
 				});
 			}
 			case 'delete': {
 				await resourceStore.deleteBookmark(resourceId);
 
 				return redirect(`/${params.guide}`, {
-					headers: await session.commitWithFlashMessage(
-						'The bookmark is deleted successfully',
-						'success',
-					),
+					headers: {
+						'Set-Cookie': await session.flash(
+							'The bookmark is deleted successfully',
+							'success',
+						),
+					},
 				});
 			}
 			default:
@@ -135,7 +139,7 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 	const { session, resourceStore, userStore } = context as Context;
 	const [list, profile] = await Promise.all([
 		resourceStore.list(),
-		session.isAuthenticated(),
+		session.getUserProfile(),
 	]);
 	const resource = list[resourceId];
 

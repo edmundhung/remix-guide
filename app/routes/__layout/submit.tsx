@@ -32,21 +32,25 @@ function isValidURL(text: string): boolean {
 
 export let action: ActionFunction = async ({ request, context }) => {
 	const { session, resourceStore } = context as Context;
-	const profile = await session.isAuthenticated();
+	const profile = await session.getUserProfile();
 
 	if (!profile) {
 		return redirect('/submit', {
-			headers: await session.commitWithFlashMessage(
-				'Please login first before submitting new resources',
-				'warning',
-			),
+			headers: {
+				'Set-Cookie': await session.flash(
+					'Please login first before submitting new resources',
+					'warning',
+				),
+			},
 		});
 	} else if (!isMaintainer(profile.name)) {
 		return redirect('/submit', {
-			headers: await session.commitWithFlashMessage(
-				'Sorry. This feature is not enabled on your account yet.',
-				'warning',
-			),
+			headers: {
+				'Set-Cookie': await session.flash(
+					'Sorry. This feature is not enabled on your account yet.',
+					'warning',
+				),
+			},
 		});
 	}
 
@@ -55,10 +59,9 @@ export let action: ActionFunction = async ({ request, context }) => {
 
 	if (!url || !isValidURL(url.toString())) {
 		return redirect('/submit', {
-			headers: await session.commitWithFlashMessage(
-				'Invalid URL provided',
-				'warning',
-			),
+			headers: {
+				'Set-Cookie': await session.flash('Invalid URL provided', 'warning'),
+			},
 		});
 	}
 
@@ -67,49 +70,52 @@ export let action: ActionFunction = async ({ request, context }) => {
 			url.toString(),
 			profile.id,
 		);
-
-		let setCookieHeader = {};
+		const headers = new Headers();
 
 		switch (status) {
 			case 'PUBLISHED':
-				setCookieHeader = await session.commitWithFlashMessage(
-					'The submitted resource is now published',
-					'success',
+				headers.set(
+					'Set-Cookie',
+					await session.flash(
+						'The submitted resource is now published',
+						'success',
+					),
 				);
 				break;
 			case 'RESUBMITTED':
-				setCookieHeader = await session.commitWithFlashMessage(
-					'A resource with the same url is found',
-					'info',
+				headers.set(
+					'Set-Cookie',
+					await session.flash('A resource with the same url is found', 'info'),
 				);
 				break;
 			case 'INVALID':
-				setCookieHeader = await session.commitWithFlashMessage(
-					'The provided data looks invalid; Please make sure a proper category is selected',
-					'error',
+				headers.set(
+					'Set-Cookie',
+					await session.flash(
+						'The provided data looks invalid; Please make sure a proper category is selected',
+						'error',
+					),
 				);
 				break;
 		}
 
 		if (!id) {
-			return redirect('/submit', {
-				headers: setCookieHeader,
-			});
+			return redirect('/submit', { headers });
 		}
 
 		return redirect(
 			`/discover?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
-			{
-				headers: setCookieHeader,
-			},
+			{ headers },
 		);
 	} catch (error) {
 		console.log('Error while submitting new url; Received', error);
 		return redirect('/submit', {
-			headers: await session.commitWithFlashMessage(
-				'Something wrong with the URL; Please try again later',
-				'error',
-			),
+			headers: {
+				'Set-Cookie': await session.flash(
+					'Something wrong with the URL; Please try again later',
+					'error',
+				),
+			},
 		});
 	}
 };

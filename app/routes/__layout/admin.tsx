@@ -4,18 +4,15 @@ import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
-import { isAdministrator, notFound } from '~/helpers';
-import type { Context } from '~/types';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
+import { requireAdministrator } from '~/helpers';
+import { ok } from '~/helpers';
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { session } = context as Context;
-	const profile = await session.isAuthenticated();
+	await requireAdministrator(context);
 
-	if (!isAdministrator(profile?.name)) {
-		throw notFound();
-	}
+	return ok();
 };
 
 export default function Admin() {

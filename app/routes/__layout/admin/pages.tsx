@@ -1,24 +1,16 @@
 import { LoaderFunction, ActionFunction, Link } from 'remix';
 import { Form, useLoaderData, useLocation, json, redirect } from 'remix';
-import { isAdministrator, notFound } from '~/helpers';
+import { requireAdministrator } from '~/helpers';
 import { getSite } from '~/search';
 import type { Context, PageMetadata } from '~/types';
 
 export let action: ActionFunction = async ({ context, request }) => {
 	const { session, pageStore } = context as Context;
-	const [profile, formData] = await Promise.all([
-		session.isAuthenticated(),
+	const [formData] = await Promise.all([
 		request.formData(),
+		requireAdministrator(context),
 	]);
 	const url = formData.get('url')?.toString();
-
-	if (!profile) {
-		return new Response('Unauthorized', { status: 401 });
-	}
-
-	if (!isAdministrator(profile.name)) {
-		return new Response('Forbidden', { status: 403 });
-	}
 
 	if (!url) {
 		return new Response('Bad Request', { status: 400 });
@@ -27,20 +19,19 @@ export let action: ActionFunction = async ({ context, request }) => {
 	await pageStore.refresh(url);
 
 	return redirect(request.url, {
-		headers: await session.commitWithFlashMessage(
-			'Refresh successfull. Be aware that new content will be populated only after the cache is expired',
-			'success',
-		),
+		headers: {
+			'Set-Cookie': await session.flash(
+				'Refresh successfull. Be aware that new content will be populated only after the cache is expired',
+				'success',
+			),
+		},
 	});
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { pageStore, session } = context as Context;
-	const profile = await session.isAuthenticated();
+	const { pageStore } = context as Context;
 
-	if (!isAdministrator(profile?.name)) {
-		throw notFound();
-	}
+	await requireAdministrator(context);
 
 	const entries = await pageStore.listPageMetadata();
 

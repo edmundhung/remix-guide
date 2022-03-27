@@ -1,9 +1,14 @@
-import { administrators, maintainers } from './config';
+import { administrators, maintainers } from '~/config';
+import { Context } from '~/types';
 
 export function notFound(): Response {
 	const statusText = 'Not Found';
 
 	return new Response(statusText, { status: 404, statusText });
+}
+
+export function ok(body?: string | null): Response {
+	return new Response(body, { status: body ? 200 : 204 });
 }
 
 export function formatMeta(meta: Record<string, string>) {
@@ -78,4 +83,14 @@ export function isAdministrator(name: string | null | undefined) {
 	}
 
 	return administrators.includes(name);
+}
+
+export async function requireAdministrator(context: Context) {
+	const profile = await context.session.getUserProfile();
+
+	if (!profile || !isAdministrator(profile.name)) {
+		throw notFound();
+	}
+
+	return profile;
 }

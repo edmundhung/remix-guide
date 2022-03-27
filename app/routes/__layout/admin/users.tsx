@@ -1,15 +1,12 @@
 import type { LoaderFunction } from 'remix';
 import { Link, useLoaderData, json } from 'remix';
-import { isAdministrator, notFound } from '~/helpers';
+import { requireAdministrator } from '~/helpers';
 import type { Context, UserProfile } from '~/types';
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { userStore, session } = context as Context;
-	const profile = await session.isAuthenticated();
+	const { userStore } = context as Context;
 
-	if (!isAdministrator(profile?.name)) {
-		throw notFound();
-	}
+	await requireAdministrator(context);
 
 	const users = await userStore.listUserProfiles();
 

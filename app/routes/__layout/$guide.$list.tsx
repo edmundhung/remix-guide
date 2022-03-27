@@ -9,7 +9,7 @@ import type { Resource, Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const { session, resourceStore, userStore } = context as Context;
-	const profile = await session.isAuthenticated();
+	const profile = await session.getUserProfile();
 
 	if (params.guide === 'discover') {
 		const searchOptions = getSearchOptions(request.url);

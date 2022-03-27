@@ -1,18 +1,20 @@
 import type { ActionFunction } from 'remix';
 import { json, useActionData, redirect } from 'remix';
+import { requireAdministrator, notFound } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
-import { isAdministrator, notFound } from '~/helpers';
 import type { Context } from '~/types';
 
 export let action: ActionFunction = async ({ params, request, context }) => {
 	const { session, userStore } = context as Context;
-	const profile = await session.isAuthenticated();
 
-	if (!isAdministrator(profile?.name) || !params.userId) {
+	if (!params.userId) {
 		throw notFound();
 	}
 
-	const formData = await request.formData();
+	const [formData] = await Promise.all([
+		request.formData(),
+		requireAdministrator(context),
+	]);
 	const type = formData.get('type');
 
 	switch (type) {
@@ -27,28 +29,34 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 
 			if (data.trim() === '') {
 				return redirect('/admin/users', {
-					headers: await session.commitWithFlashMessage(
-						'Please provide proper data before clicking restore',
-						'error',
-					),
+					headers: {
+						'Set-Cookie': await session.flash(
+							'Please provide proper data before clicking restore',
+							'error',
+						),
+					},
 				});
 			}
 
 			await userStore.restore(params.userId, JSON.parse(data.trim()));
 
 			return redirect('/admin/users', {
-				headers: await session.commitWithFlashMessage(
-					`Data restored for user (${params.userId})`,
-					'success',
-				),
+				headers: {
+					'Set-Cookie': await session.flash(
+						`Data restored for user (${params.userId})`,
+						'success',
+					),
+				},
 			});
 		}
 		default:
 			return redirect('/admin/users', {
-				headers: await session.commitWithFlashMessage(
-					'Please select either backup or restore',
-					'error',
-				),
+				headers: {
+					'Set-Cookie': await session.flash(
+						'Please select either backup or restore',
+						'error',
+					),
+				},
 			});
 	}
 };

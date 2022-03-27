@@ -100,22 +100,17 @@ export function createSession(
 
 			return [data, setCookieHeader];
 		},
-		async isAuthenticated(): Promise<UserProfile | null> {
+		async getUserProfile(): Promise<UserProfile | null> {
 			return await authenticator.isAuthenticated(request);
 		},
-		async commitWithFlashMessage(
-			message: string,
-			type: MessageType = 'info',
-		): Promise<Record<string, string>> {
+		async flash(message: string, type: MessageType = 'info'): Promise<string> {
 			const session = await sessionStorage.getSession(
 				request.headers.get('Cookie'),
 			);
 
 			session.flash('message', `${type}: ${message}`);
 
-			return {
-				'Set-Cookie': await sessionStorage.commitSession(session),
-			};
+			return await sessionStorage.commitSession(session);
 		},
 	};
 }
