@@ -15,6 +15,7 @@ import { getSuggestions, patchResource } from '~/resources';
 import { getSearchOptions, getTitleBySearchOptions } from '~/search';
 import type { Context, Resource, SearchOptions, User } from '~/types';
 import BookmarkDetails from '~/components/BookmarkDetails';
+import { useFlashMessage } from '~/hooks';
 
 interface LoaderData {
 	resource: Resource;
@@ -142,22 +143,13 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 		throw notFound();
 	}
 
-	const [user, [message, setCookieHeader]] = await Promise.all([
-		profile?.id ? userStore.getUser(profile.id) : null,
-		session.getFlashMessage(),
-	]);
+	const user = profile?.id ? await userStore.getUser(profile.id) : null;
 
-	return json(
-		{
-			user,
-			message,
-			resource: user ? patchResource(resource, user) : resource,
-			suggestions: getSuggestions(list, resource),
-		},
-		{
-			headers: setCookieHeader,
-		},
-	);
+	return json({
+		user,
+		resource: user ? patchResource(resource, user) : resource,
+		suggestions: getSuggestions(list, resource),
+	});
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
@@ -178,7 +170,8 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function UserProfile() {
-	const { resource, message, user, suggestions } = useLoaderData<LoaderData>();
+	const { resource, user, suggestions } = useLoaderData<LoaderData>();
+	const message = useFlashMessage();
 	const location = useLocation();
 	const [showBookmark, action] = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);

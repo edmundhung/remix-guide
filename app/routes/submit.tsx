@@ -1,5 +1,5 @@
-import type { LoaderFunction, MetaFunction, ActionFunction } from 'remix';
-import { Form, redirect, json, useLoaderData, useLocation } from 'remix';
+import type { MetaFunction, ActionFunction } from 'remix';
+import { Form, redirect, useLocation } from 'remix';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
@@ -8,6 +8,7 @@ import { Context } from '~/types';
 import { formatMeta, isMaintainer } from '~/helpers';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
+import { useFlashMessage } from '~/hooks';
 
 export let meta: MetaFunction = () => {
 	return formatMeta({
@@ -113,22 +114,8 @@ export let action: ActionFunction = async ({ request, context }) => {
 	}
 };
 
-export let loader: LoaderFunction = async ({ context }) => {
-	const { session } = context as Context;
-	const [message, setCookieHeader] = await session.getFlashMessage();
-
-	return json(
-		{
-			message,
-		},
-		{
-			headers: setCookieHeader,
-		},
-	);
-};
-
 export default function Submit() {
-	const { message } = useLoaderData();
+	const message = useFlashMessage();
 	const location = useLocation();
 	const toggleMenuURL = useMemo(
 		() => `?${toggleSearchParams(location.search, 'menu')}`,

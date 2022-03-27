@@ -1,5 +1,5 @@
 import type { LoaderFunction } from 'remix';
-import { Outlet, json, useLoaderData, useLocation } from 'remix';
+import { Outlet, useLoaderData, useLocation } from 'remix';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
@@ -16,15 +16,6 @@ export let loader: LoaderFunction = async ({ context }) => {
 	if (!isAdministrator(profile?.name)) {
 		throw notFound();
 	}
-
-	const [message, setCookieHeader] = await session.getFlashMessage();
-
-	return json(
-		{ message },
-		{
-			headers: setCookieHeader,
-		},
-	);
 };
 
 export default function Admin() {

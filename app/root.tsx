@@ -37,25 +37,27 @@ export let meta: MetaFunction = () => {
 
 export let loader: LoaderFunction = async ({ context }) => {
 	const { session, resourceStore } = context as Context;
-	const [profile, guide] = await Promise.all([
+	const [profile, [message, headers], guide] = await Promise.all([
 		session.isAuthenticated(),
+		session.getFlashMessage(),
 		resourceStore.getData(),
 	]);
 
-	return json({
-		profile,
-		lists: guide.metadata.lists,
-		version: process.env.VERSION,
-	});
+	return json(
+		{
+			profile,
+			message,
+			lists: guide.metadata.lists,
+			version: process.env.VERSION,
+		},
+		{
+			headers,
+		},
+	);
 };
 
-/**
- * Not sure if this is a bad idea or not to minimise requests
- * But the only time this data change is when user login / logout
- * Which trigger a full page reload at the moment
- */
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
-	return typeof submission !== 'undefined';
+	return submission?.formData.get('type') !== 'view';
 };
 
 function Document({
