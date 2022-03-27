@@ -15,7 +15,7 @@ import { getSuggestions, patchResource } from '~/resources';
 import { getSearchOptions, getTitleBySearchOptions } from '~/search';
 import type { Context, Resource, SearchOptions, User } from '~/types';
 import BookmarkDetails from '~/components/BookmarkDetails';
-import { useFlashMessage } from '~/hooks';
+import { useSessionData } from '~/hooks';
 
 interface LoaderData {
 	resource: Resource;
@@ -171,7 +171,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 
 export default function UserProfile() {
 	const { resource, user, suggestions } = useLoaderData<LoaderData>();
-	const message = useFlashMessage();
+	const { message } = useSessionData();
 	const location = useLocation();
 	const [showBookmark, action] = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);

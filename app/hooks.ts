@@ -1,10 +1,10 @@
 import { useMatches } from 'remix';
-import { GuideMetadata } from '~/types';
+import { GuideMetadata, SessionData } from '~/types';
 
-export function useFlashMessage(): string | null {
+export function useSessionData(): SessionData {
 	const [rootMatch] = useMatches();
 
-	return rootMatch?.data.message ?? null;
+	return (rootMatch?.data as SessionData) ?? null;
 }
 
 export function useLists(): Required<GuideMetadata>['lists'] {

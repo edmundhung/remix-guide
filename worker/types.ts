@@ -24,6 +24,11 @@ export interface Env {
 	USER_STORE: DurableObjectNamespace;
 }
 
+export interface SessionData {
+	profile: UserProfile | null;
+	message: string | null;
+}
+
 export interface UserProfile {
 	id: string;
 	name: string;

@@ -8,16 +8,11 @@ import {
 	Meta,
 	Links,
 	Scripts,
-	useLoaderData,
-	useLocation,
 	LiveReload,
 	useCatch,
 	Outlet,
 	json,
 } from 'remix';
-import clsx from 'clsx';
-import Progress from '~/components/Progress';
-import SidebarNavigation from '~/components/SidebarNavigation';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
@@ -36,24 +31,14 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { session, resourceStore } = context as Context;
-	const [profile, [message, headers], guide] = await Promise.all([
-		session.isAuthenticated(),
-		session.getFlashMessage(),
-		resourceStore.getData(),
-	]);
+	const { session } = context as Context;
+	const [data, setCookieHeader] = await session.getData();
 
-	return json(
-		{
-			profile,
-			message,
-			lists: guide.metadata.lists,
-			version: process.env.VERSION,
+	return json(data, {
+		headers: {
+			'Set-Cookie': setCookieHeader,
 		},
-		{
-			headers,
-		},
-	);
+	});
 };
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
@@ -85,25 +70,9 @@ function Document({
 }
 
 export default function App() {
-	const { profile, lists } = useLoaderData();
-	const location = useLocation();
-	const isMenuOpened =
-		new URLSearchParams(location.search).get('open') === 'menu';
-
 	return (
 		<Document>
-			<Progress />
-			<nav
-				className={clsx(
-					'z-30 xl:block w-full lg:w-96 xl:w-64 border-r',
-					isMenuOpened ? 'absolute xl:relative bg-gray-900' : 'hidden',
-				)}
-			>
-				<SidebarNavigation profile={profile} lists={lists} />
-			</nav>
-			<main className={clsx('flex-1', { 'hidden lg:block': isMenuOpened })}>
-				<Outlet />
-			</main>
+			<Outlet />
 		</Document>
 	);
 }

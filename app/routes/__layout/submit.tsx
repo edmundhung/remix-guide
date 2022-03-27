@@ -8,7 +8,7 @@ import { Context } from '~/types';
 import { formatMeta, isMaintainer } from '~/helpers';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
-import { useFlashMessage } from '~/hooks';
+import { useSessionData } from '~/hooks';
 
 export let meta: MetaFunction = () => {
 	return formatMeta({
@@ -115,7 +115,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 };
 
 export default function Submit() {
-	const message = useFlashMessage();
+	const { message } = useSessionData();
 	const location = useLocation();
 	const toggleMenuURL = useMemo(
 		() => `?${toggleSearchParams(location.search, 'menu')}`,

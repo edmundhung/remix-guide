@@ -1,7 +1,7 @@
 import { Authenticator } from 'remix-auth';
 import { GitHubStrategy } from 'remix-auth-github';
 import { createCookieSessionStorage, redirect } from 'remix';
-import type { Env, MessageType, UserProfile } from '../types';
+import type { Env, MessageType, SessionData, UserProfile } from '../types';
 import { getUserStore } from '../store/UserStore';
 
 export type Session = ReturnType<typeof createSession>;
@@ -86,21 +86,22 @@ export function createSession(
 				redirectTo: '/',
 			});
 		},
-		async isAuthenticated(): Promise<UserProfile | null> {
-			return await authenticator.isAuthenticated(request);
-		},
-		async getFlashMessage(): Promise<[string | null, Record<string, string>]> {
+		async getData(): Promise<[SessionData, string]> {
 			const session = await sessionStorage.getSession(
 				request.headers.get('Cookie'),
 			);
+			const profile = session.get(authenticator.sessionKey) ?? null;
 			const message = session.get('message') ?? null;
-			const setCookieHeader = !message
-				? null
-				: {
-						'Set-Cookie': await sessionStorage.commitSession(session),
-				  };
+			const setCookieHeader = await sessionStorage.commitSession(session);
+			const data = {
+				profile,
+				message,
+			};
 
-			return [message, setCookieHeader ?? {}];
+			return [data, setCookieHeader];
+		},
+		async isAuthenticated(): Promise<UserProfile | null> {
+			return await authenticator.isAuthenticated(request);
 		},
 		async commitWithFlashMessage(
 			message: string,
