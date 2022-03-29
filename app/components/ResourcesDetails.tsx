@@ -186,7 +186,7 @@ function ResourcesDetails({
 										</div>
 									) : null}
 									{!resource.description ? null : (
-										<p className="pt-6 text-gray-400 break-words whitespace-pre-line">
+										<p className="pt-6 text-gray-400 whitespace-pre-line [overflow-wrap:anywhere]">
 											{resource.description}
 										</p>
 									)}
