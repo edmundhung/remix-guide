@@ -8,7 +8,7 @@ export function useSessionData(): SessionData {
 }
 
 export function useLists(): Required<GuideMetadata>['lists'] {
-	const [rootMatch] = useMatches();
+	const [, layoutMatch] = useMatches();
 
-	return rootMatch?.data.lists ?? [];
+	return layoutMatch?.data.lists ?? [];
 }
