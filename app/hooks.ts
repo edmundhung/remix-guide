@@ -1,5 +1,5 @@
 import { useMatches } from '@remix-run/react';
-import { GuideMetadata, SessionData } from '~/types';
+import type { GuideMetadata, SessionData } from '~/types';
 
 export function useSessionData(): SessionData {
 	const [rootMatch] = useMatches();

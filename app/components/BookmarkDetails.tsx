@@ -1,4 +1,5 @@
-import { ReactElement, useMemo } from 'react';
+import type { ReactElement } from 'react';
+import { useMemo } from 'react';
 import { useLocation } from '@remix-run/react';
 import { PaneContainer, PaneHeader, PaneContent, PaneFooter } from '~/layout';
 import IconLink from '~/components/IconLink';

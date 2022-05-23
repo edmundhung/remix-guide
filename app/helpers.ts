@@ -1,5 +1,5 @@
 import { administrators, maintainers } from '~/config';
-import { Context } from '~/types';
+import type { Context } from '~/types';
 
 export function notFound(): Response {
 	const statusText = 'Not Found';

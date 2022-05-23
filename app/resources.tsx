@@ -1,5 +1,5 @@
 import { getSite } from '~/search';
-import { SearchOptions, Resource, User } from '~/types';
+import type { SearchOptions, Resource, User } from '~/types';
 
 function calculateScore(resource: Resource): number {
 	const timeScore =

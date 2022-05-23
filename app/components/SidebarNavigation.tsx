@@ -26,10 +26,10 @@ import {
 	List,
 } from '~/layout';
 import { getResourceURL, getSearchOptions, toggleSearchParams } from '~/search';
-import { SearchOptions } from '~/types';
+import type { SearchOptions } from '~/types';
 import IconLink from '~/components/IconLink';
 import { isAdministrator, isMaintainer } from '~/helpers';
-import { GuideMetadata } from '../../worker/types';
+import type { GuideMetadata } from '../../worker/types';
 
 interface ExternalLinkProps {
 	href: string;

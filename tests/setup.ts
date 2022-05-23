@@ -1,8 +1,6 @@
 import { test as base, expect } from '@playwright/test';
-import {
-	fixtures,
-	TestingLibraryFixtures,
-} from '@playwright-testing-library/test/fixture';
+import type { TestingLibraryFixtures } from '@playwright-testing-library/test/fixture';
+import { fixtures } from '@playwright-testing-library/test/fixture';
 import { Miniflare } from 'miniflare';
 import { MockAgent, setGlobalDispatcher } from 'undici';
 

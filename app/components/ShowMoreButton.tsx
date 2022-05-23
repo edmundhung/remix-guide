@@ -1,7 +1,7 @@
 import { Link } from '@remix-run/react';
 import { useInView } from 'react-intersection-observer';
 import { getResourceSearchParams } from '~/search';
-import { SearchOptions } from '~/types';
+import type { SearchOptions } from '~/types';
 import { useEffect, useMemo, useRef } from 'react';
 
 interface ShowMoreButtonProps {

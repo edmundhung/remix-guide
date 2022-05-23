@@ -5,7 +5,7 @@ import { json } from '@remix-run/cloudflare';
 import clsx from 'clsx';
 import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';
-import { Context } from '~/types';
+import type { Context } from '~/types';
 import { useSessionData } from '~/hooks';
 
 export let loader: LoaderFunction = async ({ context }) => {

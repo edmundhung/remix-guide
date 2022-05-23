@@ -13,7 +13,7 @@ import {
 	List,
 	PaneFooter,
 } from '~/layout';
-import { SearchOptions } from '~/types';
+import type { SearchOptions } from '~/types';
 
 interface SearchListProps {
 	searchOptions: SearchOptions;

@@ -14,7 +14,7 @@ import {
 } from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
-import { User } from '~/types';
+import type { User } from '~/types';
 import IconLink from '~/components/IconLink';
 import { isAdministrator } from '~/helpers';
 import { useLists } from '~/hooks';

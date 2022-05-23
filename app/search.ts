@@ -1,4 +1,4 @@
-import { SearchOptions } from '~/types';
+import type { SearchOptions } from '~/types';
 import { platforms } from '~/config';
 import { capitalize } from '~/helpers';
 

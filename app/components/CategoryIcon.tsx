@@ -1,4 +1,4 @@
-import { ReactElement } from 'react';
+import type { ReactElement } from 'react';
 import SvgIcon from '~/components/SvgIcon';
 import packageIcon from '~/icons/box-open.svg';
 import repositoryIcon from '~/icons/map-signs.svg';

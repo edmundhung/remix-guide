@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
-import { Context } from '~/types';
+import type { Context } from '~/types';
 import { formatMeta, isMaintainer } from '~/helpers';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';

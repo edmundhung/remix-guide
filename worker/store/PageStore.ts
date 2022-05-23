@@ -1,5 +1,5 @@
 import { scrapeHTML, getPageDetails, checkSafeBrowsingAPI } from '../scraping';
-import { Env, Page, PageMetadata } from '../types';
+import type { Env, Page, PageMetadata } from '../types';
 import { configureStore, restoreStoreData } from '../utils';
 
 type PageStatistics = Required<Pick<Page, 'bookmarkUsers' | 'viewCount'>>;
