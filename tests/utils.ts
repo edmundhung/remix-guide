@@ -1,18 +1,10 @@
 import type { Miniflare } from 'miniflare';
 import type { Page } from 'playwright-core';
 import type { MockAgent } from 'undici';
-import { createCookie } from '@remix-run/server-runtime';
-import { sign, unsign } from '@remix-run/node/cookieSigning';
+import { createCookie } from '@remix-run/node';
 import { queries, getDocument } from '@playwright-testing-library/test';
 import type { Resource } from '../worker/types';
 import { createPageStoreClient } from '../worker/store/PageStore';
-
-/**
- * Simulate installGlobals from remix
- * Required for createCookie
- */
-global.sign = sign;
-global.unsign = unsign;
 
 export async function setSessionCookie(value: any) {
 	const cookie = createCookie('__session', {
