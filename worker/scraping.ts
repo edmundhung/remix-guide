@@ -1,11 +1,31 @@
 import { decode } from 'html-entities';
-import { integrations, platforms } from '~/config';
 import type { Env, Page } from './types';
 
 interface Parser {
 	setup(htmlRewriter: HTMLRewriter): HTMLRewriter;
 	getResult(): string | null;
 }
+
+// Duplciated from ~/config
+const platforms = [
+	'aws',
+	'azure',
+	'cloudflare',
+	'firebase',
+	'fly',
+	'netlify',
+	'render',
+	'vercel',
+];
+
+// Duplciated from ~/config
+const integrations = [
+	'architect',
+	'cypress',
+	'express',
+	'prisma',
+	'tailwindcss',
+];
 
 function createAttributeParser(selector: string, attribute: string): Parser {
 	let result: string | null = null;

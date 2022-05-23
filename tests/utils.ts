@@ -5,7 +5,7 @@ import { createCookie } from '@remix-run/server-runtime';
 import { sign, unsign } from '@remix-run/node/cookieSigning';
 import { queries, getDocument } from '@playwright-testing-library/test';
 import type { Resource } from '../worker/types';
-import { createStoreFetch } from '../worker/utils';
+import { createPageStoreClient } from '../worker/store/PageStore';
 
 /**
  * Simulate installGlobals from remix
@@ -257,8 +257,8 @@ export async function getResource(mf: Miniflare, resourceId: string | null) {
 
 export async function getPage(mf: Miniflare, url: string) {
 	const PAGE_STORE = await mf.getDurableObjectNamespace('PAGE_STORE');
-	const fetchStore = createStoreFetch(PAGE_STORE, 'page');
-	const page = await fetchStore('global', '/details', 'GET', { url });
+	const client = createPageStoreClient(PAGE_STORE as any, 'global');
+	const page = await client.getPage(url);
 
 	return page;
 }

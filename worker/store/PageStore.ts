@@ -130,6 +130,7 @@ const { Store, createClient } = configureStore(async ({ storage }, env) => {
 });
 
 export const PageStore = Store;
+export const createPageStoreClient = createClient;
 
 export function getPageStore(
 	env: Env,
