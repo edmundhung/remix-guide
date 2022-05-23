@@ -2,8 +2,9 @@ import type {
 	LinksFunction,
 	MetaFunction,
 	LoaderFunction,
-	ShouldReloadFunction,
-} from 'remix';
+} from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
+import type { ShouldReloadFunction } from '@remix-run/react';
 import {
 	Meta,
 	Links,
@@ -11,8 +12,7 @@ import {
 	LiveReload,
 	useCatch,
 	Outlet,
-	json,
-} from 'remix';
+} from '@remix-run/react';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 

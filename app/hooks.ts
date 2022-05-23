@@ -1,4 +1,4 @@
-import { useMatches } from 'remix';
+import { useMatches } from '@remix-run/react';
 import { GuideMetadata, SessionData } from '~/types';
 
 export function useSessionData(): SessionData {

@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 import type { ComponentProps, ReactElement } from 'react';
-import { Link } from 'remix';
+import { Link } from '@remix-run/react';
 import SvgIcon from '~/components/SvgIcon';
 
 interface IconLinkProps {

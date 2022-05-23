@@ -1,6 +1,6 @@
 import type { ReactElement, ReactNode } from 'react';
 import { useMemo } from 'react';
-import { Form, Link, NavLink, useLocation } from 'remix';
+import { Form, Link, NavLink, useLocation } from '@remix-run/react';
 import clsx from 'clsx';
 import SvgIcon from '~/components/SvgIcon';
 import logo from '~/icons/logo.svg';

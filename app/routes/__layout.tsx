@@ -1,5 +1,7 @@
-import type { LoaderFunction, ShouldReloadFunction } from 'remix';
-import { Outlet, json, useLoaderData, useLocation } from 'remix';
+import type { ShouldReloadFunction } from '@remix-run/react';
+import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
+import type { LoaderFunction } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import clsx from 'clsx';
 import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';

@@ -1,4 +1,4 @@
-import type { ActionFunction, LoaderFunction } from 'remix';
+import type { ActionFunction, LoaderFunction } from '@remix-run/cloudflare';
 import { notFound } from '~/helpers';
 
 export let action: ActionFunction = async ({ context }) => {

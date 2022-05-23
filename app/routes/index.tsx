@@ -1,5 +1,5 @@
-import type { LoaderFunction, MetaFunction } from 'remix';
-import { redirect } from 'remix';
+import type { LoaderFunction, MetaFunction } from '@remix-run/cloudflare';
+import { redirect } from '@remix-run/cloudflare';
 import { formatMeta } from '~/helpers';
 
 export let meta: MetaFunction = () => {

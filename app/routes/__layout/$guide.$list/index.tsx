@@ -1,10 +1,11 @@
 import type {
 	LoaderFunction,
 	ActionFunction,
-	ShouldReloadFunction,
 	MetaFunction,
-} from 'remix';
-import { Form, useLocation, useLoaderData, json, redirect } from 'remix';
+} from '@remix-run/cloudflare';
+import { json, redirect } from '@remix-run/cloudflare';
+import type { ShouldReloadFunction } from '@remix-run/react';
+import { Form, useLocation, useLoaderData } from '@remix-run/react';
 import { useMemo } from 'react';
 import clsx from 'clsx';
 import About from '~/components/About';

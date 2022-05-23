@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
-import type { LoaderFunction, ShouldReloadFunction } from 'remix';
-import { Outlet, useLoaderData, useLocation, json } from 'remix';
+import type { LoaderFunction } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
+import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
+import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
 import { notFound } from '~/helpers';
 import { search } from '~/resources';
@@ -50,8 +52,10 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function List() {
-	const { entries, count } =
-		useLoaderData<{ entries: Resource[]; count: number }>();
+	const { entries, count } = useLoaderData<{
+		entries: Resource[];
+		count: number;
+	}>();
 	const location = useLocation();
 	const resourceId = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);

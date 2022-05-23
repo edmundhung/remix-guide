@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { Form } from 'remix';
+import { Form } from '@remix-run/react';
 
 interface BackupFormProps {
 	data: any;

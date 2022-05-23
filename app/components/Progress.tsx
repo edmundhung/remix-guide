@@ -1,6 +1,6 @@
 import type { ReactElement, RefObject } from 'react';
 import { useEffect, useRef } from 'react';
-import { useTransition } from 'remix';
+import { useTransition } from '@remix-run/react';
 
 export function useProgress(): RefObject<HTMLElement> {
 	const el = useRef<HTMLElement>(null);

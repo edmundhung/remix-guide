@@ -1,5 +1,6 @@
-import { LoaderFunction, ActionFunction, Link } from 'remix';
-import { Form, useLoaderData, useLocation, json, redirect } from 'remix';
+import type { LoaderFunction, ActionFunction } from '@remix-run/cloudflare';
+import { json, redirect } from '@remix-run/cloudflare';
+import { Link, Form, useLoaderData, useLocation } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import { getSite } from '~/search';
 import type { Context, PageMetadata } from '~/types';

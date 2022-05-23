@@ -1,4 +1,4 @@
-import { Link } from 'remix';
+import { Link } from '@remix-run/react';
 import type { ReactElement } from 'react';
 import type { Resource } from '~/types';
 import { getSite, getResourceURL } from '~/search';

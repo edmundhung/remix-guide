@@ -1,4 +1,4 @@
-import { Link, useLocation } from 'remix';
+import { Link, useLocation } from '@remix-run/react';
 import Card from '~/components/Card';
 import SvgIcon from '~/components/SvgIcon';
 import searchIcon from '~/icons/search.svg';

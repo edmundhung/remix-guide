@@ -1,4 +1,4 @@
-import { Form, Link } from 'remix';
+import { Form, Link } from '@remix-run/react';
 import { useRef, useState } from 'react';
 import clsx from 'clsx';
 import SvgIcon from '~/components/SvgIcon';

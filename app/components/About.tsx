@@ -1,5 +1,5 @@
 import type { ReactElement } from 'react';
-import { useMatches } from 'remix';
+import { useMatches } from '@remix-run/react';
 import SvgIcon from '~/components/SvgIcon';
 import logo from '~/icons/logo.svg';
 

@@ -1,5 +1,5 @@
-import type { LoaderFunction } from 'remix';
-import { Outlet, useLoaderData, useLocation } from 'remix';
+import type { LoaderFunction } from '@remix-run/cloudflare';
+import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';

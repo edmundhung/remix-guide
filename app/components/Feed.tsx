@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { useMemo } from 'react';
-import { useLocation } from 'remix';
+import { useLocation } from '@remix-run/react';
 import clsx from 'clsx';
 import SearchList from '~/components/SearchList';
 import ResourcesList from '~/components/ResourcesList';

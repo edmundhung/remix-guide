@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
-import { useBeforeUnload, useLocation, useTransition } from 'remix';
+import { useBeforeUnload, useLocation, useTransition } from '@remix-run/react';
 
 let STORAGE_KEY = 'feed-positions';
 

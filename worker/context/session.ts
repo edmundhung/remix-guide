@@ -1,6 +1,6 @@
 import { Authenticator } from 'remix-auth';
 import { GitHubStrategy } from 'remix-auth-github';
-import { createCookieSessionStorage, redirect } from 'remix';
+import { createCookieSessionStorage, redirect } from '@remix-run/cloudflare';
 import type { Env, MessageType, SessionData, UserProfile } from '../types';
 import { getUserStore } from '../store/UserStore';
 

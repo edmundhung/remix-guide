@@ -1,5 +1,6 @@
-import type { LoaderFunction } from 'remix';
-import { Link, useLoaderData, json } from 'remix';
+import type { LoaderFunction } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
+import { Link, useLoaderData } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import type { Context, UserProfile } from '~/types';
 

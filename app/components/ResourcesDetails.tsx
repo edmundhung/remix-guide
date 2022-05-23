@@ -1,4 +1,4 @@
-import { Link, useLocation, useFetcher } from 'remix';
+import { Link, useLocation, useFetcher } from '@remix-run/react';
 import type { ReactElement, ReactNode } from 'react';
 import { useEffect, useMemo } from 'react';
 import type { Resource } from '~/types';

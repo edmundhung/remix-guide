@@ -1,5 +1,5 @@
-import type { LoaderFunction } from 'remix';
-import { redirect } from 'remix';
+import type { LoaderFunction } from '@remix-run/cloudflare';
+import { redirect } from '@remix-run/cloudflare';
 import { getRelatedSearchParams } from '~/search';
 
 export let loader: LoaderFunction = async ({ request, params }) => {
