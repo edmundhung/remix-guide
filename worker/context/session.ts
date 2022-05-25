@@ -1,4 +1,4 @@
-import { Authenticator } from 'remix-auth';
+import { Authenticator, AuthorizationError } from 'remix-auth';
 import { GitHubStrategy } from 'remix-auth-github';
 import { createCookieSessionStorage, redirect } from '@remix-run/cloudflare';
 import type { Env, MessageType, SessionData, UserProfile } from '../types';
@@ -31,6 +31,7 @@ export function createSession(
 
 	let authenticator = new Authenticator<UserProfile>(sessionStorage, {
 		sessionErrorKey: 'message',
+		throwOnError: true,
 	});
 
 	if (
@@ -60,7 +61,11 @@ export function createSession(
 					email: profile.emails[0].value,
 				};
 
-				await userStore.updateProfile(userProfile);
+				try {
+					await userStore.updateProfile(userProfile);
+				} catch (e) {
+					console.log('Fail updating user profile:', e);
+				}
 
 				return userProfile;
 			},
@@ -69,20 +74,30 @@ export function createSession(
 
 	return {
 		async login(): Promise<void> {
-			const user = await authenticator.authenticate('github', request, {
-				failureRedirect: '/',
-			});
-			const session = await sessionStorage.getSession(
-				request.headers.get('cookie'),
-			);
+			try {
+				const user = await authenticator.authenticate('github', request);
+				const session = await sessionStorage.getSession(
+					request.headers.get('cookie'),
+				);
 
-			session.set(authenticator.sessionKey, user);
+				session.set(authenticator.sessionKey, user);
 
-			throw redirect(`/${user.name ?? ''}`, {
-				headers: {
-					'Set-Cookie': await sessionStorage.commitSession(session),
-				},
-			});
+				throw redirect(`/${user.name ?? ''}`, {
+					headers: {
+						'Set-Cookie': await sessionStorage.commitSession(session),
+					},
+				});
+			} catch (ex) {
+				if (ex instanceof AuthorizationError) {
+					throw redirect('/', {
+						headers: {
+							'set-cookie': await this.flash(ex.message, 'error'),
+						},
+					});
+				}
+
+				throw ex;
+			}
 		},
 		async logout(): Promise<void> {
 			await authenticator.logout(request, {
