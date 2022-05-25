@@ -13,6 +13,7 @@ import {
 	useCatch,
 	Outlet,
 } from '@remix-run/react';
+import { MetronomeLinks } from '@metronome-sh/react';
 import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
@@ -59,6 +60,7 @@ function Document({
 				{title ? <title>{title}</title> : null}
 				<Meta />
 				<Links />
+				<MetronomeLinks />
 			</head>
 			<body className="relative w-full min-h-screen flex bg-gray-900 text-gray-200">
 				{children}

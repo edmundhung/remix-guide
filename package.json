@@ -21,6 +21,8 @@
 	},
 	"dependencies": {
 		"@cloudflare/kv-asset-handler": "^0.2.0",
+		"@metronome-sh/cloudflare-pages": "^5.4.2",
+		"@metronome-sh/react": "^5.4.2",
 		"@remix-run/cloudflare-workers": "^1.5.1",
 		"@remix-run/react": "^1.5.1",
 		"clsx": "^1.1.1",
