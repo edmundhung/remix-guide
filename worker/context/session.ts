@@ -63,8 +63,13 @@ export function createSession(
 
 				try {
 					await userStore.updateProfile(userProfile);
-				} catch (e) {
-					console.log('Fail updating user profile:', e);
+				} catch (ex) {
+					console.log(
+						'Fail updating user profile:',
+						ex instanceof Error ? ex.message : ex,
+					);
+
+					throw ex;
 				}
 
 				return userProfile;

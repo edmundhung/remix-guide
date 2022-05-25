@@ -171,7 +171,7 @@ export function getUserStore(
 		async updateProfile(profile: UserProfile): Promise<void> {
 			const client = createClient(env.USER_STORE, profile.id);
 
-			return await client.updateProfile(profile);
+			await client.updateProfile(profile);
 		},
 		async view(
 			userId: string | null,

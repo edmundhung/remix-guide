@@ -32,8 +32,10 @@ export function configureStore<Env, T extends Record<string, any>>(
 				const handler = this.handlers[method];
 
 				if (typeof handler === 'function') {
-					return new Response(JSON.stringify(await handler(...args)) ?? null, {
-						status: 200,
+					const result = JSON.stringify(await handler(...args)) ?? null;
+
+					return new Response(result, {
+						status: result !== null ? 200 : 204,
 					});
 				} else {
 					return new Response('Not Found', { status: 404 });
@@ -63,11 +65,9 @@ export function configureStore<Env, T extends Record<string, any>>(
 
 						switch (response.status) {
 							case 200:
-								if (!response.body) {
-									return;
-								}
-
 								return await response.json();
+							case 204:
+								return;
 							case 404:
 								throw new Error(`Method ${method.toString()} is not available`);
 							default:
