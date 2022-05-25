@@ -48,6 +48,7 @@ export function createSession(
 				clientSecret: env.GITHUB_CLIENT_SECRET,
 				callbackURL: env.GITHUB_CALLBACK_URL,
 				userAgent: 'remix-guide',
+				scope: '',
 			},
 			async ({ profile }) => {
 				const userStore = getUserStore(env, profile.id);
