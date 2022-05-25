@@ -29,7 +29,9 @@ export function createSession(
 		},
 	});
 
-	let authenticator = new Authenticator<UserProfile>(sessionStorage);
+	let authenticator = new Authenticator<UserProfile>(sessionStorage, {
+		sessionErrorKey: 'message',
+	});
 
 	if (
 		!env.GITHUB_CLIENT_ID ||
