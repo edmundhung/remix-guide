@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import type { LoaderFunction } from '@remix-run/cloudflare';
-import { json } from '@remix-run/cloudflare';
+import { json, redirect } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
@@ -13,25 +13,31 @@ export let loader: LoaderFunction = async ({ request, params, context }) => {
 	const { session, resourceStore, userStore } = context as Context;
 	const profile = await session.getUserProfile();
 
-	if (params.guide === 'discover') {
-		const searchOptions = getSearchOptions(request.url);
-		const guide = await resourceStore.getData();
+	switch (params.list) {
+		case 'bookmarks':
+		case 'history': {
+			if (!profile) {
+				throw redirect('/');
+			}
 
-		if (!guide.metadata.lists?.find((list) => list.slug === params.list)) {
-			throw notFound();
+			const searchOptions = getSearchOptions(request.url);
+			const [list, includes] = await Promise.all([
+				resourceStore.list(),
+				userStore.getList(profile.id, params.list ?? null),
+			]);
+
+			return json(search(list, { ...searchOptions, includes }));
 		}
+		default: {
+			const searchOptions = getSearchOptions(request.url);
+			const guide = await resourceStore.getData();
 
-		return json(search(guide.value, searchOptions));
-	} else if (profile && params.guide === profile?.name) {
-		const searchOptions = getSearchOptions(request.url);
-		const [list, includes] = await Promise.all([
-			resourceStore.list(),
-			userStore.getList(profile.id, params.list ?? null),
-		]);
+			if (!guide.metadata.lists?.find((list) => list.slug === params.list)) {
+				throw notFound();
+			}
 
-		return json(search(list, { ...searchOptions, includes }));
-	} else {
-		throw notFound();
+			return json(search(guide.value, searchOptions));
+		}
 	}
 };
 

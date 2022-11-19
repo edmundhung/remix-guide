@@ -1,11 +1,11 @@
 import type {
-	LoaderFunction,
 	ActionFunction,
+	LoaderFunction,
 	MetaFunction,
 } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import type { ShouldReloadFunction } from '@remix-run/react';
-import { Form, useLocation, useLoaderData } from '@remix-run/react';
+import { Form, useLoaderData, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
 import clsx from 'clsx';
 import About from '~/components/About';
@@ -29,9 +29,9 @@ interface LoaderData {
 }
 
 export let meta: MetaFunction = ({ params, location }) => {
-	const { guide, list } = params;
+	const { guide } = params;
 
-	if (!guide || !list) {
+	if (!guide) {
 		return {};
 	}
 
@@ -43,7 +43,7 @@ export let meta: MetaFunction = ({ params, location }) => {
 	return formatMeta({
 		title,
 		description: 'A platform for sharing everything about Remix',
-		'og:url': `https://remix.guide/${guide}/${list}`,
+		'og:url': `https://remix.guide/${guide}`,
 	});
 };
 
@@ -174,7 +174,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 	);
 };
 
-export default function UserProfile() {
+export default function Index() {
 	const { resource, user, suggestions } = useLoaderData<LoaderData>();
 	const { message } = useSessionData();
 	const location = useLocation();

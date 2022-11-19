@@ -105,7 +105,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 		}
 
 		return redirect(
-			`/discover?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
+			`/?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
 			{ headers },
 		);
 	} catch (error) {

@@ -42,12 +42,10 @@ export function getSearchOptions(url: string): SearchOptions {
 	}
 
 	const { pathname, searchParams } = new URL(url, 'https://remix.guide');
-	const [, guide, list] =
-		pathname.match(/^\/([a-z-0-9]+)(?:\/([a-z-0-9]+))*$/i) ?? [];
+	const [list] = pathname.slice(1).split('/');
 	const options: SearchOptions = {
 		keyword: searchParams.get('q'),
 		author: searchParams.get('author'),
-		guide: guide ?? null,
 		list: list ?? null,
 		site: searchParams.get('site'),
 		category: searchParams.get('category'),
@@ -92,13 +90,7 @@ export function createIntegrationSearch(value: string): string {
 }
 
 export function getResourcePathname(options: SearchOptions): string {
-	let base = `/${options.guide ?? ''}`;
-
-	if (options.list) {
-		base += `/${options.list}`;
-	}
-
-	return base;
+	return options.list ? `/${options.list}` : '/';
 }
 
 export function getResourceSearchParams(

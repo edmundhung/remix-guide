@@ -106,7 +106,6 @@ export interface GuideMetadata {
 export interface SearchOptions {
 	keyword?: string | null;
 	list?: string | null;
-	guide?: string | null;
 	author?: string | null;
 	site?: string | null;
 	category?: Category | null;

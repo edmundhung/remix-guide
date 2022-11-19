@@ -66,10 +66,7 @@ export function search(
 			}
 
 			const isMatching =
-				match(
-					options.guide === 'discover' && options?.list ? [options.list] : [],
-					resource.lists ?? [],
-				) &&
+				match(options?.list ? [options.list] : [], resource.lists ?? []) &&
 				match(
 					options?.keyword ? options.keyword.toLowerCase().split(' ') : [],
 					`${resource.title} ${resource.description}`.toLowerCase(),
@@ -136,7 +133,6 @@ export function getSuggestions(
 
 	if (resource.category === 'package' && resource.title) {
 		suggestions.push({
-			guide: 'discover',
 			integrations: [resource.title],
 			sort: 'top',
 		});
@@ -144,7 +140,6 @@ export function getSuggestions(
 
 	if (resource.author) {
 		suggestions.push({
-			guide: 'discover',
 			author: resource.author,
 			sort: 'top',
 		});
@@ -152,7 +147,6 @@ export function getSuggestions(
 
 	if (resource.category === 'others') {
 		suggestions.push({
-			guide: 'discover',
 			site: getSite(resource.url),
 			sort: 'top',
 		});

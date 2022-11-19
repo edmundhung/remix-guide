@@ -1,26 +1,15 @@
 import { useMemo } from 'react';
 import type { LoaderFunction } from '@remix-run/cloudflare';
-import { json, redirect } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
-import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import type { Resource, Context } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
-	const { session, resourceStore } = context as Context;
-	const profile = await session.getUserProfile();
-
-	if (params.guide === profile?.name) {
-		throw redirect(`${params.guide}/bookmarks`);
-	}
-
-	if (params.guide !== 'discover') {
-		throw notFound();
-	}
-
+	const { resourceStore } = context as Context;
 	const searchOptions = getSearchOptions(request.url);
 	const list = await resourceStore.list();
 

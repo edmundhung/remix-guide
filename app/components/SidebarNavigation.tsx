@@ -49,30 +49,27 @@ function ExternalLink({ href, children }: ExternalLinkProps): ReactElement {
 	);
 }
 
-interface SearchLinkProps
-	extends Pick<SearchOptions, 'guide' | 'list' | 'category'> {
+interface SearchLinkProps extends Pick<SearchOptions, 'list' | 'category'> {
 	children: ReactNode;
 }
 
 function SearchLink({
-	guide,
 	list,
 	category,
 	children,
 }: SearchLinkProps): ReactElement {
 	const location = useLocation();
 	const [to, isActive] = useMemo(() => {
-		const to = getResourceURL({ guide, list, category });
+		const to = getResourceURL({ list, category });
 		const currentOptions = getSearchOptions(
 			`${location.pathname}${location.search}`,
 		);
 		const isActive =
-			(typeof guide === 'undefined' || guide === currentOptions.guide) &&
 			(typeof list === 'undefined' || list === currentOptions.list) &&
 			(typeof category === 'undefined' || category === currentOptions.category);
 
 		return [to, isActive];
-	}, [guide, list, category, location]);
+	}, [list, category, location]);
 
 	return (
 		<Link
@@ -82,7 +79,7 @@ function SearchLink({
 					? 'text-gray-200 bg-gray-700'
 					: 'text-gray-400 hover:text-gray-200 hover:bg-gray-800',
 			)}
-			to={isActive ? `/${guide === 'discover' ? guide : ''}` : to}
+			to={isActive ? '/' : to}
 			prefetch="intent"
 		>
 			{children}
@@ -187,17 +184,17 @@ function SidebarNavigation({
 								) : null
 							}
 						>
-							<SearchLink guide={profile.name} list="bookmarks">
+							<SearchLink list="bookmarks">
 								<SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
 							</SearchLink>
-							<SearchLink guide={profile.name} list="history">
+							<SearchLink list="history">
 								<SvgIcon className="w-4 h-4" href={historyIcon} /> History
 							</SearchLink>
 						</List>
 					) : null}
-					<List title="Discover">
+					<List title="Guide">
 						{(lists ?? []).map((list) => (
-							<SearchLink key={list.slug} guide="discover" list={list.slug}>
+							<SearchLink key={list.slug} list={list.slug}>
 								<SvgIcon className="w-4 h-4" href={getListIcon(list.slug)} />{' '}
 								<div className="flex-1">{list.title}</div>
 								<span className="px-1 py-0.5 text-xs">
