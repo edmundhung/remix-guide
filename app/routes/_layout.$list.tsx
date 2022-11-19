@@ -7,10 +7,10 @@ import Feed from '~/components/Feed';
 import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
-import type { Resource, Context } from '~/types';
+import type { Resource } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
-	const { session, resourceStore, userStore } = context as Context;
+	const { session, resourceStore, userStore } = context;
 	const profile = await session.getUserProfile();
 
 	switch (params.list) {

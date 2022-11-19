@@ -1,20 +1,41 @@
 import * as build from '../build/index.js';
 import { createFetchHandler, createWorkerAssetHandler } from './adapter';
-import { createContext } from './context';
+import { getPageStore } from './store/PageStore';
+import { getUserStore } from './store/UserStore';
+import { getResourceStore } from './store/ResourcesStore';
+import { createSession } from './session';
+
+import type { Env } from './types';
 
 // Setup Durable Objects
 export * from './store';
 
-const handleFetch = createFetchHandler({
-	build,
-	getLoadContext(request, env, ctx) {
-		return createContext(request, env, ctx);
-	},
-	handleAsset: createWorkerAssetHandler(build),
-});
+declare module '@remix-run/server-runtime' {
+	export interface AppLoadContext {
+		session: Context['session'];
+		resourceStore: Context['resourceStore'];
+		pageStore: Context['pageStore'];
+		userStore: Context['userStore'];
+	}
+}
 
-const worker: ExportedHandler = {
-	fetch: handleFetch,
+type Context = ReturnType<typeof getLoadContext>;
+
+function getLoadContext(request: Request, env: Env, ctx: ExecutionContext) {
+	return {
+		session: createSession(request, env, ctx),
+		resourceStore: getResourceStore(env, ctx),
+		pageStore: getPageStore(env, ctx),
+		userStore: getUserStore(env, ctx),
+	};
+}
+
+const worker: ExportedHandler<Env> = {
+	fetch: createFetchHandler({
+		build,
+		getLoadContext,
+		handleAsset: createWorkerAssetHandler(build),
+	}),
 };
 
 export default worker;

@@ -3,10 +3,9 @@ import { json, redirect } from '@remix-run/cloudflare';
 import { useActionData } from '@remix-run/react';
 import { requireAdministrator, notFound } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
-import type { Context } from '~/types';
 
 export let action: ActionFunction = async ({ params, request, context }) => {
-	const { session, userStore } = context as Context;
+	const { session, userStore } = context;
 
 	if (!params.userId) {
 		throw notFound();

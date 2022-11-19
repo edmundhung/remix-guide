@@ -3,10 +3,10 @@ import { json, redirect } from '@remix-run/cloudflare';
 import { Link, Form, useLoaderData, useLocation } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import { getSite } from '~/search';
-import type { Context, PageMetadata } from '~/types';
+import type { PageMetadata } from '~/types';
 
 export let action: ActionFunction = async ({ context, request }) => {
-	const { session, pageStore } = context as Context;
+	const { session, pageStore } = context;
 	const [formData] = await Promise.all([
 		request.formData(),
 		requireAdministrator(context),
@@ -30,7 +30,7 @@ export let action: ActionFunction = async ({ context, request }) => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { pageStore } = context as Context;
+	const { pageStore } = context;
 
 	await requireAdministrator(context);
 

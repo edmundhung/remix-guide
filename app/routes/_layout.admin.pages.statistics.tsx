@@ -3,10 +3,9 @@ import { json, redirect } from '@remix-run/cloudflare';
 import { useActionData } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
-import type { Context } from '~/types';
 
 export let action: ActionFunction = async ({ request, context }) => {
-	const { session, pageStore } = context as Context;
+	const { session, pageStore } = context;
 	const [formData] = await Promise.all([
 		request.formData(),
 		requireAdministrator(context),

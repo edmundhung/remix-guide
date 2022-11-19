@@ -6,10 +6,10 @@ import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
-import type { Resource, Context } from '~/types';
+import type { Resource } from '~/types';
 
 export let loader: LoaderFunction = async ({ request, params, context }) => {
-	const { resourceStore } = context as Context;
+	const { resourceStore } = context;
 	const searchOptions = getSearchOptions(request.url);
 	const list = await resourceStore.list();
 

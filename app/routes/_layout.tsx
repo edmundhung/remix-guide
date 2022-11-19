@@ -5,11 +5,10 @@ import { json } from '@remix-run/cloudflare';
 import clsx from 'clsx';
 import Progress from '~/components/Progress';
 import SidebarNavigation from '~/components/SidebarNavigation';
-import type { Context } from '~/types';
 import { useSessionData } from '~/hooks';
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { resourceStore } = context as Context;
+	const { resourceStore } = context;
 	const guide = await resourceStore.getData();
 
 	return json({

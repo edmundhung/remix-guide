@@ -14,7 +14,7 @@ import SuggestedResources from '~/components/SuggestedResources';
 import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
 import { getSearchOptions, getTitleBySearchOptions } from '~/search';
-import type { Context, Resource, SearchOptions, User } from '~/types';
+import type { Resource, SearchOptions, User } from '~/types';
 import BookmarkDetails from '~/components/BookmarkDetails';
 import { useSessionData } from '~/hooks';
 
@@ -29,9 +29,9 @@ interface LoaderData {
 }
 
 export let meta: MetaFunction = ({ params, location }) => {
-	const { guide, list } = params;
+	const { list } = params;
 
-	if (!guide || !list) {
+	if (!list) {
 		return {};
 	}
 
@@ -43,12 +43,12 @@ export let meta: MetaFunction = ({ params, location }) => {
 	return formatMeta({
 		title,
 		description: 'A platform for sharing everything about Remix',
-		'og:url': `https://remix.guide/${guide}/${list}`,
+		'og:url': `https://remix.guide/${list}`,
 	});
 };
 
 export let action: ActionFunction = async ({ params, context, request }) => {
-	const { session, userStore, resourceStore } = context as Context;
+	const { session, userStore, resourceStore } = context;
 	const [profile, formData] = await Promise.all([
 		session.getUserProfile(),
 		request.formData(),
@@ -137,7 +137,7 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 		return json({});
 	}
 
-	const { session, resourceStore, userStore } = context as Context;
+	const { session, resourceStore, userStore } = context;
 	const [list, profile] = await Promise.all([
 		resourceStore.list(),
 		session.getUserProfile(),

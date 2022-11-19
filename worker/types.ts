@@ -1,5 +1,3 @@
-export type { Context } from './context';
-
 export interface Env {
 	GITHUB_TOKEN?: string;
 	GITHUB_CLIENT_ID?: string;

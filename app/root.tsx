@@ -13,7 +13,6 @@ import {
 	useCatch,
 	Outlet,
 } from '@remix-run/react';
-import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
 export let links: LinksFunction = () => {
@@ -31,7 +30,7 @@ export let meta: MetaFunction = () => {
 };
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { session } = context as Context;
+	const { session } = context;
 	const [data, setCookieHeader] = await session.getData();
 
 	return json(data, {

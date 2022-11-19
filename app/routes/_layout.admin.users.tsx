@@ -2,10 +2,10 @@ import type { LoaderFunction } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import { Link, useLoaderData } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
-import type { Context, UserProfile } from '~/types';
+import type { UserProfile } from '~/types';
 
 export let loader: LoaderFunction = async ({ context }) => {
-	const { userStore } = context as Context;
+	const { userStore } = context;
 
 	await requireAdministrator(context);
 
