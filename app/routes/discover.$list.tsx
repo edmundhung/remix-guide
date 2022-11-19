@@ -4,5 +4,5 @@ import { redirect } from '@remix-run/cloudflare';
 export function loader({ request, params }: LoaderArgs) {
 	const url = new URL(request.url);
 
-	throw redirect(`/${params.list}${url.search}`, 308);
+	throw redirect(`/${params.list}${url.search}`, 301);
 }
