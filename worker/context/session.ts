@@ -119,6 +119,7 @@ export function createSession(
 			const data = {
 				profile,
 				message,
+				version: process.env.VERSION ?? 'development',
 			};
 
 			return [data, setCookieHeader];
