@@ -57,7 +57,7 @@
 		"eslint-config-prettier": "^8.5.0",
 		"husky": "^8.0.1",
 		"lint-staged": "^12.4.1",
-		"miniflare": "^2.4.0",
+		"miniflare": "^2.11.0",
 		"postcss": "^8.4.14",
 		"prettier": "^2.6.2",
 		"rimraf": "^3.0.2",
