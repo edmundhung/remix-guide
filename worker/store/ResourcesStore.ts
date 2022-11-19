@@ -22,6 +22,40 @@ const generateId = customAlphabet(
 	12,
 );
 
+/**
+ * Default setup
+ */
+const defaultLists: List[] = [
+	{
+		slug: 'official',
+		title: 'Official',
+	},
+	{
+		slug: 'packages',
+		title: 'Packages',
+	},
+	{
+		slug: 'tutorials',
+		title: 'Tutorials',
+	},
+	{
+		slug: 'templates',
+		title: 'Templates',
+	},
+	{
+		slug: 'talks',
+		title: 'Talks',
+	},
+	{
+		slug: 'examples',
+		title: 'Examples',
+	},
+	{
+		slug: 'integrations',
+		title: 'Integrations',
+	},
+];
+
 const { Store, createClient } = configureStore(async (state, env: Env) => {
 	const { storage } = state;
 	const pageStore = getPageStore(env, state);
@@ -69,11 +103,16 @@ const { Store, createClient } = configureStore(async (state, env: Env) => {
 
 	return {
 		async list(): Promise<Guide> {
-			const [resourceSummaryMap, lists, pageDictionary] = await Promise.all([
+			let [resourceSummaryMap, lists, pageDictionary] = await Promise.all([
 				storage.list<ResourceSummary>({ prefix: 'resources/' }),
 				storage.get<List[]>('lists'),
 				pageStore.list(),
 			]);
+
+			if (typeof lists === 'undefined') {
+				storage.put<List[]>('lists', defaultLists);
+				lists = defaultLists;
+			}
 
 			const countByList = {} as { [key in string]?: number };
 			const resourceEntries = [] as Array<[string, Resource]>;
@@ -121,7 +160,7 @@ const { Store, createClient } = configureStore(async (state, env: Env) => {
 				value: Object.fromEntries(resourceEntries),
 				metadata: {
 					timestamp: new Date().toISOString(),
-					lists: (lists ?? []).map((list) => ({
+					lists: lists.map((list) => ({
 						...list,
 						count: countByList[list.slug] ?? 0,
 					})),
