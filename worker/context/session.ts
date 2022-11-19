@@ -80,17 +80,8 @@ export function createSession(
 	return {
 		async login(): Promise<void> {
 			try {
-				const user = await authenticator.authenticate('github', request);
-				const session = await sessionStorage.getSession(
-					request.headers.get('cookie'),
-				);
-
-				session.set(authenticator.sessionKey, user);
-
-				throw redirect(`/${user.name ?? ''}`, {
-					headers: {
-						'Set-Cookie': await sessionStorage.commitSession(session),
-					},
+				await authenticator.authenticate('github', request, {
+					successRedirect: '/',
 				});
 			} catch (ex) {
 				if (ex instanceof AuthorizationError) {
