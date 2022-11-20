@@ -30,7 +30,7 @@ interface ResourcesListProps {
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['guide', 'list', 'sort', 'limit'];
+	const keys = ['list', 'sort', 'limit'];
 
 	return Object.entries(searchOptions).some(
 		([key, value]) =>
