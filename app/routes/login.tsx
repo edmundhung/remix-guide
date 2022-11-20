@@ -1,10 +1,10 @@
-import type { LoaderFunction, ActionFunction } from '@remix-run/cloudflare';
+import type { ActionArgs } from '@remix-run/cloudflare';
 import { notFound } from '~/helpers';
 
-export let loader: LoaderFunction = async ({ context }) => {
+export async function loader() {
 	return notFound();
-};
+}
 
-export let action: ActionFunction = async ({ context }) => {
+export async function action({ context }: ActionArgs) {
 	return await context.session.login();
-};
+}

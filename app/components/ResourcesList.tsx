@@ -59,11 +59,26 @@ export default function ResourcesList({
 		<PaneContainer ref={container}>
 			{!isSearching(searchOptions) ? (
 				<PaneHeader>
-					<IconLink icon={menuIcon} to={toggleMenuURL} mobileOnly />
+					<IconLink
+						icon={menuIcon}
+						to={`${
+							selectedResourceId
+								? `/resources/${selectedResourceId}`
+								: '/resources'
+						}${toggleMenuURL}`}
+						mobileOnly
+					/>
 					<div className="flex-1 line-clamp-1 text-center lg:text-left">
 						{getTitleBySearchOptions(searchOptions)}
 					</div>
-					<IconLink icon={searchIcon} to={toggleSearchURL} />
+					<IconLink
+						icon={searchIcon}
+						to={`${
+							selectedResourceId
+								? `/resources/${selectedResourceId}`
+								: '/resources'
+						}${toggleSearchURL}`}
+					/>
 				</PaneHeader>
 			) : (
 				<PaneHeader>
@@ -75,7 +90,10 @@ export default function ResourcesList({
 					</div>
 					<IconLink
 						icon={timesIcon}
-						to={selectedResourceId ? `?resourceId=${selectedResourceId}` : '?'}
+						to={getResourceURL(
+							{ list: searchOptions.list },
+							selectedResourceId,
+						)}
 					/>
 				</PaneHeader>
 			)}

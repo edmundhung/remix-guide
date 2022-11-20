@@ -1,7 +1,7 @@
 import type {
 	LinksFunction,
 	MetaFunction,
-	LoaderFunction,
+	LoaderArgs,
 } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import type { ShouldReloadFunction } from '@remix-run/react';
@@ -29,7 +29,7 @@ export let meta: MetaFunction = () => {
 	};
 };
 
-export let loader: LoaderFunction = async ({ context }) => {
+export async function loader({ context }: LoaderArgs) {
 	const { session } = context;
 	const [data, setCookieHeader] = await session.getData();
 
@@ -38,7 +38,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 			'Set-Cookie': setCookieHeader,
 		},
 	});
-};
+}
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
 	return submission?.formData.get('type') !== 'view';

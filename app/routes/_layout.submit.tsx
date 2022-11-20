@@ -1,4 +1,4 @@
-import type { MetaFunction, ActionFunction } from '@remix-run/cloudflare';
+import type { MetaFunction, ActionArgs } from '@remix-run/cloudflare';
 import { redirect } from '@remix-run/cloudflare';
 import { Form, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
@@ -30,7 +30,7 @@ function isValidURL(text: string): boolean {
 	}
 }
 
-export let action: ActionFunction = async ({ request, context }) => {
+export async function action({ request, context }: ActionArgs) {
 	const { session, resourceStore } = context;
 	const profile = await session.getUserProfile();
 
@@ -104,7 +104,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 		}
 
 		return redirect(
-			`/?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
+			`/resources/${id}?${new URLSearchParams({ open: 'bookmark' })}`,
 			{ headers },
 		);
 	} catch (error) {
@@ -118,7 +118,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 			},
 		});
 	}
-};
+}
 
 export default function Submit() {
 	const { message } = useSessionData();

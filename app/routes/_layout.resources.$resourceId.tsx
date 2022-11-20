@@ -1,14 +1,9 @@
-import type {
-	LoaderFunction,
-	ActionFunction,
-	MetaFunction,
-} from '@remix-run/cloudflare';
+import type { ActionArgs, MetaFunction } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import { Form, useLocation, useLoaderData } from '@remix-run/react';
 import { useMemo } from 'react';
 import clsx from 'clsx';
-import About from '~/components/About';
 import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
 import { formatMeta, notFound } from '~/helpers';
@@ -47,7 +42,7 @@ export let meta: MetaFunction = ({ params, location }) => {
 	});
 };
 
-export let action: ActionFunction = async ({ params, context, request }) => {
+export async function action({ params, context, request }: ActionArgs) {
 	const { session, userStore, resourceStore } = context;
 	const [profile, formData] = await Promise.all([
 		session.getUserProfile(),
@@ -127,22 +122,15 @@ export let action: ActionFunction = async ({ params, context, request }) => {
 	}
 
 	return null;
-};
+}
 
-export let loader: LoaderFunction = async ({ context, request }) => {
-	const url = new URL(request.url);
-	const resourceId = url.searchParams.get('resourceId');
-
-	if (!resourceId) {
-		return json({});
-	}
-
+export async function loader({ context, params }: LoaderArgs) {
 	const { session, resourceStore, userStore } = context;
 	const [list, profile] = await Promise.all([
 		resourceStore.list(),
 		session.getUserProfile(),
 	]);
-	const resource = list[resourceId];
+	const resource = params.resourceId ? list[params.resourceId] : null;
 
 	if (!resource) {
 		throw notFound();
@@ -155,7 +143,7 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 		resource: user ? patchResource(resource, user) : resource,
 		suggestions: getSuggestions(list, resource),
 	});
-};
+}
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
 	prevUrl,
@@ -174,7 +162,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 	);
 };
 
-export default function ListDetails() {
+export default function ResourcePreview() {
 	const { resource, user, suggestions } = useLoaderData<LoaderData>();
 	const { message } = useSessionData();
 	const location = useLocation();
@@ -184,12 +172,8 @@ export default function ListDetails() {
 
 		searchParams.delete('open');
 
-		return [showBookmark, `?${searchParams.toString()}&index`];
+		return [showBookmark, `?${searchParams.toString()}`];
 	}, [location.search]);
-
-	if (!resource) {
-		return <About />;
-	}
 
 	return (
 		<div className="flex flex-row">

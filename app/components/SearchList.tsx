@@ -28,13 +28,13 @@ function SearchList({
 	const [keyword, setKeyword] = useState(searchOptions.keyword ?? '');
 
 	return (
-		<Form action={selectedId ? `?resourceId=${selectedId}` : '.'}>
+		<Form action={selectedId ? `/resources/${selectedId}` : '/resources'}>
 			<PaneContainer>
 				<PaneHeader padding="minimum">
 					<div className="relative w-full flex items-center">
 						<Link
 							className="z-10 absolute left-2"
-							to={selectedId ? `?resourceId=${selectedId}` : '?'}
+							to={selectedId ? `/resources/${selectedId}` : '/resources'}
 						>
 							<span className="flex items-center justify-center w-6 h-6">
 								<SvgIcon className="w-4 h-4" href={backIcon} />
@@ -68,6 +68,9 @@ function SearchList({
 				</PaneHeader>
 				<PaneContent>
 					<input type="hidden" name="sort" value="top" />
+					{searchOptions.list ? (
+						<input type="hidden" name="list" value={searchOptions.list} />
+					) : null}
 					<List title="Category">
 						<div className="grid grid-cols-2 gap-1 capitalize">
 							<div className="col-span-2 normal-case">

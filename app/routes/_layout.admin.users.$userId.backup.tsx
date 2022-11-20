@@ -1,10 +1,10 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
+import type { ActionArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { useActionData } from '@remix-run/react';
 import { requireAdministrator, notFound } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
 
-export let action: ActionFunction = async ({ params, request, context }) => {
+export async function action({ params, request, context }: ActionArgs) {
 	const { session, userStore } = context;
 
 	if (!params.userId) {
@@ -59,7 +59,7 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 				},
 			});
 	}
-};
+}
 
 export default function AdminResources() {
 	const data = useActionData();

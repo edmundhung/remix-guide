@@ -1,41 +1,33 @@
 import type { LoaderArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
-import { useLoaderData } from '@remix-run/react';
+import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
-import { notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
-import About from '~/components/About';
 
-export async function loader({ request, params, context }: LoaderArgs) {
-	const { session, resourceStore, userStore } = context;
-	const profile = await session.getUserProfile();
+export async function loader({ request, context }: LoaderArgs) {
+	const profile = await context.session.getUserProfile();
+	const searchOptions = getSearchOptions(request.url);
 
-	switch (params.list) {
+	switch (searchOptions.list) {
 		case 'bookmarks':
 		case 'history': {
 			if (!profile) {
 				throw redirect('/');
 			}
 
-			const searchOptions = getSearchOptions(request.url);
 			const [list, includes] = await Promise.all([
-				resourceStore.list(),
-				userStore.getList(profile.id, params.list ?? null),
+				context.resourceStore.list(),
+				context.userStore.getList(profile.id, searchOptions.list ?? null),
 			]);
 
 			return json(search(list, { ...searchOptions, list: null, includes }));
 		}
 		default: {
-			const searchOptions = getSearchOptions(request.url);
-			const guide = await resourceStore.getData();
+			const list = await context.resourceStore.list();
 
-			if (!guide.metadata.lists?.find((list) => list.slug === params.list)) {
-				throw notFound();
-			}
-
-			return json(search(guide.value, searchOptions));
+			return json(search(list, searchOptions));
 		}
 	}
 }
@@ -56,12 +48,16 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 	);
 };
 
-export default function List() {
-	const { entries, count } = useLoaderData<typeof loader>();
+export default function Resources() {
+	const data = useLoaderData<typeof loader>();
+	const location = useLocation();
+	const [selectedId] = location.pathname.startsWith('/resources/')
+		? location.pathname.slice(11).split('/')
+		: [];
 
 	return (
-		<Feed entries={entries} count={count}>
-			<About />;
+		<Feed entries={data.entries} count={data.count} selectedId={selectedId}>
+			<Outlet />
 		</Feed>
 	);
 }

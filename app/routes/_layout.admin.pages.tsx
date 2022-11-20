@@ -1,11 +1,11 @@
-import type { LoaderFunction, ActionFunction } from '@remix-run/cloudflare';
+import type { LoaderArgs, ActionArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { Link, Form, useLoaderData, useLocation } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import { getSite } from '~/search';
 import type { PageMetadata } from '~/types';
 
-export let action: ActionFunction = async ({ context, request }) => {
+export async function action({ context, request }: ActionArgs) {
 	const { session, pageStore } = context;
 	const [formData] = await Promise.all([
 		request.formData(),
@@ -27,9 +27,9 @@ export let action: ActionFunction = async ({ context, request }) => {
 			),
 		},
 	});
-};
+}
 
-export let loader: LoaderFunction = async ({ context }) => {
+export async function loader({ context }: LoaderArgs) {
 	const { pageStore } = context;
 
 	await requireAdministrator(context);
@@ -39,7 +39,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 	return json({
 		entries,
 	});
-};
+}
 
 export default function ListUsers() {
 	const { entries } = useLoaderData<{ entries: PageMetadata[] }>();

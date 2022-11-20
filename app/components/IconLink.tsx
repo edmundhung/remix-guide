@@ -8,6 +8,7 @@ interface IconLinkProps {
 	icon: ComponentProps<typeof SvgIcon>['href'];
 	prefetch?: ComponentProps<typeof Link>['prefetch'];
 	mobileOnly?: boolean;
+	rotateIcon?: boolean;
 }
 
 function IconLink({
@@ -15,6 +16,7 @@ function IconLink({
 	icon,
 	prefetch,
 	mobileOnly,
+	rotateIcon,
 }: IconLinkProps): ReactElement {
 	return (
 		<Link
@@ -26,7 +28,10 @@ function IconLink({
 			state={{ skipRestore: true }}
 			prefetch={prefetch}
 		>
-			<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={icon} />
+			<SvgIcon
+				className={clsx('w-4 h-4 lg:w-3 lg:h-3', { 'rotate-180': rotateIcon })}
+				href={icon}
+			/>
 		</Link>
 	);
 }

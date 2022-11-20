@@ -1,10 +1,10 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
+import type { ActionArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { useActionData } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
 
-export let action: ActionFunction = async ({ request, context }) => {
+export async function action({ request, context }: ActionArgs) {
 	const { session, resourceStore } = context;
 	const [formData] = await Promise.all([
 		request.formData(),
@@ -51,7 +51,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 				},
 			});
 	}
-};
+}
 
 export default function AdminResources() {
 	const data = useActionData();
