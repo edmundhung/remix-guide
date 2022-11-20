@@ -161,7 +161,7 @@ function ResourcesDetails({
 													<Link
 														key={list.slug}
 														className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-														to={`/${list.slug}`}
+														to={getResourceURL({ list: list.slug })}
 													>
 														{list.title}
 													</Link>
@@ -170,7 +170,7 @@ function ResourcesDetails({
 												<Link
 													key={integration}
 													className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-													to={`/?${createIntegrationSearch(integration)}`}
+													to={getResourceURL({ integrations: [integration] })}
 												>
 													{integration}
 												</Link>

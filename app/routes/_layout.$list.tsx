@@ -61,7 +61,7 @@ export default function List() {
 
 	return (
 		<Feed entries={entries} count={count}>
-			<About />;
+			<About />
 		</Feed>
 	);
 }

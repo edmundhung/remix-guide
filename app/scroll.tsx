@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useRef } from 'react';
+import type { Location } from '@remix-run/react';
 import { useBeforeUnload, useLocation, useTransition } from '@remix-run/react';
 
 let STORAGE_KEY = 'feed-positions';
@@ -22,6 +23,21 @@ function getScrollTop(el: HTMLElement | null) {
 	}
 }
 
+function isShowingMore(prev: Location, next: Location): boolean {
+	const prevSearchParams = new URLSearchParams(prev.search);
+	const nextSearchParams = new URLSearchParams(next.search);
+	const prevLimit = Number(prevSearchParams.get('limit'));
+	const nextLimit = Number(nextSearchParams.get('limit'));
+
+	return !isNaN(nextLimit) && (isNaN(prevLimit) || nextLimit > prevLimit);
+}
+
+function isSelectingResources(prev: Location, next: Location) {
+	return (
+		prev.pathname !== next.pathname && next.pathname.startsWith('/resources/')
+	);
+}
+
 export function scrollOnElemenIfScrollable(
 	el: HTMLElement | null,
 	x: number,
@@ -34,7 +50,7 @@ export function scrollOnElemenIfScrollable(
 	}
 }
 
-export function useElementScrollRestoration(prefix: string) {
+export function useFeedScrollRestoration(prefix = 'feed') {
 	let ref = useRef<HTMLElement | null>(null);
 	let transition = useTransition();
 	let location = useLocation();
@@ -59,9 +75,19 @@ export function useElementScrollRestoration(prefix: string) {
 	}, [transition]);
 
 	useEffect(() => {
-		if (transition.location) {
-			positions[prefix + location.key] = getScrollTop(ref.current);
+		if (!transition.location) {
+			return;
 		}
+
+		// Maintain scroll top
+		if (
+			isSelectingResources(location, transition.location) ||
+			isShowingMore(location, transition.location)
+		) {
+			positions[prefix + transition.location.key] = getScrollTop(ref.current);
+		}
+
+		positions[prefix + location.key] = getScrollTop(ref.current);
 	}, [transition, location, prefix]);
 
 	useBeforeUnload(
@@ -80,17 +106,12 @@ export function useElementScrollRestoration(prefix: string) {
 				return;
 			}
 
-			let state = location.state as { skipRestore?: boolean } | null;
-
-			if (state?.skipRestore) {
-				return;
-			}
-
 			let y = positions[prefix + location.key];
 
 			// been here before, scroll to it
 			if (y != undefined) {
 				scrollOnElemenIfScrollable(ref.current, 0, y);
+				console.log('restored with y: ', y);
 				return;
 			}
 
@@ -102,6 +123,7 @@ export function useElementScrollRestoration(prefix: string) {
 
 			// otherwise go to the top on new locations
 			scrollOnElemenIfScrollable(ref.current, 0, 0);
+			console.log('go to top');
 		}, [prefix, location]);
 	}
 

@@ -20,7 +20,7 @@ import { useMemo } from 'react';
 import clsx from 'clsx';
 import IconLink from '~/components/IconLink';
 import ShowMoreButton from '~/components/ShowMoreButton';
-import { useElementScrollRestoration } from '~/scroll';
+import { useFeedScrollRestoration } from '~/scroll';
 
 interface ResourcesListProps {
 	entries: Resource[];
@@ -46,7 +46,7 @@ export default function ResourcesList({
 	searchOptions,
 }: ResourcesListProps) {
 	const location = useLocation();
-	const container = useElementScrollRestoration('feed');
+	const container = useFeedScrollRestoration();
 	const [toggleSearchURL, toggleMenuURL] = useMemo(
 		() => [
 			`?${toggleSearchParams(location.search, 'search')}`,
