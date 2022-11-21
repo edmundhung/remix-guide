@@ -3,8 +3,8 @@ import { search } from '~/resources';
 
 interface FeedEntry {
 	title: string;
-	description: string | null | undefined;
 	pubDate: string;
+	link: string;
 	guid: string;
 }
 
@@ -15,13 +15,18 @@ export async function loader({ context }: LoaderArgs) {
 		limit: 25,
 		sort: 'new',
 	});
+	const entries = list.entries.reduce<FeedEntry[]>((list, resource) => {
+		if (resource.title) {
+			list.push({
+				title: resource.title,
+				pubDate: new Date(resource.createdAt).toUTCString(),
+				link: resource.url,
+				guid: `${domain}/resources/${resource.id}`,
+			});
+		}
 
-	const entries = list.entries.map<FeedEntry>((resource) => ({
-		title: resource.title ?? '',
-		description: resource.description,
-		pubDate: new Date(resource.createdAt).toUTCString(),
-		guid: `${domain}/resources/${resource.id}`,
-	}));
+		return list;
+	}, []);
 
 	const rss = `
         <?xml version="1.0" encoding="utf-8"?>
@@ -39,8 +44,8 @@ export async function loader({ context }: LoaderArgs) {
 										`
 					<item>
 						<title><![CDATA[${entry.title}]]></title>
-						<description><![CDATA[${entry.description}]]></description>
 						<pubDate>${entry.pubDate}</pubDate>
+						<link>${entry.link}</link>
 						<guid>${entry.guid}</guid>
 					</item>
 				`.trim(),
