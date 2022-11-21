@@ -12,11 +12,13 @@ import discordIcon from '~/icons/discord.svg';
 import timesIcon from '~/icons/times.svg';
 import remixIcon from '~/icons/remix.svg';
 import packageIcon from '~/icons/box-open.svg';
-import repositoryIcon from '~/icons/map-signs.svg';
+import showcaseIcon from '~/icons/map-signs.svg';
 import officialIcon from '~/icons/bullhorn.svg';
 import tutorialIcon from '~/icons/chalkboard-teacher.svg';
 import templateIcon from '~/icons/layer-group.svg';
-import othersIcon from '~/icons/mail-bulk.svg';
+import exampleIcon from '~/icons/code.svg';
+import eventIcon from '~/icons/calendar-alt.svg';
+import opinionIcon from '~/icons/mail-bulk.svg';
 import type { UserProfile } from '~/types';
 import {
 	PaneContainer,
@@ -122,13 +124,19 @@ function getListIcon(slug: string): string {
 		case 'packages':
 			return packageIcon;
 		case 'examples':
-			return repositoryIcon;
+			return exampleIcon;
 		case 'tutorials':
 			return tutorialIcon;
 		case 'templates':
 			return templateIcon;
+		case 'events':
+			return eventIcon;
+		case 'opinions':
+			return opinionIcon;
+		case 'showcase':
+			return showcaseIcon;
 		default:
-			return othersIcon;
+			return opinionIcon;
 	}
 }
 
@@ -192,7 +200,7 @@ function SidebarNavigation({
 							</SearchLink>
 						</List>
 					) : null}
-					<List title="Guide">
+					<List title="List">
 						{(lists ?? []).map((list) => (
 							<SearchLink key={list.slug} list={list.slug}>
 								<SvgIcon className="w-4 h-4" href={getListIcon(list.slug)} />{' '}

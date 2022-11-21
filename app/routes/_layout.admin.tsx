@@ -1,4 +1,5 @@
 import type { LoaderArgs } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
@@ -7,12 +8,11 @@ import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
 import { requireAdministrator } from '~/helpers';
-import { ok } from '~/helpers';
 
 export async function loader({ context }: LoaderArgs) {
 	await requireAdministrator(context);
 
-	return ok();
+	return json({});
 }
 
 export default function Admin() {

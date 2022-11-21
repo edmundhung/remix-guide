@@ -31,28 +31,32 @@ const defaultLists: List[] = [
 		title: 'Official',
 	},
 	{
+		slug: 'tutorials',
+		title: 'Tutorials',
+	},
+	{
 		slug: 'packages',
 		title: 'Packages',
 	},
 	{
-		slug: 'tutorials',
-		title: 'Tutorials',
+		slug: 'events',
+		title: 'Events',
+	},
+	{
+		slug: 'showcase',
+		title: 'Showcase',
 	},
 	{
 		slug: 'templates',
 		title: 'Templates',
 	},
 	{
-		slug: 'talks',
-		title: 'Talks',
-	},
-	{
 		slug: 'examples',
 		title: 'Examples',
 	},
 	{
-		slug: 'integrations',
-		title: 'Integrations',
+		slug: 'opinions',
+		title: 'Opinions',
 	},
 ];
 
