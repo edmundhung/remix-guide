@@ -15,23 +15,6 @@ interface SitemapEntry {
 }
 
 export async function loader({ context }: LoaderArgs) {
-	function formatEntry(entry: SitemapEntry) {
-		return `
-            <url>
-                <loc>${entry.loc}</loc>
-                ${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ''}
-                ${
-									entry.changefreq
-										? `<changefreq>${entry.changefreq}</changefreq>`
-										: ''
-								}
-                ${
-									entry.priority ? `<priority>${entry.priority}</priority>` : ''
-								}
-            </url>
-        `.trim();
-	}
-
 	const guide = await context.resourceStore.getData();
 	const domain = 'https://remix.guide';
 	const entries: SitemapEntry[] = [
@@ -58,7 +41,18 @@ export async function loader({ context }: LoaderArgs) {
 	const sitemap = `
         <?xml version="1.0" encoding="UTF-8"?>
         <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-            ${entries.map(formatEntry)}
+            ${entries
+							.map((entry) =>
+								`
+				<url>
+					<loc>${entry.loc}</loc>
+					${entry.lastmod ? `<lastmod>${entry.lastmod}</lastmod>` : ''}
+					${entry.changefreq ? `<changefreq>${entry.changefreq}</changefreq>` : ''}
+					${entry.priority ? `<priority>${entry.priority}</priority>` : ''}
+				</url>
+			`.trim(),
+							)
+							.join('\n')}
         </urlset>
     `.trim();
 
