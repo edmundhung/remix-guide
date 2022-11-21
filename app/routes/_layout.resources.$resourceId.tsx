@@ -1,6 +1,6 @@
 import type {
-	LoaderFunction,
-	ActionFunction,
+	LoaderArgs,
+	ActionArgs,
 	MetaFunction,
 } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
@@ -8,47 +8,15 @@ import type { ShouldReloadFunction } from '@remix-run/react';
 import { Form, useLocation, useLoaderData } from '@remix-run/react';
 import { useMemo } from 'react';
 import clsx from 'clsx';
-import About from '~/components/About';
 import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
 import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
-import { getSearchOptions, getTitleBySearchOptions } from '~/search';
-import type { Context, Resource, SearchOptions, User } from '~/types';
 import BookmarkDetails from '~/components/BookmarkDetails';
 import { useSessionData } from '~/hooks';
 
-interface LoaderData {
-	resource: Resource;
-	message: string | null;
-	user: User | null;
-	suggestions: Array<{
-		entries: Resource[];
-		searchOptions: SearchOptions;
-	}>;
-}
-
-export let meta: MetaFunction = ({ params, location }) => {
-	const { guide, list } = params;
-
-	if (!guide || !list) {
-		return {};
-	}
-
-	const searchOptions = getSearchOptions(
-		`${location.pathname}${location.search}`,
-	);
-	const title = getTitleBySearchOptions(searchOptions);
-
-	return formatMeta({
-		title,
-		description: 'A platform for sharing everything about Remix',
-		'og:url': `https://remix.guide/${guide}/${list}`,
-	});
-};
-
-export let action: ActionFunction = async ({ params, context, request }) => {
-	const { session, userStore, resourceStore } = context as Context;
+export async function action({ params, context, request }: ActionArgs) {
+	const { session, userStore, resourceStore } = context;
 	const [profile, formData] = await Promise.all([
 		session.getUserProfile(),
 		request.formData(),
@@ -127,22 +95,15 @@ export let action: ActionFunction = async ({ params, context, request }) => {
 	}
 
 	return null;
-};
+}
 
-export let loader: LoaderFunction = async ({ context, request }) => {
-	const url = new URL(request.url);
-	const resourceId = url.searchParams.get('resourceId');
-
-	if (!resourceId) {
-		return json({});
-	}
-
-	const { session, resourceStore, userStore } = context as Context;
+export async function loader({ context, params }: LoaderArgs) {
+	const { session, resourceStore, userStore } = context;
 	const [list, profile] = await Promise.all([
 		resourceStore.list(),
 		session.getUserProfile(),
 	]);
-	const resource = list[resourceId];
+	const resource = params.resourceId ? list[params.resourceId] : null;
 
 	if (!resource) {
 		throw notFound();
@@ -154,6 +115,14 @@ export let loader: LoaderFunction = async ({ context, request }) => {
 		user,
 		resource: user ? patchResource(resource, user) : resource,
 		suggestions: getSuggestions(list, resource),
+	});
+}
+
+export const meta: MetaFunction<typeof loader> = ({ params, data }) => {
+	return formatMeta({
+		title: data.resource.title ?? '',
+		description: data.resource.description ?? '',
+		'og:url': `https://remix.guide/resources/${params.resourceId}`,
 	});
 };
 
@@ -174,8 +143,8 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 	);
 };
 
-export default function UserProfile() {
-	const { resource, user, suggestions } = useLoaderData<LoaderData>();
+export default function ResourcePreview() {
+	const { resource, user, suggestions } = useLoaderData<typeof loader>();
 	const { message } = useSessionData();
 	const location = useLocation();
 	const [showBookmark, action] = useMemo(() => {
@@ -184,12 +153,8 @@ export default function UserProfile() {
 
 		searchParams.delete('open');
 
-		return [showBookmark, `?${searchParams.toString()}&index`];
+		return [showBookmark, `?${searchParams.toString()}`];
 	}, [location.search]);
-
-	if (!resource) {
-		return <About />;
-	}
 
 	return (
 		<div className="flex flex-row">

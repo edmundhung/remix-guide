@@ -1,11 +1,10 @@
-import type { MetaFunction, ActionFunction } from '@remix-run/cloudflare';
+import type { MetaFunction, ActionArgs } from '@remix-run/cloudflare';
 import { redirect } from '@remix-run/cloudflare';
 import { Form, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
-import type { Context } from '~/types';
 import { formatMeta, isMaintainer } from '~/helpers';
 import { toggleSearchParams } from '~/search';
 import IconLink from '~/components/IconLink';
@@ -13,7 +12,8 @@ import { useSessionData } from '~/hooks';
 
 export let meta: MetaFunction = () => {
 	return formatMeta({
-		title: 'Submit a new Resource',
+		title: 'Submit a new resource',
+		description: 'Sharing with the community',
 		'og:url': 'https://remix.guide/submit',
 	});
 };
@@ -31,8 +31,8 @@ function isValidURL(text: string): boolean {
 	}
 }
 
-export let action: ActionFunction = async ({ request, context }) => {
-	const { session, resourceStore } = context as Context;
+export async function action({ request, context }: ActionArgs) {
+	const { session, resourceStore } = context;
 	const profile = await session.getUserProfile();
 
 	if (!profile) {
@@ -105,7 +105,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 		}
 
 		return redirect(
-			`/discover?${new URLSearchParams({ resourceId: id, open: 'bookmark' })}`,
+			`/resources/${id}?${new URLSearchParams({ open: 'bookmark' })}`,
 			{ headers },
 		);
 	} catch (error) {
@@ -119,7 +119,7 @@ export let action: ActionFunction = async ({ request, context }) => {
 			},
 		});
 	}
-};
+}
 
 export default function Submit() {
 	const { message } = useSessionData();

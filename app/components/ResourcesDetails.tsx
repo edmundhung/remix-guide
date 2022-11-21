@@ -9,8 +9,9 @@ import bookmarkIcon from '~/icons/bookmark.svg';
 import {
 	getSite,
 	createIntegrationSearch,
-	excludeParams,
 	toggleSearchParams,
+	getResourceURL,
+	getSearchOptions,
 } from '~/search';
 import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
@@ -38,14 +39,17 @@ function ResourcesDetails({
 	const location = useLocation();
 	const [backURL, bookmarkURL] = useMemo(() => {
 		const searchParams = new URLSearchParams(location.search);
-		const backURL = `?${excludeParams('resourceId', searchParams)}`;
+		const searchOptions = getSearchOptions(
+			`${location.pathname}${location.search}`,
+		);
+		const backURL = getResourceURL(searchOptions);
 		const bookmarkURL = `?${toggleSearchParams(
 			searchParams.toString(),
 			'bookmark',
 		)}`;
 
 		return [backURL, bookmarkURL];
-	}, [location.search]);
+	}, [location.pathname, location.search]);
 
 	useEffect(() => {
 		submit(
@@ -76,51 +80,41 @@ function ResourcesDetails({
 			<PaneHeader>
 				<IconLink icon={backIcon} to={backURL} />
 				<div className="flex-1" />
-				{!isAdministrator(user?.profile.name) ? (
-					<bookmark.Form className="flex flex-row items-center" method="post">
-						<input
-							type="hidden"
-							name="referer"
-							value={`${location.pathname}${location.search}`}
-						/>
-						<input
-							type="hidden"
-							name="type"
-							value={bookmarked ? 'unbookmark' : 'bookmark'}
-						/>
-						<input type="hidden" name="resourceId" value={resource.id} />
-						<input type="hidden" name="url" value={resource.url} />
-						<button
-							type="submit"
-							className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${
-								bookmarked
-									? 'rounded-full text-red-500 bg-gray-200'
-									: authenticated
-									? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
-									: ''
-							}`}
-							disabled={!authenticated || bookmark.state === 'submitting'}
-						>
-							<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
-						</button>
-						<label className="px-2 w-10 text-right">
-							{bookmarkCount >= 0 ? bookmarkCount : 0}
-						</label>
-					</bookmark.Form>
-				) : (
+				<bookmark.Form className="flex flex-row items-center" method="post">
+					<input
+						type="hidden"
+						name="referer"
+						value={`${location.pathname}${location.search}`}
+					/>
+					<input
+						type="hidden"
+						name="type"
+						value={bookmarked ? 'unbookmark' : 'bookmark'}
+					/>
+					<input type="hidden" name="resourceId" value={resource.id} />
+					<input type="hidden" name="url" value={resource.url} />
+					<button
+						type="submit"
+						className={`flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 ${
+							bookmarked
+								? 'rounded-full text-red-500 bg-gray-200'
+								: authenticated
+								? 'hover:rounded-full hover:bg-gray-200 hover:text-black'
+								: ''
+						}`}
+						disabled={!authenticated || bookmark.state === 'submitting'}
+					>
+						<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
+					</button>
+					<label className="px-2 w-10 text-right">
+						{bookmarkCount >= 0 ? bookmarkCount : 0}
+					</label>
+				</bookmark.Form>
+				{isAdministrator(user?.profile.name) ? (
 					<div className="flex flex-row items-center">
-						<Link
-							className="flex items-center justify-center w-8 h-8 lg:w-6 lg:h-6 rounded-full text-red-500 bg-gray-200 hover:rounded-full hover:bg-gray-200 hover:text-black"
-							to={bookmarkURL}
-							state={{ skipRestore: true }}
-						>
-							<SvgIcon className="w-4 h-4 lg:w-3 lg:h-3" href={bookmarkIcon} />
-						</Link>
-						<label className="px-2 w-10 text-right">
-							{bookmarkCount >= 0 ? bookmarkCount : 0}
-						</label>
+						<IconLink icon={backIcon} to={bookmarkURL} rotateIcon />
 					</div>
-				)}
+				) : null}
 			</PaneHeader>
 			<PaneContent>
 				<div className="flex flex-row justify-center">
@@ -167,7 +161,7 @@ function ResourcesDetails({
 													<Link
 														key={list.slug}
 														className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-														to={`/discover/${list.slug}`}
+														to={getResourceURL({ list: list.slug })}
 													>
 														{list.title}
 													</Link>
@@ -176,9 +170,7 @@ function ResourcesDetails({
 												<Link
 													key={integration}
 													className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-													to={`/discover?${createIntegrationSearch(
-														integration,
-													)}`}
+													to={getResourceURL({ integrations: [integration] })}
 												>
 													{integration}
 												</Link>

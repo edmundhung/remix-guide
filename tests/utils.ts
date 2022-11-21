@@ -280,5 +280,11 @@ export function getPageGuide(page: Page): string | null {
 }
 
 export function getPageResourceId(page: Page): string | null {
-	return getPageURL(page).searchParams.get('resourceId');
+	const url = getPageURL(page);
+	const prefix = '/resources/';
+	const [resourcedId] = url.pathname.startsWith(prefix)
+		? url.pathname.slice(prefix.length).split('/')
+		: [];
+
+	return resourcedId ?? null;
 }

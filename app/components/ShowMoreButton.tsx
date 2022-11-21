@@ -1,6 +1,6 @@
 import { Link } from '@remix-run/react';
 import { useInView } from 'react-intersection-observer';
-import { getResourceSearchParams } from '~/search';
+import { getResourceURL } from '~/search';
 import type { SearchOptions } from '~/types';
 import { useEffect, useMemo, useRef } from 'react';
 
@@ -12,18 +12,17 @@ interface ShowMoreButtonProps {
 function ShowMoreButton({ searchOptions, selected }: ShowMoreButtonProps) {
 	const { ref, inView } = useInView();
 	const link = useRef<HTMLAnchorElement>(null);
-	const url = useMemo(() => {
-		const searchParams = getResourceSearchParams({
-			...searchOptions,
-			limit: (searchOptions.limit ?? 0) + 25,
-		});
-
-		if (selected) {
-			searchParams.set('resourceId', selected);
-		}
-
-		return `?${searchParams.toString()}`;
-	}, [searchOptions, selected]);
+	const url = useMemo(
+		() =>
+			getResourceURL(
+				{
+					...searchOptions,
+					limit: (searchOptions.limit ?? 0) + 25,
+				},
+				selected,
+			),
+		[searchOptions, selected],
+	);
 
 	useEffect(() => {
 		if (!inView || !link.current) {

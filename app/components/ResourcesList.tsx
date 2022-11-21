@@ -20,7 +20,7 @@ import { useMemo } from 'react';
 import clsx from 'clsx';
 import IconLink from '~/components/IconLink';
 import ShowMoreButton from '~/components/ShowMoreButton';
-import { useElementScrollRestoration } from '~/scroll';
+import { useFeedScrollRestoration } from '~/scroll';
 
 interface ResourcesListProps {
 	entries: Resource[];
@@ -30,7 +30,7 @@ interface ResourcesListProps {
 }
 
 function isSearching(searchOptions: SearchOptions): boolean {
-	const keys = ['guide', 'list', 'sort', 'limit'];
+	const keys = ['list', 'sort', 'limit'];
 
 	return Object.entries(searchOptions).some(
 		([key, value]) =>
@@ -46,7 +46,7 @@ export default function ResourcesList({
 	searchOptions,
 }: ResourcesListProps) {
 	const location = useLocation();
-	const container = useElementScrollRestoration('feed');
+	const container = useFeedScrollRestoration();
 	const [toggleSearchURL, toggleMenuURL] = useMemo(
 		() => [
 			`?${toggleSearchParams(location.search, 'search')}`,
@@ -59,11 +59,26 @@ export default function ResourcesList({
 		<PaneContainer ref={container}>
 			{!isSearching(searchOptions) ? (
 				<PaneHeader>
-					<IconLink icon={menuIcon} to={toggleMenuURL} mobileOnly />
+					<IconLink
+						icon={menuIcon}
+						to={`${
+							selectedResourceId
+								? `/resources/${selectedResourceId}`
+								: '/resources'
+						}${toggleMenuURL}`}
+						mobileOnly
+					/>
 					<div className="flex-1 line-clamp-1 text-center lg:text-left">
 						{getTitleBySearchOptions(searchOptions)}
 					</div>
-					<IconLink icon={searchIcon} to={toggleSearchURL} />
+					<IconLink
+						icon={searchIcon}
+						to={`${
+							selectedResourceId
+								? `/resources/${selectedResourceId}`
+								: '/resources'
+						}${toggleSearchURL}`}
+					/>
 				</PaneHeader>
 			) : (
 				<PaneHeader>
@@ -75,7 +90,10 @@ export default function ResourcesList({
 					</div>
 					<IconLink
 						icon={timesIcon}
-						to={selectedResourceId ? `?resourceId=${selectedResourceId}` : '?'}
+						to={getResourceURL(
+							{ list: searchOptions.list },
+							selectedResourceId,
+						)}
 					/>
 				</PaneHeader>
 			)}

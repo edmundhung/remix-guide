@@ -1,7 +1,7 @@
 import type {
 	LinksFunction,
 	MetaFunction,
-	LoaderFunction,
+	LoaderArgs,
 } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
 import type { ShouldReloadFunction } from '@remix-run/react';
@@ -13,7 +13,6 @@ import {
 	useCatch,
 	Outlet,
 } from '@remix-run/react';
-import type { Context } from '~/types';
 import stylesUrl from '~/styles/tailwind.css';
 
 export let links: LinksFunction = () => {
@@ -30,8 +29,8 @@ export let meta: MetaFunction = () => {
 	};
 };
 
-export let loader: LoaderFunction = async ({ context }) => {
-	const { session } = context as Context;
+export async function loader({ context }: LoaderArgs) {
+	const { session } = context;
 	const [data, setCookieHeader] = await session.getData();
 
 	return json(data, {
@@ -39,7 +38,7 @@ export let loader: LoaderFunction = async ({ context }) => {
 			'Set-Cookie': setCookieHeader,
 		},
 	});
-};
+}
 
 export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) => {
 	return submission?.formData.get('type') !== 'view';

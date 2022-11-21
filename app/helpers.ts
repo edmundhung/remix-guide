@@ -1,5 +1,5 @@
+import type { AppLoadContext } from '@remix-run/cloudflare';
 import { administrators, maintainers } from '~/config';
-import type { Context } from '~/types';
 
 export function notFound(): Response {
 	const statusText = 'Not Found';
@@ -9,6 +9,27 @@ export function notFound(): Response {
 
 export function ok(body?: string | null): Response {
 	return new Response(body, { status: body ? 200 : 204 });
+}
+
+export function getDescription(list?: string): string {
+	switch (list) {
+		case 'official':
+			return 'Official resources provided by the Remix team';
+		case 'packages':
+			return 'NPM package directory that the community used with Remix';
+		case 'tutorials':
+			return 'Learning materials curated by the communtiy';
+		case 'templates':
+			return 'Find out a remix stack to generate a project quickly and easily';
+		case 'talks':
+			return 'Ideas and opinions all about Remix or the web';
+		case 'examples':
+			return 'List of websites that are built with Remix';
+		case 'integrations':
+			return 'Need help? Check out these examples integrating with Remix';
+		default:
+			return 'A platform for the Remix community';
+	}
 }
 
 export function formatMeta(meta: Record<string, string>) {
@@ -85,7 +106,7 @@ export function isAdministrator(name: string | null | undefined) {
 	return administrators.includes(name);
 }
 
-export async function requireAdministrator(context: Context) {
+export async function requireAdministrator(context: AppLoadContext) {
 	const profile = await context.session.getUserProfile();
 
 	if (!profile || !isAdministrator(profile.name)) {

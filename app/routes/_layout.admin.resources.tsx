@@ -1,17 +1,11 @@
-import type { ActionFunction } from '@remix-run/cloudflare';
+import type { ActionArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { useActionData } from '@remix-run/react';
-import { requireAdministrator, notFound } from '~/helpers';
+import { requireAdministrator } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
-import type { Context } from '~/types';
 
-export let action: ActionFunction = async ({ params, request, context }) => {
-	const { session, userStore } = context as Context;
-
-	if (!params.userId) {
-		throw notFound();
-	}
-
+export async function action({ request, context }: ActionArgs) {
+	const { session, resourceStore } = context;
 	const [formData] = await Promise.all([
 		request.formData(),
 		requireAdministrator(context),
@@ -20,7 +14,7 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 
 	switch (type) {
 		case 'backup': {
-			const data = await userStore.backup(params.userId);
+			const data = await resourceStore.backup();
 
 			return json(data);
 		}
@@ -29,7 +23,7 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 			const data = input ? input.toString() : '';
 
 			if (data.trim() === '') {
-				return redirect('/admin/users', {
+				return redirect('/admin/resources', {
 					headers: {
 						'Set-Cookie': await session.flash(
 							'Please provide proper data before clicking restore',
@@ -39,19 +33,16 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 				});
 			}
 
-			await userStore.restore(params.userId, JSON.parse(data.trim()));
+			await resourceStore.restore(JSON.parse(data.trim()));
 
-			return redirect('/admin/users', {
+			return redirect('/admin/resources', {
 				headers: {
-					'Set-Cookie': await session.flash(
-						`Data restored for user (${params.userId})`,
-						'success',
-					),
+					'Set-Cookie': await session.flash('Data restored', 'success'),
 				},
 			});
 		}
 		default:
-			return redirect('/admin/users', {
+			return redirect('/admin/resources', {
 				headers: {
 					'Set-Cookie': await session.flash(
 						'Please select either backup or restore',
@@ -60,14 +51,14 @@ export let action: ActionFunction = async ({ params, request, context }) => {
 				},
 			});
 	}
-};
+}
 
 export default function AdminResources() {
 	const data = useActionData();
 
 	return (
 		<section className="flex flex-col flex-1 px-2.5 pt-2">
-			<h3 className="pb-4">User backup / restore</h3>
+			<h3 className="pb-4">Resources backup / restore</h3>
 			<BackupForm data={data} />
 		</section>
 	);

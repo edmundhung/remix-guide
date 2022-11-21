@@ -27,21 +27,19 @@ test.describe('Index', () => {
 		await page.goto('/');
 	});
 
-	test('shows all URLs submitted', async ({ page, mf, queries }) => {
+	test('shows all URLs submitted', async ({ page, mf }) => {
 		const list = await listResources(mf);
+		const feed = page.locator('section', { hasText: 'Discover' });
 		const resources = Object.values(list ?? {});
-		const links = await Promise.all(
-			resources.map((resource) =>
-				resource.title ? queries.queryByTitle(resource.title) : null,
-			),
-		);
 
-		expect(links).not.toContain(null);
+		for (const resource of resources) {
+			if (!resource.title) {
+				throw new Error('resource title is undefined');
+			}
 
-		for (let i = 0; i < links.length; i++) {
-			await links[i]?.click();
+			await feed.getByTitle(resource.title).click();
 
-			expect(getPageResourceId(page)).toBe(resources[i].id);
+			expect(getPageResourceId(page)).toBe(resource.id);
 		}
 	});
 });

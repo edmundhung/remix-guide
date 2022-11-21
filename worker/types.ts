@@ -1,5 +1,3 @@
-export type { Context } from './context';
-
 export interface Env {
 	GITHUB_TOKEN?: string;
 	GITHUB_CLIENT_ID?: string;
@@ -106,7 +104,6 @@ export interface GuideMetadata {
 export interface SearchOptions {
 	keyword?: string | null;
 	list?: string | null;
-	guide?: string | null;
 	author?: string | null;
 	site?: string | null;
 	category?: Category | null;

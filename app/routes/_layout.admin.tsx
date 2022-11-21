@@ -1,4 +1,4 @@
-import type { LoaderFunction } from '@remix-run/cloudflare';
+import type { LoaderArgs } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
@@ -9,11 +9,11 @@ import IconLink from '~/components/IconLink';
 import { requireAdministrator } from '~/helpers';
 import { ok } from '~/helpers';
 
-export let loader: LoaderFunction = async ({ context }) => {
+export async function loader({ context }: LoaderArgs) {
 	await requireAdministrator(context);
 
 	return ok();
-};
+}
 
 export default function Admin() {
 	const { message } = useLoaderData();

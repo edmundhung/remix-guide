@@ -42,13 +42,11 @@ export function getSearchOptions(url: string): SearchOptions {
 	}
 
 	const { pathname, searchParams } = new URL(url, 'https://remix.guide');
-	const [, guide, list] =
-		pathname.match(/^\/([a-z-0-9]+)(?:\/([a-z-0-9]+))*$/i) ?? [];
+	const [list] = pathname.slice(1).split('/');
 	const options: SearchOptions = {
 		keyword: searchParams.get('q'),
 		author: searchParams.get('author'),
-		guide: guide ?? null,
-		list: list ?? null,
+		list: list === 'resources' ? searchParams.get('list') : list,
 		site: searchParams.get('site'),
 		category: searchParams.get('category'),
 		platform: searchParams.get('platform'),
@@ -91,16 +89,6 @@ export function createIntegrationSearch(value: string): string {
 	return searchParams.toString();
 }
 
-export function getResourcePathname(options: SearchOptions): string {
-	let base = `/${options.guide ?? ''}`;
-
-	if (options.list) {
-		base += `/${options.list}`;
-	}
-
-	return base;
-}
-
 export function getResourceSearchParams(
 	options: SearchOptions,
 ): URLSearchParams {
@@ -113,6 +101,7 @@ export function getResourceSearchParams(
 				case 'site':
 				case 'keyword':
 				case 'limit':
+				case 'list':
 				case 'sort': {
 					let k = key;
 					let v = value;
@@ -150,15 +139,18 @@ export function getResourceURL(
 	resourceId?: string | null,
 ): string {
 	const searchParams = getResourceSearchParams(options);
-	const pathname = getResourcePathname(options);
 
-	if (resourceId) {
-		searchParams.set('resourceId', resourceId);
+	if (
+		!resourceId &&
+		searchParams.has('list') &&
+		Array.from(searchParams.keys()).length === 1
+	) {
+		return `/${options.list}`;
 	}
 
-	const search = searchParams.toString();
-
-	return search ? `${pathname}?${search}` : pathname;
+	return resourceId
+		? `/resources/${resourceId}?${searchParams}`
+		: `/resources?${searchParams}`;
 }
 
 export function toggleSearchParams(search: string, key: string): string {

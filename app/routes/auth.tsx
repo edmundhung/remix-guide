@@ -1,5 +1,5 @@
-import type { LoaderFunction } from '@remix-run/cloudflare';
+import type { LoaderArgs } from '@remix-run/cloudflare';
 
-export let loader: LoaderFunction = async ({ context }) => {
+export async function loader({ context }: LoaderArgs) {
 	return await context.session.login();
-};
+}

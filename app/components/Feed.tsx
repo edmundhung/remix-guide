@@ -10,7 +10,7 @@ import type { Resource } from '~/types';
 interface ListProps {
 	entries: Resource[];
 	count: number;
-	selectedId: string | null | undefined;
+	selectedId?: string | null;
 	children: ReactNode;
 }
 
