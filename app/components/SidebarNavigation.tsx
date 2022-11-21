@@ -9,6 +9,7 @@ import historyIcon from '~/icons/history.svg';
 import plusIcon from '~/icons/plus.svg';
 import githubIcon from '~/icons/github.svg';
 import discordIcon from '~/icons/discord.svg';
+import meetupIcon from '~/icons/meetup.svg';
 import timesIcon from '~/icons/times.svg';
 import remixIcon from '~/icons/remix.svg';
 import packageIcon from '~/icons/box-open.svg';
@@ -200,7 +201,7 @@ function SidebarNavigation({
 							</SearchLink>
 						</List>
 					) : null}
-					<List title="List">
+					<List title="Menu">
 						{(lists ?? []).map((list) => (
 							<SearchLink key={list.slug} list={list.slug}>
 								<SvgIcon className="w-4 h-4" href={getListIcon(list.slug)} />{' '}
@@ -227,8 +228,11 @@ function SidebarNavigation({
 						<ExternalLink href="https://github.com/remix-run/remix">
 							<SvgIcon className="w-4 h-4" href={githubIcon} /> GitHub
 						</ExternalLink>
-						<ExternalLink href="https://discord.com/invite/remix">
+						<ExternalLink href="https://rmx.as/discord">
 							<SvgIcon className="w-4 h-4" href={discordIcon} /> Discord
+						</ExternalLink>
+						<ExternalLink href="https://www.meetup.com/pro/remix-run/">
+							<SvgIcon className="w-4 h-4" href={meetupIcon} /> Meetup
 						</ExternalLink>
 					</List>
 				</div>
