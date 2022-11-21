@@ -1,5 +1,5 @@
 import type { LoaderArgs, MetaFunction } from '@remix-run/cloudflare';
-import { json, redirect } from '@remix-run/cloudflare';
+import { json } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
@@ -16,7 +16,7 @@ export async function loader({ request, params, context }: LoaderArgs) {
 		case 'bookmarks':
 		case 'history': {
 			if (!profile) {
-				throw redirect('/');
+				throw notFound();
 			}
 
 			const searchOptions = getSearchOptions(request.url);
