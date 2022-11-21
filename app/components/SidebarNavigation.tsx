@@ -44,8 +44,6 @@ function ExternalLink({ href, children }: ExternalLinkProps): ReactElement {
 		<a
 			className="px-3 py-1.5 flex items-center gap-4 transition-colors rounded-lg text-gray-400 hover:text-gray-200 hover:bg-gray-800"
 			href={href}
-			target="_blank"
-			rel="noopener noreferrer"
 		>
 			{children}
 		</a>
