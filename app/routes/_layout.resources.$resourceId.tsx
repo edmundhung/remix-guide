@@ -1,4 +1,8 @@
-import type { ActionArgs, MetaFunction } from '@remix-run/cloudflare';
+import type {
+	LoaderArgs,
+	ActionArgs,
+	MetaFunction,
+} from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import { Form, useLocation, useLoaderData } from '@remix-run/react';
@@ -8,39 +12,8 @@ import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
 import { formatMeta, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
-import { getSearchOptions, getTitleBySearchOptions } from '~/search';
-import type { Resource, SearchOptions, User } from '~/types';
 import BookmarkDetails from '~/components/BookmarkDetails';
 import { useSessionData } from '~/hooks';
-
-interface LoaderData {
-	resource: Resource;
-	message: string | null;
-	user: User | null;
-	suggestions: Array<{
-		entries: Resource[];
-		searchOptions: SearchOptions;
-	}>;
-}
-
-export let meta: MetaFunction = ({ params, location }) => {
-	const { list } = params;
-
-	if (!list) {
-		return {};
-	}
-
-	const searchOptions = getSearchOptions(
-		`${location.pathname}${location.search}`,
-	);
-	const title = getTitleBySearchOptions(searchOptions);
-
-	return formatMeta({
-		title,
-		description: 'A platform for sharing everything about Remix',
-		'og:url': `https://remix.guide/${list}`,
-	});
-};
 
 export async function action({ params, context, request }: ActionArgs) {
 	const { session, userStore, resourceStore } = context;
@@ -145,6 +118,14 @@ export async function loader({ context, params }: LoaderArgs) {
 	});
 }
 
+export const meta: MetaFunction<typeof loader> = ({ params, data }) => {
+	return formatMeta({
+		title: data.resource.title ?? '',
+		description: data.resource.description ?? '',
+		'og:url': `https://remix.guide/resources/${params.resourceId}`,
+	});
+};
+
 export const unstable_shouldReload: ShouldReloadFunction = ({
 	prevUrl,
 	url,
@@ -163,7 +144,7 @@ export const unstable_shouldReload: ShouldReloadFunction = ({
 };
 
 export default function ResourcePreview() {
-	const { resource, user, suggestions } = useLoaderData<LoaderData>();
+	const { resource, user, suggestions } = useLoaderData<typeof loader>();
 	const { message } = useSessionData();
 	const location = useLocation();
 	const [showBookmark, action] = useMemo(() => {

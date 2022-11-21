@@ -1,9 +1,9 @@
-import type { LoaderArgs } from '@remix-run/cloudflare';
+import type { LoaderArgs, MetaFunction } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { useLoaderData } from '@remix-run/react';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
-import { notFound } from '~/helpers';
+import { capitalize, formatMeta, getDescription, notFound } from '~/helpers';
 import { search } from '~/resources';
 import { getRelatedSearchParams, getSearchOptions } from '~/search';
 import About from '~/components/About';
@@ -39,6 +39,14 @@ export async function loader({ request, params, context }: LoaderArgs) {
 		}
 	}
 }
+
+export const meta: MetaFunction = ({ params }) => {
+	return formatMeta({
+		title: params.list ? capitalize(params.list) : '',
+		description: getDescription(params.list),
+		'og:url': `https://remix.guide/${params.list}`,
+	});
+};
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
 	url,

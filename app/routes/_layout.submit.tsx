@@ -12,7 +12,8 @@ import { useSessionData } from '~/hooks';
 
 export let meta: MetaFunction = () => {
 	return formatMeta({
-		title: 'Submit a new Resource',
+		title: 'Submit a new resource',
+		description: 'Sharing with the community',
 		'og:url': 'https://remix.guide/submit',
 	});
 };
