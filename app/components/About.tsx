@@ -20,8 +20,6 @@ function About(): ReactElement {
 					<a
 						className="hover:underline"
 						href="https://github.com/edmundhung/remix-guide"
-						target="_blank"
-						rel="noopener noreferrer"
 					>
 						{version}
 					</a>

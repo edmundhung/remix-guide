@@ -127,12 +127,7 @@ function ResourcesDetails({
 										<span>{resource.createdAt.substring(0, 10)}</span>
 									</div>
 									<div>
-										<a
-											className="sticky top-0"
-											href={resource.url}
-											target="_blank"
-											rel="noopener noreferrer"
-										>
+										<a className="sticky top-0" href={resource.url}>
 											<h2 className="inline-block text-xl break-words">
 												{resource.title ?? resource.url}
 											</h2>
@@ -141,8 +136,6 @@ function ResourcesDetails({
 									<a
 										className="hover:underline text-gray-400"
 										href={resource.url}
-										target="_blank"
-										rel="noopener noreferrer"
 									>
 										<SvgIcon
 											className="inline-block w-3 h-3 mr-2"
@@ -201,12 +194,7 @@ function ResourcesDetails({
 											</div>
 										) : resource.image ? (
 											<div className="lg:max-w-sm 2xl:max-w-xs w-auto mx-auto">
-												<a
-													className="relative"
-													href={resource.url}
-													target="_blank"
-													rel="noopener noreferrer"
-												>
+												<a className="relative" href={resource.url}>
 													<img
 														className="max-h-96 rounded-lg bg-white"
 														src={resource.image}
