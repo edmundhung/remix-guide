@@ -1,15 +1,10 @@
-import type { LoaderArgs, MetaFunction } from '@remix-run/cloudflare';
+import type { LoaderArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import type { ShouldReloadFunction } from '@remix-run/react';
 import Feed from '~/components/Feed';
 import { search } from '~/resources';
-import {
-	getRelatedSearchParams,
-	getSearchOptions,
-	getTitleBySearchOptions,
-} from '~/search';
-import { formatMeta } from '~/helpers';
+import { getRelatedSearchParams, getSearchOptions } from '~/search';
 
 export async function loader({ request, context }: LoaderArgs) {
 	const profile = await context.session.getUserProfile();
@@ -36,17 +31,6 @@ export async function loader({ request, context }: LoaderArgs) {
 		}
 	}
 }
-
-export const meta: MetaFunction = ({ location }) => {
-	const searchOptions = getSearchOptions(
-		`${location.pathname}${location.search}`,
-	);
-	const title = getTitleBySearchOptions(searchOptions);
-
-	return formatMeta({
-		title,
-	});
-};
 
 export const unstable_shouldReload: ShouldReloadFunction = ({
 	url,
