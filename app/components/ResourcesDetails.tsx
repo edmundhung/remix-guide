@@ -8,7 +8,6 @@ import backIcon from '~/icons/back.svg';
 import bookmarkIcon from '~/icons/bookmark.svg';
 import {
 	getSite,
-	createIntegrationSearch,
 	toggleSearchParams,
 	getResourceURL,
 	getSearchOptions,
@@ -17,6 +16,7 @@ import { PaneContainer, PaneHeader, PaneFooter, PaneContent } from '~/layout';
 import FlashMessage from '~/components/FlashMessage';
 import type { User } from '~/types';
 import IconLink from '~/components/IconLink';
+import { platforms } from '~/config';
 import { isAdministrator } from '~/helpers';
 import { useLists } from '~/hooks';
 
@@ -154,7 +154,10 @@ function ResourcesDetails({
 													<Link
 														key={list.slug}
 														className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-														to={getResourceURL({ list: list.slug })}
+														to={getResourceURL({
+															list: list.slug,
+															sort: 'top',
+														})}
 													>
 														{list.title}
 													</Link>
@@ -163,7 +166,17 @@ function ResourcesDetails({
 												<Link
 													key={integration}
 													className="text-xs bg-gray-700 hover:bg-gray-500 rounded-md px-2"
-													to={getResourceURL({ integrations: [integration] })}
+													to={
+														platforms.includes(integration)
+															? getResourceURL({
+																	sort: 'top',
+																	platform: integration,
+															  })
+															: getResourceURL({
+																	sort: 'top',
+																	integrations: [integration],
+															  })
+													}
 												>
 													{integration}
 												</Link>

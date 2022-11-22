@@ -111,7 +111,6 @@ export function useFeedScrollRestoration(prefix = 'feed') {
 			// been here before, scroll to it
 			if (y != undefined) {
 				scrollOnElemenIfScrollable(ref.current, 0, y);
-				console.log('restored with y: ', y);
 				return;
 			}
 
@@ -123,7 +122,6 @@ export function useFeedScrollRestoration(prefix = 'feed') {
 
 			// otherwise go to the top on new locations
 			scrollOnElemenIfScrollable(ref.current, 0, 0);
-			console.log('go to top');
 		}, [prefix, location]);
 	}
 

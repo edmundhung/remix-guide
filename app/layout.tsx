@@ -21,6 +21,8 @@ export const PaneContainer = forwardRef<HTMLElement, PaneContainerProps>(
 	},
 );
 
+PaneContainer.displayName = 'PaneContainer';
+
 interface PaneHeaderProps {
 	padding?: Padding;
 	children: ReactNode;

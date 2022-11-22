@@ -14,16 +14,16 @@ interface SitemapEntry {
 	priority?: 1.0 | 0.9 | 0.8 | 0.7 | 0.6 | 0.5 | 0.4 | 0.3 | 0.2 | 0.1 | 0.0;
 }
 
-export async function loader({ context }: LoaderArgs) {
+export async function loader({ request, context }: LoaderArgs) {
+	const url = new URL(request.url);
 	const guide = await context.resourceStore.getData();
-	const domain = 'https://remix.guide';
 	const entries: SitemapEntry[] = [
-		{ loc: domain, changefreq: 'hourly', priority: 1 },
+		{ loc: url.origin, changefreq: 'hourly', priority: 1 },
 	];
 
 	for (const list of guide.metadata.lists ?? []) {
 		entries.push({
-			loc: `${domain}/${list.slug}`,
+			loc: `${url.origin}/${list.slug}`,
 			changefreq: 'hourly',
 			priority: 0.8,
 		});
@@ -31,7 +31,7 @@ export async function loader({ context }: LoaderArgs) {
 
 	for (const [resourceId, resource] of Object.entries(guide.value)) {
 		entries.push({
-			loc: `${domain}/resources/${resourceId}`,
+			loc: `${url.origin}/resources/${resourceId}`,
 			lastmod: resource.updatedAt,
 			changefreq: 'weekly',
 			priority: 0.5,

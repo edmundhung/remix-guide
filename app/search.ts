@@ -1,5 +1,4 @@
 import type { SearchOptions } from '~/types';
-import { platforms } from '~/config';
 import { capitalize } from '~/helpers';
 
 /**
@@ -75,18 +74,6 @@ export function excludeParams(
 
 export function getSite(url: string): string {
 	return new URL(url).hostname;
-}
-
-export function createIntegrationSearch(value: string): string {
-	const searchParams = new URLSearchParams({ sort: 'top' });
-
-	if (platforms.includes(value)) {
-		searchParams.set('platform', value);
-	} else {
-		searchParams.set('integration', value);
-	}
-
-	return searchParams.toString();
 }
 
 export function getResourceSearchParams(
