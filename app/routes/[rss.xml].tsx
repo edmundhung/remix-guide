@@ -1,4 +1,5 @@
 import type { LoaderArgs } from '@remix-run/cloudflare';
+import { capitalize } from '~/helpers';
 import { search } from '~/resources';
 import { getSearchOptions } from '~/search';
 
@@ -21,7 +22,12 @@ export async function loader({ request, context }: LoaderArgs) {
 	const entries = list.entries.reduce<FeedEntry[]>((list, resource) => {
 		if (resource.title) {
 			list.push({
-				title: resource.title,
+				title:
+					!searchOptions.list && resource.lists
+						? `[${resource.lists.map((list) => capitalize(list)).join(', ')}] ${
+								resource.title
+						  }`
+						: resource.title,
 				pubDate: new Date(resource.createdAt).toUTCString(),
 				link: resource.url,
 				guid: `${url.origin}/resources/${resource.id}`,
