@@ -1,5 +1,6 @@
 import type { LoaderArgs } from '@remix-run/cloudflare';
 import { search } from '~/resources';
+import { getSearchOptions } from '~/search';
 
 interface FeedEntry {
 	title: string;
@@ -8,12 +9,14 @@ interface FeedEntry {
 	guid: string;
 }
 
-export async function loader({ context }: LoaderArgs) {
-	const domain = 'https://remix.guide';
+export async function loader({ request, context }: LoaderArgs) {
+	const url = new URL(request.url);
+	const searchOptions = getSearchOptions(request.url);
 	const resources = await context.resourceStore.list();
 	const list = search(resources, {
-		limit: 25,
+		...searchOptions,
 		sort: 'new',
+		limit: 25,
 	});
 	const entries = list.entries.reduce<FeedEntry[]>((list, resource) => {
 		if (resource.title) {
@@ -21,7 +24,7 @@ export async function loader({ context }: LoaderArgs) {
 				title: resource.title,
 				pubDate: new Date(resource.createdAt).toUTCString(),
 				link: resource.url,
-				guid: `${domain}/resources/${resource.id}`,
+				guid: `${url.origin}/resources/${resource.id}`,
 			});
 		}
 
