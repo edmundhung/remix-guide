@@ -37,11 +37,13 @@ export async function loader({ request, context }: LoaderArgs) {
             <channel>
                 <title>Remix Guide</title>
                 <description>A platform for the Remix community</description>
-                <link>https://remix.guide</link>
+                <link>${url.origin}</link>
                 <language>en-us</language>
 				<generator>remix-guide</generator>
                 <ttl>60</ttl>
-                <atom:link href="https://remix.guide/rss.xml" rel="self" type="application/rss+xml" />
+                <atom:link href="${
+									url.origin
+								}/rss.xml" rel="self" type="application/rss+xml" />
                 ${entries
 									.map((entry) =>
 										`

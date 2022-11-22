@@ -41,11 +41,13 @@ export function getSearchOptions(url: string): SearchOptions {
 	}
 
 	const { pathname, searchParams } = new URL(url, 'https://remix.guide');
-	const [list] = pathname.slice(1).split('/');
 	const options: SearchOptions = {
 		keyword: searchParams.get('q'),
 		author: searchParams.get('author'),
-		list: list === 'resources' ? searchParams.get('list') : list,
+		list:
+			pathname.startsWith('/resources') || pathname === '/rss.xml'
+				? searchParams.get('list')
+				: pathname.slice(1).split('/').shift(),
 		site: searchParams.get('site'),
 		category: searchParams.get('category'),
 		platform: searchParams.get('platform'),
