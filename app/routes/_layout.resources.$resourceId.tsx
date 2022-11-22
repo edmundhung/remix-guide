@@ -80,7 +80,7 @@ export async function action({ params, context, request }: ActionArgs) {
 			case 'delete': {
 				await resourceStore.deleteBookmark(resourceId);
 
-				return redirect(`/${params.guide}`, {
+				return redirect('/', {
 					headers: {
 						'Set-Cookie': await session.flash(
 							'The bookmark is deleted successfully',
