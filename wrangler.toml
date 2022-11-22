@@ -4,7 +4,7 @@ workers_dev = false
 account_id = "c63d756a160ad09cd9a82553c77e9174"
 zone_id = "e433232c2f0e3fddcd03a20251740130"
 route = "remix.guide/*"
-compatibility_date = "2021-12-24"
+compatibility_date = "2022-11-22"
 
 [[kv_namespaces]]
 binding = "CONTENT"
