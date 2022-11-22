@@ -34,4 +34,6 @@ export const maintainers = [
 	'kiliman',
 	'benborgers',
 	'gustavoguichard',
+	'nakleiderer',
+	'dev-xo',
 ];
