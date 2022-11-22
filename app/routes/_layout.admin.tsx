@@ -1,6 +1,6 @@
 import type { LoaderArgs } from '@remix-run/cloudflare';
 import { json } from '@remix-run/cloudflare';
-import { Outlet, useLoaderData, useLocation } from '@remix-run/react';
+import { Link, Outlet, useLoaderData, useLocation } from '@remix-run/react';
 import { useMemo } from 'react';
 import menuIcon from '~/icons/menu.svg';
 import FlashMessage from '~/components/FlashMessage';
@@ -30,6 +30,19 @@ export default function Admin() {
 				<div className="flex-1 leading-8 line-clamp-1">Administrator</div>
 			</PaneHeader>
 			<PaneContent>
+				<div className="px-2.5 flex flex-row gap-4">
+					<Link to="pages" className="hover:underline">
+						Pages
+					</Link>
+					<span>/</span>
+					<Link to="users" className="hover:underline">
+						Users
+					</Link>
+					<span>/</span>
+					<Link to="resources" className="hover:underline">
+						Resources
+					</Link>
+				</div>
 				<Outlet />
 			</PaneContent>
 			<PaneFooter>

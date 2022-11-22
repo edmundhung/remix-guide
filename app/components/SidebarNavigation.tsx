@@ -20,6 +20,7 @@ import templateIcon from '~/icons/layer-group.svg';
 import exampleIcon from '~/icons/code.svg';
 import eventIcon from '~/icons/calendar-alt.svg';
 import opinionIcon from '~/icons/mail-bulk.svg';
+import rssIcon from '~/icons/rss-square.svg';
 import type { UserProfile } from '~/types';
 import {
 	PaneContainer,
@@ -197,6 +198,9 @@ function SidebarNavigation({
 							<SearchLink list="history">
 								<SvgIcon className="w-4 h-4" href={historyIcon} /> History
 							</SearchLink>
+							{isAdministrator(profile.name) ? (
+								<MenuLink to="/admin">⌨ Admin</MenuLink>
+							) : null}
 						</List>
 					) : null}
 					<List title="Menu">
@@ -210,13 +214,6 @@ function SidebarNavigation({
 							</SearchLink>
 						))}
 					</List>
-					{isAdministrator(profile?.name) ? (
-						<List title="Administrator">
-							<MenuLink to="/admin/pages">🌐 Pages</MenuLink>
-							<MenuLink to="/admin/users">👥 Users</MenuLink>
-							<MenuLink to="/admin/resources">🗃 Backup / Restore</MenuLink>
-						</List>
-					) : null}
 				</div>
 				<div className="border-t">
 					<List>
@@ -231,6 +228,9 @@ function SidebarNavigation({
 						</ExternalLink>
 						<ExternalLink href="https://www.meetup.com/pro/remix-run/">
 							<SvgIcon className="w-4 h-4" href={meetupIcon} /> Meetup
+						</ExternalLink>
+						<ExternalLink href="/rss.xml">
+							<SvgIcon className="w-4 h-4" href={rssIcon} /> RSS
 						</ExternalLink>
 					</List>
 				</div>
