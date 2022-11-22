@@ -115,3 +115,13 @@ export async function requireAdministrator(context: AppLoadContext) {
 
 	return profile;
 }
+
+export async function requireMaintainer(context: AppLoadContext) {
+	const profile = await context.session.getUserProfile();
+
+	if (!profile || !isMaintainer(profile.name)) {
+		throw notFound();
+	}
+
+	return profile;
+}

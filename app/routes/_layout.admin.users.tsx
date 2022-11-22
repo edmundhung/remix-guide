@@ -5,11 +5,10 @@ import { requireAdministrator } from '~/helpers';
 import type { UserProfile } from '~/types';
 
 export async function loader({ context }: LoaderArgs) {
-	const { userStore } = context;
-
-	await requireAdministrator(context);
-
-	const users = await userStore.listUserProfiles();
+	const [users] = await Promise.all([
+		context.userStore.listUserProfiles(),
+		requireAdministrator(context),
+	]);
 
 	return json({
 		users,

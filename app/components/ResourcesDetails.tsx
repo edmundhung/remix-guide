@@ -17,7 +17,7 @@ import FlashMessage from '~/components/FlashMessage';
 import type { User } from '~/types';
 import IconLink from '~/components/IconLink';
 import { platforms } from '~/config';
-import { isAdministrator } from '~/helpers';
+import { isMaintainer } from '~/helpers';
 import { useLists } from '~/hooks';
 
 interface ResourcesDetailsProps {
@@ -110,7 +110,7 @@ function ResourcesDetails({
 						{bookmarkCount >= 0 ? bookmarkCount : 0}
 					</label>
 				</bookmark.Form>
-				{isAdministrator(user?.profile.name) ? (
+				{isMaintainer(user?.profile.name) ? (
 					<div className="flex flex-row items-center">
 						<IconLink icon={backIcon} to={bookmarkURL} rotateIcon />
 					</div>

@@ -1,8 +1,14 @@
-import type { ActionArgs } from '@remix-run/cloudflare';
+import type { LoaderArgs, ActionArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
 import { useActionData } from '@remix-run/react';
 import { requireAdministrator } from '~/helpers';
 import BackupForm from '~/components/BackupForm';
+
+export async function loader({ context }: LoaderArgs) {
+	await requireAdministrator(context);
+
+	return json({});
+}
 
 export async function action({ request, context }: ActionArgs) {
 	const { session, pageStore } = context;

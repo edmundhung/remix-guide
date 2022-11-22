@@ -32,7 +32,7 @@ import {
 import { getResourceURL, getSearchOptions, toggleSearchParams } from '~/search';
 import type { SearchOptions } from '~/types';
 import IconLink from '~/components/IconLink';
-import { isAdministrator, isMaintainer } from '~/helpers';
+import { isMaintainer } from '~/helpers';
 import type { GuideMetadata } from '../../worker/types';
 
 interface ExternalLinkProps {
@@ -192,15 +192,15 @@ function SidebarNavigation({
 								) : null
 							}
 						>
+							{isMaintainer(profile?.name) ? (
+								<MenuLink to="/admin">⌨ Admin</MenuLink>
+							) : null}
 							<SearchLink list="bookmarks">
 								<SvgIcon className="w-4 h-4" href={bookmarkIcon} /> Bookmarks
 							</SearchLink>
 							<SearchLink list="history">
 								<SvgIcon className="w-4 h-4" href={historyIcon} /> History
 							</SearchLink>
-							{isAdministrator(profile.name) ? (
-								<MenuLink to="/admin">⌨ Admin</MenuLink>
-							) : null}
 						</List>
 					) : null}
 					<List title="Menu">

@@ -1,7 +1,7 @@
 import type { LoaderArgs, ActionArgs } from '@remix-run/cloudflare';
 import { json, redirect } from '@remix-run/cloudflare';
-import { Link, Form, useLoaderData, useLocation } from '@remix-run/react';
-import { requireAdministrator } from '~/helpers';
+import { Form, useLoaderData, useLocation } from '@remix-run/react';
+import { requireMaintainer } from '~/helpers';
 import { getSite } from '~/search';
 import type { PageMetadata } from '~/types';
 
@@ -9,7 +9,7 @@ export async function action({ context, request }: ActionArgs) {
 	const { session, pageStore } = context;
 	const [formData] = await Promise.all([
 		request.formData(),
-		requireAdministrator(context),
+		requireMaintainer(context),
 	]);
 	const url = formData.get('url')?.toString();
 
@@ -30,11 +30,10 @@ export async function action({ context, request }: ActionArgs) {
 }
 
 export async function loader({ context }: LoaderArgs) {
-	const { pageStore } = context;
-
-	await requireAdministrator(context);
-
-	const entries = await pageStore.listPageMetadata();
+	const [entries] = await Promise.all([
+		context.pageStore.listPageMetadata(),
+		requireMaintainer(context),
+	]);
 
 	return json({
 		entries,
@@ -49,12 +48,6 @@ export default function ListUsers() {
 		<section className="px-2.5 pt-2">
 			<div className="flex flex-row gap-4">
 				<h3 className="pb-4">Pages ({entries.length})</h3>
-				<div>/</div>
-				<div>
-					<Link to="statistics" className="hover:underline">
-						Statistics
-					</Link>
-				</div>
 			</div>
 			<div>
 				<table className="w-full border-collapse">
