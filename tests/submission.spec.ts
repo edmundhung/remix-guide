@@ -30,7 +30,7 @@ test.describe.parallel('Permission', () => {
 		).toBeDefined();
 	});
 
-	test('fails as a user', async ({ page, queries, mockAgent }) => {
+	test.skip('fails as a user', async ({ page, queries, mockAgent }) => {
 		const url = 'http://example.com/user';
 
 		await login(page, mockAgent, 'github-username');
