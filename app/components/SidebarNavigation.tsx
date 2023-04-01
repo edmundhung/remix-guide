@@ -176,20 +176,18 @@ function SidebarNavigation({
 						<List
 							title={`Hi, ${profile.name}`}
 							action={
-								isMaintainer(profile.name) ? (
-									<NavLink
-										className={({ isActive }) =>
-											clsx(
-												'flex items-center justify-center gap-2',
-												isActive ? 'text-white' : 'hover:text-gray-300',
-											)
-										}
-										to="/submit"
-										prefetch="intent"
-									>
-										<SvgIcon className="w-3 h-3" href={plusIcon} />
-									</NavLink>
-								) : null
+								<NavLink
+									className={({ isActive }) =>
+										clsx(
+											'flex items-center justify-center gap-2',
+											isActive ? 'text-white' : 'hover:text-gray-300',
+										)
+									}
+									to="/submit"
+									prefetch="intent"
+								>
+									<SvgIcon className="w-3 h-3" href={plusIcon} />
+								</NavLink>
 							}
 						>
 							{isMaintainer(profile?.name) ? (

@@ -44,15 +44,6 @@ export async function action({ request, context }: ActionArgs) {
 				),
 			},
 		});
-	} else if (!isMaintainer(profile.name)) {
-		return redirect('/submit', {
-			headers: {
-				'Set-Cookie': await session.flash(
-					'Sorry. This feature is not enabled on your account yet.',
-					'warning',
-				),
-			},
-		});
 	}
 
 	const formData = await request.formData();
@@ -105,7 +96,9 @@ export async function action({ request, context }: ActionArgs) {
 		}
 
 		return redirect(
-			`/resources/${id}?${new URLSearchParams({ open: 'bookmark' })}`,
+			isMaintainer(profile.name)
+				? `/resources/${id}?${new URLSearchParams({ open: 'bookmark' })}`
+				: `/resources/${id}`,
 			{ headers },
 		);
 	} catch (error) {

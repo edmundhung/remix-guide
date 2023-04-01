@@ -10,7 +10,7 @@ import { useMemo } from 'react';
 import clsx from 'clsx';
 import ResourcesDetails from '~/components/ResourcesDetails';
 import SuggestedResources from '~/components/SuggestedResources';
-import { formatMeta, notFound } from '~/helpers';
+import { formatMeta, isMaintainer, notFound } from '~/helpers';
 import { getSuggestions, patchResource } from '~/resources';
 import BookmarkDetails from '~/components/BookmarkDetails';
 import { useSessionData } from '~/hooks';
@@ -63,6 +63,10 @@ export async function action({ params, context, request }: ActionArgs) {
 				break;
 			}
 			case 'update': {
+				if (!isMaintainer(profile.name)) {
+					return new Response('Unauthorized', { status: 401 });
+				}
+
 				const description = formData.get('description')?.toString() ?? null;
 				const lists = formData.getAll('lists').map((value) => value.toString());
 
@@ -78,6 +82,10 @@ export async function action({ params, context, request }: ActionArgs) {
 				});
 			}
 			case 'delete': {
+				if (!isMaintainer(profile.name)) {
+					return new Response('Unauthorized', { status: 401 });
+				}
+
 				await resourceStore.deleteBookmark(resourceId);
 
 				return redirect('/', {
