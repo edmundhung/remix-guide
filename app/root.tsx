@@ -58,6 +58,11 @@ function Document({
 				{title ? <title>{title}</title> : null}
 				<Meta />
 				<Links />
+				<script
+					defer
+					data-domain="remix.guide"
+					src="https://plausible.io/js/script.js"
+				/>
 			</head>
 			<body className="relative w-full min-h-screen flex bg-gray-900 text-gray-200">
 				{children}
